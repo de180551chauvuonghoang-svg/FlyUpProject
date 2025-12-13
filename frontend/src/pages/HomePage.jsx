@@ -24,12 +24,12 @@ const IMAGES = {
 
 // Categories data
 const CATEGORIES = [
-  { name: 'Design', icon: 'palette', bgColor: 'bg-purple-100 dark:bg-purple-900/30', textColor: 'text-purple-600 dark:text-purple-300' },
-  { name: 'Development', icon: 'code', bgColor: 'bg-blue-100 dark:bg-blue-900/30', textColor: 'text-blue-600 dark:text-blue-300' },
-  { name: 'Marketing', icon: 'campaign', bgColor: 'bg-orange-100 dark:bg-orange-900/30', textColor: 'text-orange-600 dark:text-orange-300' },
-  { name: 'Business', icon: 'trending_up', bgColor: 'bg-green-100 dark:bg-green-900/30', textColor: 'text-green-600 dark:text-green-300' },
-  { name: 'Photography', icon: 'photo_camera', bgColor: 'bg-pink-100 dark:bg-pink-900/30', textColor: 'text-pink-600 dark:text-pink-300' },
-  { name: 'Lifestyle', icon: 'self_improvement', bgColor: 'bg-teal-100 dark:bg-teal-900/30', textColor: 'text-teal-600 dark:text-teal-300' },
+  { name: 'Design', icon: 'palette', bgColor: 'bg-purple-500/20', textColor: 'text-purple-400' },
+  { name: 'Development', icon: 'code', bgColor: 'bg-cyan-500/20', textColor: 'text-cyan-400' },
+  { name: 'Marketing', icon: 'campaign', bgColor: 'bg-orange-500/20', textColor: 'text-orange-400' },
+  { name: 'Business', icon: 'trending_up', bgColor: 'bg-green-500/20', textColor: 'text-green-400' },
+  { name: 'Photography', icon: 'photo_camera', bgColor: 'bg-pink-500/20', textColor: 'text-pink-400' },
+  { name: 'Lifestyle', icon: 'self_improvement', bgColor: 'bg-teal-500/20', textColor: 'text-teal-400' },
 ];
 
 // Courses data
@@ -37,7 +37,7 @@ const COURSES = [
   {
     title: 'Complete Web Development Bootcamp 2024',
     category: 'Development',
-    categoryColor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    categoryColor: 'bg-cyan-500/20 text-cyan-400',
     image: IMAGES.course1,
     rating: '4.9',
     instructor: 'Dr. Angela Yu',
@@ -47,7 +47,7 @@ const COURSES = [
   {
     title: 'UI/UX Design Masterclass: From Zero to Hero',
     category: 'Design',
-    categoryColor: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+    categoryColor: 'bg-purple-500/20 text-purple-400',
     image: IMAGES.course2,
     rating: '4.8',
     instructor: 'Sarah Jones',
@@ -57,7 +57,7 @@ const COURSES = [
   {
     title: 'Business Strategy: Start Your Own Agency',
     category: 'Business',
-    categoryColor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+    categoryColor: 'bg-green-500/20 text-green-400',
     image: IMAGES.course3,
     rating: '4.7',
     instructor: 'Michael Scott',
@@ -67,7 +67,7 @@ const COURSES = [
   {
     title: 'Digital Marketing & SEO Analytics',
     category: 'Marketing',
-    categoryColor: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300',
+    categoryColor: 'bg-orange-500/20 text-orange-400',
     image: IMAGES.course4,
     rating: '5.0',
     instructor: 'Emily Chen',
@@ -114,7 +114,7 @@ const HeroSection = () => (
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight">
             Unlock Your Potential with <span className="text-primary">Expert-Led</span> Courses
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-xl leading-relaxed">
+          <p className="text-lg text-gray-400 max-w-xl leading-relaxed">
             Master new skills in design, coding, business, and more. Learn from industry leaders and start building your future today with our comprehensive curriculum.
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
@@ -122,17 +122,17 @@ const HeroSection = () => (
               Start Learning
               <span className="material-symbols-outlined text-xl">arrow_forward</span>
             </button>
-            <button className="h-12 px-8 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-transparent text-slate-900 dark:text-white font-bold text-base hover:bg-gray-50 dark:hover:bg-white/10 transition-all flex items-center gap-2">
+            <button className="h-12 px-8 rounded-full bg-[#16161e] border border-[#2a2a3a] text-white font-bold text-base hover:bg-[#1e1e28] transition-all flex items-center gap-2">
               <span className="material-symbols-outlined text-xl">grid_view</span>
               Browse Courses
             </button>
           </div>
-          <div className="flex items-center gap-4 mt-6 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-4 mt-6 text-sm text-gray-400">
             <div className="flex -space-x-3">
-              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-background-light dark:border-background-dark" src={IMAGES.student1}/>
-              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-background-light dark:border-background-dark" src={IMAGES.student2}/>
-              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-background-light dark:border-background-dark" src={IMAGES.student3}/>
-              <div className="w-10 h-10 rounded-full border-2 border-background-light dark:border-background-dark bg-gray-200 dark:bg-surface-dark flex items-center justify-center text-xs font-bold text-slate-900 dark:text-white">
+              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-[#0a0a14]" src={IMAGES.student1}/>
+              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-[#0a0a14]" src={IMAGES.student2}/>
+              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-[#0a0a14]" src={IMAGES.student3}/>
+              <div className="w-10 h-10 rounded-full border-2 border-[#0a0a14] bg-[#16161e] flex items-center justify-center text-xs font-bold text-white">
                 +2k
               </div>
             </div>
@@ -141,7 +141,7 @@ const HeroSection = () => (
         </div>
         <div className="lg:w-1/2 w-full relative">
           <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full opacity-50"></div>
-          <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-gray-200 dark:bg-surface-dark">
+          <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-[#16161e]">
             <div className="w-full h-full bg-cover bg-center" style={{backgroundImage: `url("${IMAGES.hero}")`}}></div>
             <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center gap-4 text-white">
               <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white">
@@ -167,16 +167,16 @@ const CategoriesSection = () => (
   <section className="px-4 md:px-10 py-8">
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl md:text-3xl font-bold">Explore Categories</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-white">Explore Categories</h2>
         <a className="hidden md:flex items-center gap-1 text-primary font-bold text-sm hover:underline" href="#">View All <span className="material-symbols-outlined text-lg">arrow_forward</span></a>
       </div>
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
         {CATEGORIES.map((category, index) => (
-          <a key={index} className="snap-start shrink-0 group flex items-center gap-3 p-2 pr-6 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 hover:border-primary/50 dark:hover:border-primary/50 transition-all" href="#">
+          <a key={index} className="snap-start shrink-0 group flex items-center gap-3 p-2 pr-6 rounded-full bg-[#16161e] border border-[#2a2a3a] hover:border-primary/50 transition-all" href="#">
             <div className={`w-10 h-10 rounded-full ${category.bgColor} ${category.textColor} flex items-center justify-center`}>
               <span className="material-symbols-outlined">{category.icon}</span>
             </div>
-            <span className="font-bold text-sm">{category.name}</span>
+            <span className="font-bold text-sm text-white">{category.name}</span>
           </a>
         ))}
       </div>
@@ -186,10 +186,10 @@ const CategoriesSection = () => (
 
 // Course Card Component
 const CourseCard = ({ course }) => (
-  <article className="group flex flex-col bg-white dark:bg-surface-dark rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 hover:border-primary/50 transition-all hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(168,85,247,0.5)]">
+  <article className="group flex flex-col bg-[#16161e] rounded-2xl overflow-hidden border border-[#2a2a3a] hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/20">
     <div className="relative aspect-video overflow-hidden">
       <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{backgroundImage: `url('${course.image}')`}}></div>
-      <div className="absolute top-3 right-3 bg-white/90 dark:bg-black/80 backdrop-blur text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+      <div className="absolute top-3 right-3 bg-black/80 backdrop-blur text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 text-white">
         <span className="material-symbols-outlined text-yellow-400 text-sm">star</span>
         {course.rating}
       </div>
@@ -198,13 +198,13 @@ const CourseCard = ({ course }) => (
       <div className="flex items-center gap-2">
         <span className={`text-[10px] font-bold uppercase tracking-wider ${course.categoryColor} px-2 py-1 rounded`}>{course.category}</span>
       </div>
-      <h3 className="text-lg font-bold leading-tight group-hover:text-primary transition-colors line-clamp-2">{course.title}</h3>
-      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-auto">
+      <h3 className="text-lg font-bold leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">{course.title}</h3>
+      <div className="flex items-center gap-2 text-sm text-gray-400 mt-auto">
         <img alt="Instructor" className="w-6 h-6 rounded-full" src={course.instructorImage}/>
         <span>{course.instructor}</span>
       </div>
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/5">
-        <span className="text-xl font-bold text-slate-900 dark:text-white">{course.price}</span>
+      <div className="flex items-center justify-between pt-4 border-t border-[#2a2a3a]">
+        <span className="text-xl font-bold text-white">{course.price}</span>
         <button className="bg-primary/10 hover:bg-primary text-primary hover:text-white font-bold text-sm px-4 py-2 rounded-full transition-all">Enroll Now</button>
       </div>
     </div>
@@ -216,8 +216,8 @@ const FeaturedCoursesSection = () => (
   <section className="px-4 md:px-10 py-12">
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-bold tracking-tight">Featured Courses</h2>
-        <p className="text-gray-500 dark:text-gray-400">Hand-picked by our experts for you.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-white">Featured Courses</h2>
+        <p className="text-gray-400">Hand-picked by our experts for you.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {COURSES.map((course, index) => (
@@ -230,7 +230,7 @@ const FeaturedCoursesSection = () => (
 
 // Why Choose Section Component
 const WhyChooseSection = () => (
-  <section className="px-4 md:px-10 py-16 bg-white dark:bg-[#151421]">
+  <section className="px-4 md:px-10 py-16 bg-[#0d0d16]">
     <div className="grid lg:grid-cols-2 gap-12 items-center">
       <div className="order-2 lg:order-1 relative">
         <div className="relative w-full aspect-square max-w-md mx-auto">
@@ -250,37 +250,37 @@ const WhyChooseSection = () => (
       </div>
       <div className="order-1 lg:order-2 flex flex-col gap-8">
         <div>
-          <h2 className="text-3xl md:text-4xl font-black mb-4">Why Choose CoursePlatform?</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">We provide a seamless learning experience designed to help you succeed in your career and personal life.</p>
+          <h2 className="text-3xl md:text-4xl font-black mb-4 text-white">Why Choose FlyUp?</h2>
+          <p className="text-gray-400 text-lg">We provide a seamless learning experience designed to help you succeed in your career and personal life.</p>
         </div>
         <div className="grid sm:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-primary/30 transition-colors">
+          <div className="flex flex-col gap-3 p-4 rounded-xl bg-[#16161e] border border-[#2a2a3a] hover:border-primary/30 transition-colors">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-2">
               <span className="material-symbols-outlined">school</span>
             </div>
-            <h3 className="font-bold text-lg">Expert Instructors</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Learn from industry leaders who have real-world experience.</p>
+            <h3 className="font-bold text-lg text-white">Expert Instructors</h3>
+            <p className="text-sm text-gray-400">Learn from industry leaders who have real-world experience.</p>
           </div>
-          <div className="flex flex-col gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-primary/30 transition-colors">
+          <div className="flex flex-col gap-3 p-4 rounded-xl bg-[#16161e] border border-[#2a2a3a] hover:border-primary/30 transition-colors">
             <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 mb-2">
               <span className="material-symbols-outlined">workspace_premium</span>
             </div>
-            <h3 className="font-bold text-lg">Certified Learning</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Earn recognized certificates to boost your LinkedIn profile.</p>
+            <h3 className="font-bold text-lg text-white">Certified Learning</h3>
+            <p className="text-sm text-gray-400">Earn recognized certificates to boost your LinkedIn profile.</p>
           </div>
-          <div className="flex flex-col gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-primary/30 transition-colors">
+          <div className="flex flex-col gap-3 p-4 rounded-xl bg-[#16161e] border border-[#2a2a3a] hover:border-primary/30 transition-colors">
             <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500 mb-2">
               <span className="material-symbols-outlined">all_inclusive</span>
             </div>
-            <h3 className="font-bold text-lg">Lifetime Access</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Pay once, learn forever. Revisit course material anytime.</p>
+            <h3 className="font-bold text-lg text-white">Lifetime Access</h3>
+            <p className="text-sm text-gray-400">Pay once, learn forever. Revisit course material anytime.</p>
           </div>
-          <div className="flex flex-col gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-primary/30 transition-colors">
+          <div className="flex flex-col gap-3 p-4 rounded-xl bg-[#16161e] border border-[#2a2a3a] hover:border-primary/30 transition-colors">
             <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-500 mb-2">
               <span className="material-symbols-outlined">devices</span>
             </div>
-            <h3 className="font-bold text-lg">Learn Anywhere</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Switch seamlessly between your computer, tablet, and mobile.</p>
+            <h3 className="font-bold text-lg text-white">Learn Anywhere</h3>
+            <p className="text-sm text-gray-400">Switch seamlessly between your computer, tablet, and mobile.</p>
           </div>
         </div>
       </div>
@@ -290,12 +290,12 @@ const WhyChooseSection = () => (
 
 // Testimonial Card Component
 const TestimonialCard = ({ testimonial }) => (
-  <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-200 dark:border-white/10 shadow-sm relative">
+  <div className="bg-[#16161e] p-6 rounded-2xl border border-[#2a2a3a] shadow-sm relative">
     <span className="material-symbols-outlined absolute top-6 right-6 text-primary/20 text-4xl">format_quote</span>
     <div className="flex items-center gap-4 mb-4">
       <img alt="User" className="w-12 h-12 rounded-full object-cover" src={testimonial.image}/>
       <div>
-        <h4 className="font-bold text-sm">{testimonial.name}</h4>
+        <h4 className="font-bold text-sm text-white">{testimonial.name}</h4>
         <div className="flex text-yellow-400 text-xs">
           {[...Array(Math.floor(testimonial.rating))].map((_, i) => (
             <span key={i} className="material-symbols-outlined text-[16px] fill-current">star</span>
@@ -306,7 +306,7 @@ const TestimonialCard = ({ testimonial }) => (
         </div>
       </div>
     </div>
-    <p className="text-gray-600 dark:text-gray-300 text-sm italic">{testimonial.text}</p>
+    <p className="text-gray-400 text-sm italic">{testimonial.text}</p>
   </div>
 );
 
@@ -314,8 +314,8 @@ const TestimonialCard = ({ testimonial }) => (
 const TestimonialsSection = () => (
   <section className="px-4 md:px-10 py-20">
     <div className="text-center max-w-2xl mx-auto mb-12">
-      <h2 className="text-3xl font-bold mb-4">What Our Students Say</h2>
-      <p className="text-gray-500 dark:text-gray-400">Join a community of lifelong learners who are achieving their goals.</p>
+      <h2 className="text-3xl font-bold mb-4 text-white">What Our Students Say</h2>
+      <p className="text-gray-400">Join a community of lifelong learners who are achieving their goals.</p>
     </div>
     <div className="grid md:grid-cols-3 gap-6">
       {TESTIMONIALS.map((testimonial, index) => (
