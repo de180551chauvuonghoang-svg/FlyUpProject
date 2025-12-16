@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import useAuth from '../hooks/useAuth';
 
 const LoginPage = () => {
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -16,10 +21,26 @@ const LoginPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
-    // Add your login logic here
+    setIsLoading(true);
+    const toastId = toast.loading('Logging in...');
+
+    try {
+      const { error } = await signIn(formData.email, formData.password);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      toast.success('Welcome back!', { id: toastId });
+      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error(error.message || 'Failed to login', { id: toastId });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -174,12 +195,22 @@ const LoginPage = () => {
 
             {/* Submit Button */}
             <button 
-              className="group relative mt-2 flex w-full items-center justify-center overflow-hidden rounded-lg bg-primary px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#0a0a14]"
+              className="group relative mt-2 flex w-full items-center justify-center overflow-hidden rounded-lg bg-primary px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#0a0a14] disabled:opacity-70 disabled:cursor-not-allowed"
               type="submit"
+              disabled={isLoading}
             >
               <span className="relative z-10 flex items-center gap-2">
-                Log In
-                <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Logging in...</span>
+                  </>
+                ) : (
+                  <>
+                    Log In
+                    <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+                  </>
+                )}
               </span>
             </button>
           </form>

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'learner'
   });
 
   const handleInputChange = (e) => {
@@ -19,14 +23,50 @@ const RegisterPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      toast.error('Passwords do not match!');
       return;
     }
-    console.log('Register attempt:', formData);
-    // Add your registration logic here
+
+    setIsLoading(true);
+    const toastId = toast.loading('Creating your account...');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      toast.success('Account created successfully!', { id: toastId });
+      
+      // Navigate to login after a short delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast.error(error.message || 'Failed to create account', { id: toastId });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -218,12 +258,57 @@ const RegisterPage = () => {
               </div>
             </label>
 
+            {/* Role Selector */}
+            <div className="flex flex-col w-full">
+              <p className="text-white text-sm font-medium leading-normal pb-2 ml-1">I want to join as</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'learner' }))}
+                  className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                    formData.role === 'learner'
+                      ? 'border-primary bg-primary/10 text-white shadow-lg shadow-primary/20'
+                      : 'border-[#2a2a3a] bg-[#1e1e28]/50 text-gray-400 hover:border-primary/50 hover:bg-[#1e1e28]'
+                  }`}
+                >
+                  <span className={`material-symbols-outlined text-3xl ${formData.role === 'learner' ? 'text-primary' : ''}`}>
+                    school
+                  </span>
+                  <span className="font-semibold text-sm">Learner</span>
+                  <span className="text-xs text-gray-500">Browse & enroll courses</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, role: 'instructor' }))}
+                  className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                    formData.role === 'instructor'
+                      ? 'border-primary bg-primary/10 text-white shadow-lg shadow-primary/20'
+                      : 'border-[#2a2a3a] bg-[#1e1e28]/50 text-gray-400 hover:border-primary/50 hover:bg-[#1e1e28]'
+                  }`}
+                >
+                  <span className={`material-symbols-outlined text-3xl ${formData.role === 'instructor' ? 'text-primary' : ''}`}>
+                    cast_for_education
+                  </span>
+                  <span className="font-semibold text-sm">Instructor</span>
+                  <span className="text-xs text-gray-500">Create & sell courses</span>
+                </button>
+              </div>
+            </div>
+
             {/* Submit Button */}
             <button 
-              className="w-full mt-2 flex items-center justify-center rounded-lg h-12 px-4 bg-primary hover:bg-primary/90 text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all transform hover:-translate-y-0.5"
+              className="w-full mt-2 flex items-center justify-center rounded-lg h-12 px-4 bg-primary hover:bg-primary/90 text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
               type="submit"
+              disabled={isLoading}
             >
-              Create Account
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Creating Account...</span>
+                </div>
+              ) : (
+                'Create Account'
+              )}
             </button>
           </form>
 

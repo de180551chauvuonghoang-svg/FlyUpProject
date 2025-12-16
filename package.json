@@ -1,0 +1,26 @@
+{
+  "name": "flyupproject",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/de180551chauvuonghoang-svg/FlyUpProject.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/de180551chauvuonghoang-svg/FlyUpProject/issues"
+  },
+  "homepage": "https://github.com/de180551chauvuonghoang-svg/FlyUpProject#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

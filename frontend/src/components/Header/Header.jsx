@@ -1,7 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
+import defaultAvatar from '../../assets/default-avatar.png';
 
 const Header = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await signOut();
+    setIsDropdownOpen(false);
+    navigate('/login');
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#2a2a3a] bg-[#0a0a14]/90 backdrop-blur-md">
       <div className="px-4 md:px-10 py-3 flex items-center justify-between">
@@ -30,19 +42,85 @@ const Header = () => {
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Mentors</a>
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Community</a>
           </nav>
-          <div className="flex gap-3">
-            <Link 
-              to="/login"
-              className="hidden sm:flex h-10 px-5 items-center justify-center rounded-full border border-[#2a2a3a] hover:bg-[#16161e] text-white text-sm font-bold transition-all"
-            >
-              Log In
-            </Link>
-            <Link 
-              to="/register"
-              className="h-10 px-5 flex items-center justify-center rounded-full bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] transition-all transform hover:-translate-y-0.5"
-            >
-              Sign Up
-            </Link>
+          <div className="flex gap-3 relative">
+            {user ? (
+              <div className="relative group">
+                <button 
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                  className="flex items-center gap-3 hover:bg-[#16161e] p-1.5 pr-4 rounded-full border border-transparent hover:border-[#2a2a3a] transition-all"
+                >
+                  <div className="size-8 rounded-full overflow-hidden border border-[#2a2a3a]">
+                    <img 
+                      src={user.avatarUrl || defaultAvatar} 
+                      alt="User Avatar" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-white hidden sm:block">
+                    {user.fullName || user.email.split('@')[0]}
+                  </span>
+                  <span className="material-symbols-outlined text-gray-400 text-[20px]">keyboard_arrow_down</span>
+                </button>
+
+                {/* Dropdown Menu */}
+                <div className={`absolute right-0 top-full mt-2 w-64 bg-[#16161e] border border-[#2a2a3a] rounded-2xl shadow-xl overflow-hidden transition-all duration-200 origin-top-right ${isDropdownOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}>
+                  <div className="p-4 border-b border-[#2a2a3a] bg-[#0a0a14]/50">
+                    <div className="flex items-center gap-3">
+                      <div className="size-10 rounded-full overflow-hidden border border-[#2a2a3a]">
+                        <img 
+                          src={user.avatarUrl || defaultAvatar} 
+                          alt="User Avatar" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-white truncate">{user.fullName}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">person</span>
+                      <span className="text-sm font-medium">Information Setting</span>
+                    </Link>
+                    <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">settings</span>
+                      <span className="text-sm font-medium">Settings</span>
+                    </Link>
+                    <Link to="/change-password" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">shield</span>
+                      <span className="text-sm font-medium">Change Password</span>
+                    </Link>
+                  </div>
+                  <div className="p-2 border-t border-[#2a2a3a] bg-[#0a0a14]/30">
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 text-red-500 hover:text-red-400 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">logout</span>
+                      <span className="text-sm font-bold">Log Out</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Link 
+                  to="/login"
+                  className="h-10 px-5 flex items-center justify-center rounded-full border border-[#2a2a3a] hover:bg-[#16161e] text-white text-sm font-bold transition-all"
+                >
+                  Log In
+                </Link>
+                <Link 
+                  to="/register"
+                  className="hidden sm:flex h-10 px-5 items-center justify-center rounded-full bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] transition-all transform hover:-translate-y-0.5"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
