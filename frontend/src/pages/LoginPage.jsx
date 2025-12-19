@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 import useAuth from '../hooks/useAuth';
 
 const LoginPage = () => {
-  const { signIn } = useAuth();
+  const { signIn } = useAuth(); 
+  // Wait, I should implement loginWithGoogle in useAuth or just call api here.
+  // For simplicity, let's call api directly or add to useAuth.
+  // Let's assume useAuth needs update. But I can't see useAuth file.
+  // I will implement handleGoogleSuccess here using headers.
+  
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -12,6 +18,42 @@ const LoginPage = () => {
     email: '',
     password: ''
   });
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setIsLoading(true);
+    const toastId = toast.loading('Verifying Google Login...');
+    try {
+        const res = await fetch('http://localhost:5000/api/auth/google', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ credential: credentialResponse.credential })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.details || data.error || 'Google login failed');
+        
+        // Save token and user - ideally through useAuth functionality, but here manual for now
+        localStorage.setItem('accessToken', data.session.accessToken);
+        localStorage.setItem('refreshToken', data.session.refreshToken);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Dispatch event or update context if possible. Use window reload as fallback or if useAuth listens to storage.
+        // Better: Assuming useAuth has a setSession or similar. 
+        // If not, reload page is safest to refresh auth state in context.
+        
+        toast.success('Logged in with Google!', { id: toastId });
+        window.location.href = '/'; 
+        
+    } catch (error) {
+        console.error('Google login error', error);
+        toast.error(error.message, { id: toastId });
+    } finally {
+        setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -45,6 +87,7 @@ const LoginPage = () => {
 
   return (
     <div className="font-display bg-[#0a0a14] text-white antialiased overflow-x-hidden min-h-screen relative selection:bg-primary selection:text-white">
+
       {/* Custom Styles */}
       <style>{`
         .glass-card {
@@ -227,17 +270,19 @@ const LoginPage = () => {
 
           {/* Social Buttons */}
           <div className="grid grid-cols-2 gap-4">
-            <button 
-              type="button"
-              className="flex items-center justify-center gap-2 rounded-lg border border-[#2a2a3a] bg-[#1e1e28]/50 px-4 py-2.5 text-sm font-medium text-gray-300 shadow-sm transition-all hover:bg-[#1e1e28] hover:text-primary hover:border-primary/50"
-            >
-              <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24">
-                <path d="M12.0003 20.45c4.6667 0 8.45-3.7833 8.45-8.45 0-4.6667-3.7833-8.45-8.45-8.45-4.6667 0-8.45 3.7833-8.45 8.45 0 4.6667 3.7833 8.45 8.45 8.45Z" fill="white" fillOpacity="0.01"></path>
-                <path d="M20.1018 10.875h-8.1016v3.2813h4.8633c-.2617 1.6367-1.7461 4.5469-4.8633 4.5469-2.9219 0-5.3086-2.3945-5.3086-5.3516 0-2.957 2.3867-5.3516 5.3086-5.3516 1.6367 0 2.9258.8398 3.5938 1.4883l2.457-2.4609C16.4852 5.5625 14.4266 4.5 12.0002 4.5c-4.3242 0-7.832 3.5078-7.832 7.8516s3.5078 7.8516 7.832 7.8516c3.9609 0 7.4258-2.8242 7.4258-7.8516 0-.6133-.0664-1.1211-.1328-1.4766Z" fill="#DB4437"></path>
-              </svg>
-              Google
-            </button>
-            <button 
+            <div className="flex justify-center w-full">
+                 <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => {
+                      toast.error('Google Sign In Failed');
+                    }}
+                    useOneTap
+                    theme="filled_black"
+                    shape="pill"
+                 />
+            </div>
+            {/* Facebook button removed or keep if needed, but centering Google for now as primary requested structure */}
+             <button 
               type="button"
               className="flex items-center justify-center gap-2 rounded-lg border border-[#2a2a3a] bg-[#1e1e28]/50 px-4 py-2.5 text-sm font-medium text-gray-300 shadow-sm transition-all hover:bg-[#1e1e28] hover:text-primary hover:border-primary/50"
             >

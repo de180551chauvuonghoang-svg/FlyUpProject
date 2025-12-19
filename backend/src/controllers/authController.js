@@ -153,3 +153,37 @@ export const refreshToken = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ error: 'Google credential is required' });
+    }
+
+    const user = await authService.loginWithGoogle(credential);
+
+    res.json({
+      message: 'Login successful',
+      user: {
+        id: user.Id,
+        email: user.Email,
+        fullName: user.FullName,
+        avatarUrl: user.AvatarUrl
+      },
+      session: {
+        accessToken: user.Token,
+        refreshToken: user.RefreshToken,
+      }
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    // Distinguish between Auth errors (usually string messages from service) and System errors
+    if (error.message.includes('Google account') || error.message.includes('Invalid')) {
+        return res.status(401).json({ error: error.message });
+    }
+    // Database or System errors
+    res.status(500).json({ error: 'Login failed due to system error', details: error.message });
+  }
+};

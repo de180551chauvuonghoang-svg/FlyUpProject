@@ -41,8 +41,18 @@ app.use('/api/users', usersRouter);
 app.use('/api/courses', coursesRouter);
 
 // Error handling middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  
+  // Handle JSON parse errors
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Invalid JSON format. Please check your request body.'
+    });
+  }
+
   res.status(500).json({ 
     error: 'Something went wrong!',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined

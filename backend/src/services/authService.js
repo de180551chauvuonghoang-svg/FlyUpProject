@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../configs/supabase.js';
 import prisma from '../lib/prisma.js';
@@ -120,5 +121,64 @@ export const refreshSession = async (refreshToken) => {
   }
   
   // In a real app, we would rotate tokens here.
+  return user;
+};
+
+export const loginWithGoogle = async (credential) => {
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  
+  const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,  
+  });
+  const payload = ticket.getPayload();
+  const { email, name, picture } = payload;
+
+  if (!email) {
+      throw new Error('Google account does not have an email');
+  }
+
+  // Check if user exists
+  let user = await prisma.users.findFirst({
+        where: { Email: email.toLowerCase() }
+  });
+
+  if (!user) {
+      // Create new user
+      const token = uuidv4();
+      const refreshToken = uuidv4();
+      const baseUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+      const uniqueUsername = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
+
+      user = await prisma.users.create({
+          data: {
+              UserName: uniqueUsername,
+              Password: '', // No password for Google users
+              Email: email.toLowerCase(),
+              FullName: name || 'Google User',
+              MetaFullName: removeAccents(name || 'Google User'),
+              AvatarUrl: picture || '',
+              Role: 'learner', // Default role
+              Token: token,
+              RefreshToken: refreshToken,
+              IsVerified: true, // Google emails are verified
+              IsApproved: true,
+              AccessFailedCount: 0,
+              LoginProvider: 'Google',
+              ProviderKey: email,
+              SystemBalance: BigInt(0),
+          }
+      });
+  } else {
+      // Update existing user with new tokens if needed (optional) usually we just return existing
+      // Maybe update LoginProvider if it was null?
+      if (!user.LoginProvider) {
+           await prisma.users.update({
+               where: { Id: user.Id },
+               data: { LoginProvider: 'Google', IsVerified: true }
+           });
+      }
+  }
+
   return user;
 };
