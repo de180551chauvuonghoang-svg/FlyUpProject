@@ -312,38 +312,8 @@ const RegisterPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative flex py-6 items-center">
-            <div className="flex-grow border-t border-[#2a2a3a]"></div>
-            <span className="flex-shrink-0 mx-4 text-gray-500 text-sm">Or continue with</span>
-            <div className="flex-grow border-t border-[#2a2a3a]"></div>
-          </div>
-
-          {/* Social Buttons */}
-          <div className="grid grid-cols-2 gap-4">
-            <button 
-              type="button"
-              className="flex items-center justify-center gap-2 rounded-lg h-10 border border-[#2a2a3a] bg-[#1e1e28]/50 hover:bg-[#1e1e28] hover:border-primary/50 transition-colors"
-            >
-              <svg className="size-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23.766 12.2764C23.766 11.4607 23.6999 10.6406 23.5588 9.83807H12.24V14.4591H18.7217C18.4528 15.9494 17.5885 17.2678 16.323 18.1056V21.1039H20.19C22.4608 19.0139 23.766 15.9274 23.766 12.2764Z" fill="#4285F4"></path>
-                <path d="M12.2401 24.0008C15.4766 24.0008 18.2059 22.9382 20.1945 21.1039L16.3275 18.1055C15.2517 18.8375 13.8627 19.252 12.2445 19.252C9.11388 19.252 6.45946 17.1399 5.50705 14.3003H1.5166V17.3912C3.55371 21.4434 7.7029 24.0008 12.2401 24.0008Z" fill="#34A853"></path>
-                <path d="M5.50253 14.3003C5.00236 12.8099 5.00236 11.1961 5.50253 9.70575V6.61481H1.51649C-0.18551 10.0056 -0.18551 14.0004 1.51649 17.3912L5.50253 14.3003Z" fill="#FBBC05"></path>
-                <path d="M12.2401 4.74966C13.9509 4.7232 15.6044 5.36697 16.8434 6.54867L20.2695 3.12262C18.1001 1.0855 15.2208 -0.034466 12.2401 0.000808666C7.7029 0.000808666 3.55371 2.55822 1.5166 6.61481L5.50264 9.70575C6.45064 6.86173 9.10947 4.74966 12.2401 4.74966Z" fill="#EA4335"></path>
-              </svg>
-              <span className="text-white text-sm font-medium">Google</span>
-            </button>
-            <button 
-              type="button"
-              className="flex items-center justify-center gap-2 rounded-lg h-10 border border-[#2a2a3a] bg-[#1e1e28]/50 hover:bg-[#1e1e28] hover:border-primary/50 transition-colors"
-            >
-              <svg className="size-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 12.0734C24 5.40552 18.6274 0 12 0C5.37258 0 0 5.40552 0 12.0734C0 18.1006 4.38823 23.0945 10.125 24V15.5623H7.07813V12.0734H10.125V9.41249C10.125 6.38722 11.9165 4.71536 14.6576 4.71536C15.9705 4.71536 17.3438 4.95155 17.3438 4.95155V7.9224H15.8306C14.3392 7.9224 13.875 8.85243 13.875 9.80556V12.0734H17.2031L16.6711 15.5623H13.875V24C19.6118 23.0945 24 18.1006 24 12.0734Z" fill="#1877F2"></path>
-              </svg>
-              <span className="text-white text-sm font-medium">Facebook</span>
-            </button>
-          </div>
-
+        
+         
           {/* Login Link */}
           <div className="mt-8 text-center">
             <p className="text-gray-400 text-sm">
