@@ -6,9 +6,9 @@
   --color-background-dark: #0a0a14;
   --color-surface-dark: #16161e;
   --color-surface-light: #16161e;
-  
+
   --font-family-display: "Spline Sans", sans-serif;
-  
+
   --radius-DEFAULT: 1rem;
   --radius-lg: 1.5rem;
   --radius-xl: 2rem;
@@ -51,7 +51,8 @@ body {
 
 /* Animation keyframes */
 @keyframes ping {
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(2);
     opacity: 0;
   }
@@ -62,7 +63,8 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

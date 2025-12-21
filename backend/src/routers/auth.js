@@ -19,6 +19,9 @@ router.get('/me', authController.getMe);
 // Request password reset
 router.post('/forgot-password', authController.forgotPassword);
 
+// Confirm password reset
+router.post('/reset-password-confirm', authController.resetPasswordConfirm);
+
 // Refresh token
 router.post('/refresh', authController.refreshToken);
 

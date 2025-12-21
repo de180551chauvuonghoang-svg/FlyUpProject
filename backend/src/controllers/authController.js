@@ -132,6 +132,25 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
+export const resetPasswordConfirm = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+
+    await authService.confirmPasswordReset(token, newPassword);
+    res.json({ message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Reset password confirm error:', error);
+    if (error.message === 'Invalid or expired token') {
+      return res.status(400).json({ error: 'Invalid or expired reset link' });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
