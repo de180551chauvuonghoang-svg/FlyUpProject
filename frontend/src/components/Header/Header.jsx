@@ -37,12 +37,16 @@ const Header = () => {
         </div>
         <div className="flex items-center gap-4 lg:gap-8">
           <nav className="hidden lg:flex items-center gap-6">
+            <Link className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" to="/courses">Courses</Link>
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Browse</a>
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">My Learning</a>
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Mentors</a>
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Community</a>
           </nav>
           <div className="flex gap-3 relative">
+            <Link to="/cart" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e] border border-transparent hover:border-[#2a2a3a] text-white transition-all">
+              <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
+            </Link>
             {user ? (
               <div className="relative group">
                 <button 
