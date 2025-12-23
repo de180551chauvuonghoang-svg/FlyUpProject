@@ -1,42 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
-
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.2
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" }
-  }
-};
-
-const logoVariants = {
-  initial: { scale: 0, rotate: -180 },
-  animate: { 
-    scale: 1, 
-    rotate: 0,
-    transition: {
-      type: "spring",
-      stiffness: 260,
-      damping: 20
-    }
-  }
-};
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -92,6 +56,7 @@ const RegisterPage = () => {
 
       toast.success('Account created successfully!', { id: toastId });
       
+      // Navigate to login after a short delay
       setTimeout(() => {
         navigate('/login');
       }, 1500);
@@ -174,53 +139,32 @@ const RegisterPage = () => {
       </Link>
 
       {/* Main Content */}
-      <motion.main 
-        className="w-full max-w-[480px] z-10 my-8"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <motion.div 
-          className="glass-panel w-full rounded-2xl p-8 sm:p-12"
-          variants={itemVariants}
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.3 }}
-        >
+      <main className="w-full max-w-[480px] z-10 my-8">
+        <div className="glass-panel w-full rounded-2xl p-8 sm:p-12 transition-all">
           {/* Header */}
           <div className="flex flex-col items-center mb-8">
-            <motion.div 
-              className="mb-4"
-              variants={logoVariants}
-              initial="initial"
-              animate="animate"
-            >
+            <div className="mb-4">
               <img 
                 src="/FlyUpLogin.png" 
                 alt="FlyUp Logo" 
                 className="w-32 h-32 object-contain"
               />
-            </motion.div>
-            <motion.h2 
-              className="text-4xl font-black bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent text-center"
-              variants={itemVariants}
-            >
+            </div>
+            <h2 className="text-white text-[28px] font-bold leading-tight tracking-[-0.015em] text-center">
               Create Account
-            </motion.h2>
-            <motion.p 
-              className="text-gray-400 text-base font-normal leading-normal pt-2 text-center"
-              variants={itemVariants}
-            >
+            </h2>
+            <p className="text-gray-400 text-base font-normal leading-normal pt-2 text-center">
               Start your learning journey today.
-            </motion.p>
+            </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Full Name */}
-            <motion.label className="flex flex-col w-full" variants={itemVariants}>
+            <label className="flex flex-col w-full">
               <p className="text-white text-sm font-medium leading-normal pb-2 ml-1">Full Name</p>
               <div className="relative">
-                <motion.input 
+                <input 
                   className="flex w-full rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#2a2a3a] bg-[#1e1e28]/50 focus:border-primary h-12 placeholder:text-gray-500 px-4 pl-11 text-base font-normal leading-normal transition-all"
                   placeholder="John Doe" 
                   type="text"
@@ -228,19 +172,18 @@ const RegisterPage = () => {
                   value={formData.fullName}
                   onChange={handleInputChange}
                   required
-                  whileFocus={{ scale: 1.01 }}
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <span className="material-symbols-outlined text-xl">person</span>
                 </div>
               </div>
-            </motion.label>
+            </label>
 
             {/* Email */}
-            <motion.label className="flex flex-col w-full" variants={itemVariants}>
+            <label className="flex flex-col w-full">
               <p className="text-white text-sm font-medium leading-normal pb-2 ml-1">Email</p>
               <div className="relative">
-                <motion.input 
+                <input 
                   className="flex w-full rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#2a2a3a] bg-[#1e1e28]/50 focus:border-primary h-12 placeholder:text-gray-500 px-4 pl-11 text-base font-normal leading-normal transition-all"
                   placeholder="student@example.com" 
                   type="email"
@@ -248,21 +191,20 @@ const RegisterPage = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  whileFocus={{ scale: 1.01 }}
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <span className="material-symbols-outlined text-xl">mail</span>
                 </div>
               </div>
-            </motion.label>
+            </label>
 
             {/* Password */}
-            <motion.label className="flex flex-col w-full" variants={itemVariants}>
+            <label className="flex flex-col w-full">
               <div className="flex justify-between items-center pb-2 ml-1">
                 <p className="text-white text-sm font-medium leading-normal">Password</p>
               </div>
               <div className="relative w-full">
-                <motion.input 
+                <input 
                   className="flex w-full rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#2a2a3a] bg-[#1e1e28]/50 focus:border-primary h-12 placeholder:text-gray-500 px-4 pl-11 pr-10 text-base font-normal leading-normal transition-all"
                   placeholder="••••••••" 
                   type={showPassword ? "text" : "password"}
@@ -270,7 +212,6 @@ const RegisterPage = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  whileFocus={{ scale: 1.01 }}
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <span className="material-symbols-outlined text-xl">lock</span>
@@ -285,15 +226,15 @@ const RegisterPage = () => {
                   </span>
                 </button>
               </div>
-            </motion.label>
+            </label>
 
             {/* Confirm Password */}
-            <motion.label className="flex flex-col w-full" variants={itemVariants}>
+            <label className="flex flex-col w-full">
               <div className="flex justify-between items-center pb-2 ml-1">
                 <p className="text-white text-sm font-medium leading-normal">Confirm Password</p>
               </div>
               <div className="relative w-full">
-                <motion.input 
+                <input 
                   className="flex w-full rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#2a2a3a] bg-[#1e1e28]/50 focus:border-primary h-12 placeholder:text-gray-500 px-4 pl-11 pr-10 text-base font-normal leading-normal transition-all"
                   placeholder="••••••••" 
                   type={showConfirmPassword ? "text" : "password"}
@@ -301,7 +242,6 @@ const RegisterPage = () => {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
-                  whileFocus={{ scale: 1.01 }}
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <span className="material-symbols-outlined text-xl">lock</span>
@@ -316,13 +256,13 @@ const RegisterPage = () => {
                   </span>
                 </button>
               </div>
-            </motion.label>
+            </label>
 
             {/* Role Selector */}
-            <motion.div className="flex flex-col w-full" variants={itemVariants}>
+            <div className="flex flex-col w-full">
               <p className="text-white text-sm font-medium leading-normal pb-2 ml-1">I want to join as</p>
               <div className="grid grid-cols-2 gap-3">
-                <motion.button
+                <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, role: 'learner' }))}
                   className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
@@ -330,16 +270,14 @@ const RegisterPage = () => {
                       ? 'border-primary bg-primary/10 text-white shadow-lg shadow-primary/20'
                       : 'border-[#2a2a3a] bg-[#1e1e28]/50 text-gray-400 hover:border-primary/50 hover:bg-[#1e1e28]'
                   }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
                   <span className={`material-symbols-outlined text-3xl ${formData.role === 'learner' ? 'text-primary' : ''}`}>
                     school
                   </span>
                   <span className="font-semibold text-sm">Learner</span>
                   <span className="text-xs text-gray-500">Browse & enroll courses</span>
-                </motion.button>
-                <motion.button
+                </button>
+                <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, role: 'instructor' }))}
                   className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
@@ -347,26 +285,21 @@ const RegisterPage = () => {
                       ? 'border-primary bg-primary/10 text-white shadow-lg shadow-primary/20'
                       : 'border-[#2a2a3a] bg-[#1e1e28]/50 text-gray-400 hover:border-primary/50 hover:bg-[#1e1e28]'
                   }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
                   <span className={`material-symbols-outlined text-3xl ${formData.role === 'instructor' ? 'text-primary' : ''}`}>
                     cast_for_education
                   </span>
                   <span className="font-semibold text-sm">Instructor</span>
                   <span className="text-xs text-gray-500">Create & sell courses</span>
-                </motion.button>
+                </button>
               </div>
-            </motion.div>
+            </div>
 
             {/* Submit Button */}
-            <motion.button 
-              className="w-full mt-2 flex items-center justify-center rounded-lg h-12 px-4 bg-primary hover:bg-primary/90 text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            <button 
+              className="w-full mt-2 flex items-center justify-center rounded-lg h-12 px-4 bg-primary hover:bg-primary/90 text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
               type="submit"
               disabled={isLoading}
-              variants={itemVariants}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
@@ -376,20 +309,22 @@ const RegisterPage = () => {
               ) : (
                 'Create Account'
               )}
-            </motion.button>
+            </button>
           </form>
 
+        
+         
           {/* Login Link */}
-          <motion.div className="mt-8 text-center" variants={itemVariants}>
+          <div className="mt-8 text-center">
             <p className="text-gray-400 text-sm">
               Already have an account?{' '}
               <Link to="/login" className="text-primary font-bold hover:underline hover:text-purple-400 transition-colors">
                 Log In
               </Link>
             </p>
-          </motion.div>
-        </motion.div>
-      </motion.main>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

@@ -1,6 +1,12 @@
 import React from 'react';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import StatsSection from '../components/StatsSection';
+import LearningPathsSection from '../components/LearningPathsSection';
+import CourseBenefitsSection from '../components/CourseBenefitsSection';
+
 
 // Image URLs from the template
 const IMAGES = {
@@ -349,8 +355,11 @@ const HomePage = () => {
       <Header />
       <main className="flex-1 w-full max-w-[1440px] mx-auto flex flex-col">
         <HeroSection />
+        <StatsSection />
         <CategoriesSection />
+        <LearningPathsSection />
         <FeaturedCoursesSection />
+        <CourseBenefitsSection />
         <WhyChooseSection />
         <TestimonialsSection />
         <CTASection />

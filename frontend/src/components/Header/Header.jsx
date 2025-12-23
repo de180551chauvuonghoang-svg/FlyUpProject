@@ -18,13 +18,22 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-[#2a2a3a] bg-[#0a0a14]/90 backdrop-blur-md">
       <div className="px-4 md:px-10 py-3 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link className="flex items-center gap-2 group" to="/">
-            <div className="size-8 text-primary">
-              <svg className="w-full h-full transition-transform group-hover:scale-110" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
-              </svg>
+          <Link className="flex items-center gap-3 group" to="/">
+            <div className="h-14 w-auto">
+              <img 
+                src="/FlyUpTeam.png" 
+                alt="FlyUp Logo" 
+                className="h-full w-auto object-contain transition-transform group-hover:scale-110"
+              />
             </div>
-            <h2 className="text-xl font-bold tracking-tight text-white">FlyUp</h2>
+            <div className="flex flex-col">
+              <h2 className="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent leading-tight">
+                FlyUp
+              </h2>
+              <p className="text-xs font-semibold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent leading-tight tracking-wide">
+                Edu & Tech
+              </p>
+            </div>
           </Link>
           <label className="hidden md:flex flex-col min-w-40 h-10 w-64 lg:w-80">
             <div className="flex w-full flex-1 items-stretch rounded-full h-full bg-[#16161e] border border-[#2a2a3a] overflow-hidden focus-within:ring-2 ring-primary/50 transition-all">
