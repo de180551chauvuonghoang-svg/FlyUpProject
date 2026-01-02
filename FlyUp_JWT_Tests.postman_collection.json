@@ -1,0 +1,306 @@
+{
+  "info": {
+    "name": "FlyUp JWT Authentication Tests",
+    "description": "Comprehensive test collection for JWT authentication endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Register New User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save tokens to environment variables",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.session) {",
+              "    pm.environment.set('accessToken', jsonData.session.accessToken);",
+              "    pm.environment.set('refreshToken', jsonData.session.refreshToken);",
+              "    pm.environment.set('userId', jsonData.user.id);",
+              "}",
+              "",
+              "// Test response",
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Response has access token', function () {",
+              "    pm.expect(jsonData.session.accessToken).to.be.a('string');",
+              "});",
+              "",
+              "pm.test('Response has refresh token', function () {",
+              "    pm.expect(jsonData.session.refreshToken).to.be.a('string');",
+              "});",
+              "",
+              "pm.test('Token type is Bearer', function () {",
+              "    pm.expect(jsonData.session.tokenType).to.eql('Bearer');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"Test123!\",\n  \"fullName\": \"Test User\",\n  \"role\": \"learner\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/register",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "auth", "register"]
+        },
+        "description": "Register a new user and receive JWT tokens"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Login User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save tokens to environment variables",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.session) {",
+              "    pm.environment.set('accessToken', jsonData.session.accessToken);",
+              "    pm.environment.set('refreshToken', jsonData.session.refreshToken);",
+              "    pm.environment.set('userId', jsonData.user.id);",
+              "}",
+              "",
+              "// Test response",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has JWT tokens', function () {",
+              "    pm.expect(jsonData.session.accessToken).to.be.a('string');",
+              "    pm.expect(jsonData.session.refreshToken).to.be.a('string');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"Test123!\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "auth", "login"]
+        },
+        "description": "Login with existing user credentials"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Current User (Protected Route)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has user data', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.user).to.be.an('object');",
+              "    pm.expect(jsonData.user.email).to.be.a('string');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/auth/me",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "auth", "me"]
+        },
+        "description": "Get current user info using JWT access token"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Refresh Access Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Update tokens in environment",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.session) {",
+              "    pm.environment.set('accessToken', jsonData.session.accessToken);",
+              "    pm.environment.set('refreshToken', jsonData.session.refreshToken);",
+              "}",
+              "",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Received new tokens', function () {",
+              "    pm.expect(jsonData.session.accessToken).to.be.a('string');",
+              "    pm.expect(jsonData.session.refreshToken).to.be.a('string');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/refresh",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "auth", "refresh"]
+        },
+        "description": "Get new access token using refresh token"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Test Expired Token (Manual)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "",
+              "pm.test('Error indicates token expired', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.code).to.eql('TOKEN_EXPIRED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer EXPIRED_OR_INVALID_TOKEN_HERE",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/auth/me",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "auth", "me"]
+        },
+        "description": "Test with expired or invalid token"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Google OAuth Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.session) {",
+              "    pm.environment.set('accessToken', jsonData.session.accessToken);",
+              "    pm.environment.set('refreshToken', jsonData.session.refreshToken);",
+              "}",
+              "",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has tokens', function () {",
+              "    pm.expect(jsonData.session.accessToken).to.be.a('string');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"credential\": \"GOOGLE_ID_TOKEN_HERE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/google",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "auth", "google"]
+        },
+        "description": "Login with Google OAuth (requires valid Google ID token)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ]
+}

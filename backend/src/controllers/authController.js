@@ -26,6 +26,12 @@ export const register = async (req, res) => {
         fullName: newUser.FullName,
         role: newUser.Role,
         username: newUser.UserName
+      },
+      session: {
+        accessToken: newUser.accessToken,
+        refreshToken: newUser.plainRefreshToken,
+        tokenType: 'Bearer',
+        expiresIn: 1800 // 30 minutes in seconds
       }
     });
   } catch (error) {
@@ -58,12 +64,14 @@ export const login = async (req, res) => {
       user: {
         id: user.Id,
         email: user.Email,
-        fullName: user.FullName
+        fullName: user.FullName,
+        role: user.Role
       },
       session: {
-        accessToken: user.Token,
-        refreshToken: user.RefreshToken,
-        // expiresAt: not tracked in this simple implementation
+        accessToken: user.accessToken,
+        refreshToken: user.plainRefreshToken,
+        tokenType: 'Bearer',
+        expiresIn: 1800 // 30 minutes in seconds
       }
     });
   } catch (error) {
@@ -80,7 +88,8 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    await authService.logoutUser();
+    const { refreshToken } = req.body;
+    await authService.logoutUser(refreshToken);
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout error:', error);
@@ -90,27 +99,23 @@ export const logout = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const user = await authService.getCurrentUser(token);
+    // User info is already verified and attached by authenticateJWT middleware
+    // req.user contains { userId, email, role }
+    
+    // Fetch full user details from database if needed
+    const user = await authService.getCurrentUser(req.user.userId);
 
     res.json({
       user: {
         id: user.Id,
         email: user.Email,
         fullName: user.FullName,
+        role: user.Role,
+        avatarUrl: user.AvatarUrl,
         createdAt: user.CreationTime
       }
     });
   } catch (error) {
-    if (error.message === 'Invalid or expired token') {
-      return res.status(401).json({ error: 'Invalid or expired token' });
-    }
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -162,13 +167,23 @@ export const refreshToken = async (req, res) => {
     const user = await authService.refreshSession(refreshToken);
 
     res.json({
+      message: 'Token refreshed successfully',
       session: {
-        accessToken: user.Token,
-        refreshToken: user.RefreshToken
+        accessToken: user.accessToken,
+        refreshToken: user.plainRefreshToken,
+        tokenType: 'Bearer',
+        expiresIn: 1800
       }
     });
   } catch (error) {
     console.error('Refresh token error:', error);
+    if (error.message.includes('Invalid') || error.message.includes('expired')) {
+      return res.status(401).json({ 
+        error: 'Invalid refresh token', 
+        message: error.message,
+        code: 'REFRESH_TOKEN_INVALID' 
+      });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -189,11 +204,14 @@ export const googleLogin = async (req, res) => {
         id: user.Id,
         email: user.Email,
         fullName: user.FullName,
-        avatarUrl: user.AvatarUrl
+        avatarUrl: user.AvatarUrl,
+        role: user.Role
       },
       session: {
-        accessToken: user.Token,
-        refreshToken: user.RefreshToken,
+        accessToken: user.accessToken,
+        refreshToken: user.plainRefreshToken,
+        tokenType: 'Bearer',
+        expiresIn: 1800
       }
     });
   } catch (error) {

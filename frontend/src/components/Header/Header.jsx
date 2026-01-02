@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import defaultAvatar from '../../assets/default-avatar.png';
@@ -7,6 +7,24 @@ const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const handleLogout = async () => {
     await signOut();
@@ -57,10 +75,9 @@ const Header = () => {
               <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
             </Link>
             {user ? (
-              <div className="relative group">
+              <div ref={dropdownRef} className="relative group">
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
                   className="flex items-center gap-3 hover:bg-[#16161e] p-1.5 pr-4 rounded-full border border-transparent hover:border-[#2a2a3a] transition-all"
                 >
                   <div className="size-8 rounded-full overflow-hidden border border-[#2a2a3a]">
