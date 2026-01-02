@@ -1,6 +1,7 @@
 import express from 'express';
 import * as authController from '../controllers/authController.js';
 import { validateSignup, validateLogin } from '../middleware/validationMiddleware.js';
+import { authenticateJWT } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -13,8 +14,8 @@ router.post('/login', validateLogin, authController.login);
 // Logout user
 router.post('/logout', authController.logout);
 
-// Get current user (requires auth token)
-router.get('/me', authController.getMe);
+// Get current user (requires JWT authentication)
+router.get('/me', authenticateJWT, authController.getMe);
 
 // Request password reset
 router.post('/forgot-password', authController.forgotPassword);

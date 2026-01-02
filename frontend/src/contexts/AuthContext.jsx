@@ -82,19 +82,31 @@ const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
-    try {
-      await fetch(`${API_URL}/auth/logout`, {
+    // Get refresh token before clearing
+    const refreshToken = localStorage.getItem('refreshToken');
+    
+    // Clear tokens and user state IMMEDIATELY (no waiting)
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setAccessToken(null);
+    setUser(null);
+    
+    // Call logout API in background (fire-and-forget)
+    // This invalidates the refresh token on server, but doesn't block UI
+    if (refreshToken) {
+      fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${accessToken}` }
+        headers: { 
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ refreshToken })
+      }).catch(error => {
+        // Silently ignore errors since user is already logged out on client
+        console.error('Background logout error:', error);
       });
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      setAccessToken(null);
-      setUser(null);
     }
+    
     return { error: null };
   };
 

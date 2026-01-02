@@ -1,97 +1,93 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../components/Header/Header';
-import { 
-    cardStagger, 
-    cardItem, 
-    slideInFromBottom, 
-    scaleInWithBounce,
-    chipHover,
-    chipTap,
-    sidebarSlide
-} from '../utils/animations';
+
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const CoursesPage = () => {
-    const [selectedLevel, setSelectedLevel] = useState('Intermediate');
-    const [selectedPrice, setSelectedPrice] = useState('Paid');
-    const [selectedCategory, setSelectedCategory] = useState('All Courses');
+    // Filter states
+    const [selectedLevel, setSelectedLevel] = useState('');
+    const [selectedPrice, setSelectedPrice] = useState('All Prices');
+    const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    // Data states
+    const [categories, setCategories] = useState([]);
+    const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 24,
+        totalCount: 0,
+        totalPages: 0
+    });
 
-    const categories = ['All Courses', 'UI/UX Design', 'Space Science', 'VR/AR Dev', 'Astrophysics', 'Cybernetics'];
+    // Fetch categories on mount
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch(`${API_URL}/courses/categories`);
+                const data = await response.json();
+                if (data.success) {
+                    setCategories(data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    // Fetch courses when filters change
+    useEffect(() => {
+        const fetchCourses = async () => {
+            setLoading(true);
+            setError(null);
+            
+            try {
+                const params = new URLSearchParams({
+                    page: pagination.page.toString(),
+                    limit: pagination.limit.toString(),
+                    ...(selectedCategoryId && { categoryId: selectedCategoryId }),
+                    ...(selectedLevel && { level: selectedLevel }),
+                    ...(selectedPrice === 'Free' && { maxPrice: '0' }),
+                    ...(selectedPrice === 'Paid' && { minPrice: '0.01' }),
+                    ...(searchQuery && { search: searchQuery })
+                });
+
+                const response = await fetch(`${API_URL}/courses?${params.toString()}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    setCourses(data.courses);
+                    setPagination(data.pagination);
+                } else {
+                    setError(data.error || 'Failed to fetch courses');
+                }
+            } catch (error) {
+                console.error('Error fetching courses:', error);
+                setError('Failed to connect to server');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCourses();
+    }, [selectedCategoryId, selectedLevel, selectedPrice, searchQuery, pagination.page, pagination.limit]);
 
     return (
         <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
             <Header />
 
-            {/* Main Layout */}
+            {/* Main Layout - Full Width */}
             <div className="flex flex-1 overflow-hidden">
-                {/* Sidebar Filters - Desktop */}
-                <motion.aside 
-                    variants={sidebarSlide}
-                    initial="hidden"
-                    animate="visible"
-                    className="hidden w-64 flex-col overflow-y-auto border-r border-white/5 bg-[#0D071E] p-6 lg:flex"
-                >
-                    <div className="mb-6 flex items-center justify-between">
-                        <h3 className="font-semibold text-white">Filters</h3>
-                        <motion.button 
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="text-xs text-primary hover:text-white transition-colors"
-                        >
-                            Reset
-                        </motion.button>
-                    </div>
 
-                    {/* Difficulty */}
-                    <FilterSection title="Level">
-                        <div className="space-y-3">
-                            {['Beginner', 'Intermediate', 'Advanced'].map((level) => (
-                                <CheckboxFilter
-                                    key={level}
-                                    label={level}
-                                    checked={selectedLevel === level}
-                                    onChange={() => setSelectedLevel(level === selectedLevel ? '' : level)}
-                                />
-                            ))}
-                        </div>
-                    </FilterSection>
 
-                    {/* Price */}
-                    <FilterSection title="Price">
-                        <div className="space-y-3">
-                            {['All Prices', 'Free', 'Paid'].map((price) => (
-                                <RadioFilter
-                                    key={price}
-                                    label={price}
-                                    name="price"
-                                    checked={selectedPrice === price}
-                                    onChange={() => setSelectedPrice(price)}
-                                />
-                            ))}
-                        </div>
-                    </FilterSection>
-
-                    {/* Ratings */}
-                    <FilterSection title="Rating" isLast>
-                        <div className="space-y-2">
-                            <CheckboxFilter
-                                label={
-                                    <div className="flex items-center gap-1 text-yellow-400">
-                                        {[1, 2, 3, 4].map(i => (
-                                            <span key={i} className="material-symbols-outlined text-[16px] fill-current" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                                        ))}
-                                        <span className="material-symbols-outlined text-[16px]">star</span>
-                                        <span className="text-xs text-slate-400 ml-1">& Up</span>
-                                    </div>
-                                }
-                            />
-                        </div>
-                    </FilterSection>
-                </motion.aside>
-
-                {/* Mobile Filter Overlay */}
                 <AnimatePresence>
                     {isFilterOpen && (
                         <>
@@ -129,92 +125,272 @@ const CoursesPage = () => {
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-y-auto bg-[#0D071E] p-6 lg:p-10">
                     <div className="mx-auto max-w-7xl">
-                        {/* Header Banner */}
-                        <motion.div 
-                            variants={slideInFromBottom}
-                            initial="hidden"
-                            animate="visible"
-                            className="relative mb-10 overflow-hidden rounded-3xl bg-[#1A1333] px-8 py-10 shadow-2xl"
-                        >
-                            <div className="absolute inset-0 z-0 opacity-40" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCUOloh5Q5m38qNJ5SmcVyl67k6vu60Iat38B7pqJBIJrB9XIYkKuLISnex6wnMzadRuAkeIaJaFXtInqfO-K_116kmRx3p2-geH06POmNAzre5ByPZiz2BB1XKob3mnR4h5Th-UfGS2im32R1-coxPQykArNZnVNhvOUA1FpEWyQMQc-T9mH0S61CCsJplJSHioWiBBWNSkpnlR0NRToOxIE8Fy3ea2mW58jDnZ8sDxG1GpEdPwMy6MpC5W9unMdR-g1LA7ozu64I')", backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-                            <motion.div 
-                                className="absolute inset-0 bg-gradient-to-r from-[#0D071E] via-[#0D071E]/80 to-transparent z-0"
-                                animate={{
-                                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                                }}
-                                transition={{
-                                    duration: 10,
-                                    ease: "linear",
-                                    repeat: Infinity
-                                }}
-                            ></motion.div>
+                        {/* Header Banner - No Animation */}
+                        <div className="relative mb-10 overflow-hidden rounded-3xl bg-gradient-to-r from-[#1A1333] via-purple-900/30 to-blue-900/30 px-8 py-10 shadow-2xl">
+                            {/* Static Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-50"></div>
+
+                            {/* Content */}
                             <div className="relative z-10 max-w-2xl">
-                                <motion.div 
-                                    variants={scaleInWithBounce}
-                                    initial="hidden"
-                                    animate="visible"
-                                    className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary backdrop-blur-sm"
-                                >
+                                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary backdrop-blur-sm">
                                     <span className="relative flex h-2 w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                                     </span>
                                     New Courses Added
-                                </motion.div>
-                                <motion.h1 
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2, duration: 0.6 }}
-                                    className="mb-2 text-4xl font-bold text-white tracking-tight"
-                                >
+                                </div>
+                                <h1 className="mb-2 text-4xl font-bold text-white tracking-tight">
                                     Explore the Universe of Knowledge
-                                </motion.h1>
-                                <motion.p 
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.3, duration: 0.6 }}
-                                    className="text-lg text-slate-300"
-                                >
+                                </h1>
+                                <p className="text-lg text-slate-300">
                                     Master the skills of tomorrow. From deep space navigation to advanced UI systems.
-                                </motion.p>
+                                </p>
                             </div>
-                        </motion.div>
+                        </div>
 
-                        {/* Category Chips */}
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4, duration: 0.5 }}
-                            className="mb-8 flex flex-wrap items-center gap-3 overflow-x-auto pb-2 scrollbar-hide"
-                        >
-                            {categories.map((cat, index) => (
-                                <motion.button
-                                    key={cat}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: 0.5 + index * 0.05, duration: 0.3 }}
-                                    whileHover={chipHover}
-                                    whileTap={chipTap}
-                                    onClick={() => setSelectedCategory(cat)}
-                                    className={`flex h-10 shrink-0 items-center justify-center rounded-full px-6 text-sm font-semibold transition-all ${
-                                        selectedCategory === cat
-                                            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/20'
-                                            : 'border border-white/5 bg-[#1A1333] text-slate-300 hover:border-primary/50 hover:bg-[#2e2447] hover:text-white'
-                                    }`}
+                        {/* Search Bar - Prominent */}
+                        <div className="mb-8">
+                            <div className="relative max-w-2xl">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl">
+                                    search
+                                </span>
+                                <input
+                                    type="text"
+                                    placeholder="Search courses by name, description, or price..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#1A1333] border border-white/10 text-white placeholder-slate-400 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined">close</span>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Inline Filter Bar - Compact Design */}
+                        <div className="mb-8 flex flex-wrap items-center gap-3">
+                            {/* Category Dropdown Menu */}
+                            <div className="relative">
+                                {/* Selected Category Display with Dropdown Toggle */}
+                                <button
+                                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                    className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl bg-gradient-to-r from-[#1A1333] to-[#2a2447] border border-white/10 hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 min-w-[240px]"
                                 >
-                                    {cat}
-                                </motion.button>
-                            ))}
-                        </motion.div>
+                                    <div className="flex items-center gap-3 flex-1">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                                            <span className="material-symbols-outlined text-xl text-primary">
+                                                {selectedCategoryId === '' ? 'apps' : 
+                                                 categories.find(c => c.Id === selectedCategoryId) ? 
+                                                 (() => {
+                                                    const cat = categories.find(c => c.Id === selectedCategoryId);
+                                                    const iconMap = {
+                                                        'Programming': 'code', 'Design': 'palette', 'Business': 'business_center',
+                                                        'Marketing': 'campaign', 'Photography': 'photo_camera', 'Music': 'music_note',
+                                                        'Fitness': 'fitness_center', 'Language': 'translate', 'Cooking': 'restaurant',
+                                                        'Art': 'brush', 'Science': 'science', 'Math': 'calculate',
+                                                        'Writing': 'edit_note', 'Data': 'analytics', 'AI': 'smart_toy',
+                                                        'Web': 'language', 'Mobile': 'phone_android', 'Cloud': 'cloud',
+                                                        'Security': 'security', 'Game': 'sports_esports'
+                                                    };
+                                                    for (const [key, icon] of Object.entries(iconMap)) {
+                                                        if (cat.Title.toLowerCase().includes(key.toLowerCase())) return icon;
+                                                    }
+                                                    return 'school';
+                                                 })() : 'school'
+                                                }
+                                            </span>
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-xs text-slate-400 mb-0.5">Category</p>
+                                            <p className="text-sm font-bold text-white truncate max-w-[140px]">
+                                                {selectedCategoryId === '' ? 'All Courses' : 
+                                                 categories.find(c => c.Id === selectedCategoryId)?.Title || 'All Courses'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                <span className="material-symbols-outlined text-slate-400" style={{ transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
+                                    expand_more
+                                </span>
+                            </button>
+
+                                {/* Dropdown Menu */}
+                                <AnimatePresence>
+                                    {isFilterOpen && (
+                                        <>
+                                            {/* Backdrop */}
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                onClick={() => setIsFilterOpen(false)}
+                                                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+                                            />
+
+                                            {/* Dropdown List */}
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="absolute left-0 mt-2 w-[420px] max-h-[500px] overflow-y-auto z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl"
+                                            >
+                                                <div className="p-2">
+                                                    {/* Search Header */}
+                                                    <div className="px-3 py-2 mb-2 border-b border-white/5">
+                                                        <h3 className="text-sm font-bold text-white">Browse Categories</h3>
+                                                        <p className="text-xs text-slate-500 mt-0.5">{categories.length + 1} categories available</p>
+                                                    </div>
+
+                                                    {/* All Courses Option */}
+                                                    <motion.button
+                                                        whileHover={{ x: 4 }}
+                                                        onClick={() => {
+                                                            setSelectedCategoryId('');
+                                                            setIsFilterOpen(false);
+                                                        }}
+                                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                                                            selectedCategoryId === ''
+                                                                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20'
+                                                                : 'hover:bg-white/5'
+                                                        }`}
+                                                    >
+                                                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                                                            selectedCategoryId === '' ? 'bg-white/20' : 'bg-primary/10'
+                                                        }`}>
+                                                            <span className={`material-symbols-outlined text-lg ${
+                                                                selectedCategoryId === '' ? 'text-white' : 'text-primary'
+                                                            }`}>
+                                                                apps
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex-1 text-left">
+                                                            <p className={`text-sm font-semibold ${
+                                                                selectedCategoryId === '' ? 'text-white' : 'text-slate-200'
+                                                            }`}>
+                                                                All Courses
+                                                            </p>
+                                                            <p className={`text-xs ${
+                                                                selectedCategoryId === '' ? 'text-white/70' : 'text-slate-500'
+                                                            }`}>
+                                                                {pagination.totalCount} courses
+                                                            </p>
+                                                        </div>
+                                                        {selectedCategoryId === '' && (
+                                                            <span className="material-symbols-outlined text-white text-lg">
+                                                                check_circle
+                                                            </span>
+                                                        )}
+                                                    </motion.button>
+
+                                                    {/* Category List */}
+                                                    <div className="mt-2 space-y-1">
+                                                        {categories.map((cat) => {
+                                                            const getCategoryIcon = (title) => {
+                                                                const iconMap = {
+                                                                    'Programming': 'code', 'Design': 'palette', 'Business': 'business_center',
+                                                                    'Marketing': 'campaign', 'Photography': 'photo_camera', 'Music': 'music_note',
+                                                                    'Fitness': 'fitness_center', 'Language': 'translate', 'Cooking': 'restaurant',
+                                                                    'Art': 'brush', 'Science': 'science', 'Math': 'calculate',
+                                                                    'Writing': 'edit_note', 'Data': 'analytics', 'AI': 'smart_toy',
+                                                                    'Web': 'language', 'Mobile': 'phone_android', 'Cloud': 'cloud',
+                                                                    'Security': 'security', 'Game': 'sports_esports'
+                                                                };
+                                                                for (const [key, icon] of Object.entries(iconMap)) {
+                                                                    if (title.toLowerCase().includes(key.toLowerCase())) return icon;
+                                                                }
+                                                                return 'school';
+                                                            };
+
+                                                            return (
+                                                                <motion.button
+                                                                    key={cat.Id}
+                                                                    whileHover={{ x: 4 }}
+                                                                    onClick={() => {
+                                                                        setSelectedCategoryId(cat.Id);
+                                                                        setIsFilterOpen(false);
+                                                                    }}
+                                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                                                                        selectedCategoryId === cat.Id
+                                                                            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20'
+                                                                            : 'hover:bg-white/5'
+                                                                    }`}
+                                                                >
+                                                                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                                                                        selectedCategoryId === cat.Id ? 'bg-white/20' : 'bg-primary/10'
+                                                                    }`}>
+                                                                        <span className={`material-symbols-outlined text-lg ${
+                                                                            selectedCategoryId === cat.Id ? 'text-white' : 'text-primary'
+                                                                        }`}>
+                                                                            {getCategoryIcon(cat.Title)}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex-1 text-left">
+                                                                        <p className={`text-sm font-semibold ${
+                                                                            selectedCategoryId === cat.Id ? 'text-white' : 'text-slate-200'
+                                                                        }`}>
+                                                                            {cat.Title}
+                                                                        </p>
+                                                                        <p className={`text-xs ${
+                                                                            selectedCategoryId === cat.Id ? 'text-white/70' : 'text-slate-500'
+                                                                        }`}>
+                                                                            {cat.CourseCount} courses
+                                                                        </p>
+                                                                    </div>
+                                                                    {selectedCategoryId === cat.Id && (
+                                                                        <span className="material-symbols-outlined text-white text-lg">
+                                                                            check_circle
+                                                                        </span>
+                                                                    )}
+                                                                </motion.button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            <LevelFilterDropdown 
+                                selectedLevel={selectedLevel}
+                                setSelectedLevel={setSelectedLevel}
+                            />
+
+                            {/* Price Filter Dropdown */}
+                            <PriceFilterDropdown 
+                                selectedPrice={selectedPrice}
+                                setSelectedPrice={setSelectedPrice}
+                            />
+
+                            {/* Clear All Filters */}
+                            {(selectedCategoryId || selectedLevel || selectedPrice !== 'All Prices' || searchQuery) && (
+                                <button
+                                    onClick={() => {
+                                        setSelectedCategoryId('');
+                                        setSelectedLevel('');
+                                        setSelectedPrice('All Prices');
+                                        setSearchQuery('');
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/10 text-slate-300 hover:text-white hover:border-red-500/50 hover:bg-red-500/10 transition-all"
+                                >
+                                    <span className="material-symbols-outlined text-lg">close</span>
+                                    <span className="text-sm font-semibold">Clear All</span>
+                                </button>
+                            )}
+                        </div>
+
 
                         {/* Filter Sort Mobile */}
-                        <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.6 }}
-                            className="mb-6 flex items-center justify-between"
-                        >
-                            <p className="text-sm text-slate-400">Showing <span className="text-white font-semibold">24</span> courses</p>
+                        <div className="mb-6 flex items-center justify-between">
+                            <p className="text-sm text-slate-400">
+                                Showing <span className="text-white font-semibold">{courses.length}</span> of <span className="text-white font-semibold">{pagination.totalCount}</span> courses
+                            </p>
                             <div className="flex items-center gap-2 lg:hidden">
                                 <motion.button 
                                     whileHover={{ scale: 1.05 }}
@@ -226,113 +402,138 @@ const CoursesPage = () => {
                                     Filters
                                 </motion.button>
                             </div>
-                        </motion.div>
+                        </div>
 
-                        {/* Course Grid */}
-                        <motion.div 
-                            variants={cardStagger}
-                            initial="hidden"
-                            animate="visible"
-                            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                        >
-                            <CourseCard 
-                                image="https://lh3.googleusercontent.com/aida-public/AB6AXuC3Zu31-FoGKP_my4-Lafk2xqfyDukuhjCj7FpcMNe7svCReqUCx1F9FaMLeExAtzjEJ_L9OXpLZ7jhczYS17nJsZzAukJHLhRzsfjDWm5XHfeA4-PR3oqRmn4YhCz166UbZqNzuDDkV7fy1r2e_WHBugM-QOw__MsCJBjUaQkxAIoDQoRQtVBasS8wY1YkJATQ96hCtyiRn05yL9nn2JPXY-HXMAY0qx9WBPHvENbXqOv05ky5YNPCN1a2TkfrHd5lMLNbp6qkfos"
-                                category="UI/UX"
-                                rating="4.9"
-                                reviews="1.2k"
-                                duration="12h 30m"
-                                title="Advanced UI Strategy for Deep Space Systems"
-                                desc="Learn to design mission-critical interfaces for zero-gravity environments."
-                                instructorName="Sarah Jenks"
-                                instructorRole="Lead Designer"
-                                instructorImg="https://lh3.googleusercontent.com/aida-public/AB6AXuDhXVsUn1W6DrL46qXgUu8HGckfDEjHc9bsoOZGICe-WCaGI-WBm8ddIrrGF2dbEmOdGqaymLwv3HAuieOO1fX0l-1Lh1pJEeGkG-cs2VtCBw4n2axEGrTtjpJdleY8qJt5oBB2VsPAG-seZvHdUlA__2y3HIII66qKcsOgAn2sMlD1x5NMkv2kkjjYIb4gekCK-45uvJBrj1gCdSXyiRQEKI1sICDvq-jJKEkAyXHWO88ix6NZFmun_FvU1Axv0K9s6-50R4sGPxY"
-                                price="49.99"
-                            />
-                            <CourseCard 
-                                image="https://lh3.googleusercontent.com/aida-public/AB6AXuBBpV8VhxHAccGyYNQSgwcERpMD6XhqIkAM4hun3kbzSwDjDIiqBWKFKdl0os_-82XPmXaIdJdLM9ej7MXMU9fsFguA6Og0UYV5Yy3U2qHcPHKAb6MIj5gy3YFbSuc_0riJXHKfiCXURh4GqWu4-V0Jvm7llNg-vij3Mcog51drnjt9rMKsc7VG1tdFxEUBzVuMFiyajnVS_qttAAWxi6opYscBbG5CT7WEADRi6zNhbHTKt2dJdQytFe8OdX4RDNoqztwoWPVKMLw"
-                                category="Science"
-                                rating="4.8"
-                                reviews="850"
-                                duration="8h 15m"
-                                title="Nebula Photography Masterclass"
-                                desc="Capture the cosmos with advanced telescopic photography techniques."
-                                instructorName="Dr. A. Stone"
-                                instructorRole="Astrophysicist"
-                                instructorImg="https://lh3.googleusercontent.com/aida-public/AB6AXuBMPJt06NuUJQmzmof1mEQKqr6yW6CZtk3krop_Q0SFsO5v6ED4mwWZQoZGYguLLKliafJLROpMOd3qVHNLEeCByOihnDpV3X-_DdQQWMA3U-tFbZhrqoGwvh0locJqyxh4hWaCMUZ9dBIgBbUlk3kSM7PYFM921ZfaHfNWadsBkCkM6n5rqq87mWng6NK1FiE8DRIfUkPdDPTpkUcLZTPqVgmcuXrY6vxsUp576DP7_hoUYB3oYblmY4Ch44kyvrq-0p6Px_QTnk4"
-                                price="89.99"
-                            />
-                            <CourseCard 
-                                image="https://lh3.googleusercontent.com/aida-public/AB6AXuCgYBlUW-I7C0tvtdmAs0PgnVDyz09gXk4cGVcPmCCX_d7qepORN8n8He3qzGzapAQXKYXpBhgJkSqgjCG5gVmfyGC8sOI87wKXnH90ZuzfzZb89fshjfmhUSqjpQ4umo0HGQEFH-lu04F0Hmrul4VOKXcyOd0AzXvH1DsoB_hh8fkVf4Np1z1EgUA_xMjiEImFcPJLVJaOHTke4KrmbbLzjlVWV3cUud2LS1DZmgvCooX-50noIAOYUFyUtWOGUgd-xnC4idkhCOY"
-                                category="VR/AR"
-                                rating="4.7"
-                                reviews="2.3k"
-                                duration="24h 00m"
-                                title="React for VR Environments"
-                                desc="Build immersive 3D web applications using React Three Fiber."
-                                instructorName="Devon Lane"
-                                instructorRole="Senior Dev"
-                                instructorImg="https://lh3.googleusercontent.com/aida-public/AB6AXuDk5gDw8EY5q9yjBBTtRCEAns73Pf7QQEJ-ELP1AjlxDjdAPMX22Txcuw45elXk2-zoHp0F83joIU-B3FuaxjqX6C4WaLQ2S9WhmNU2lpmpYDDXAdki-X72JrDZSXLnccu1tH3udRQB30hqubYmi5se2umO2w8TRrZcfhuwdpj2VxS46A83Ga1wfJtLXm0GAKsT2CBpf1RGvibga7BheTELAcRCKTHOVqtTTsHVVFOAGGHFq4dKcJ8u9VT1ie-x8UEbFoLD8DKL9i4"
-                                price="29.99"
-                            />
-                            <CourseCard 
-                                image="https://lh3.googleusercontent.com/aida-public/AB6AXuBtRoOlauygUo-A6rdv7v-N5DzNALaUqp8Q_1R-YVRofeZglJVLSAOKTSq9-dYd84KHVgrncmekx7Vg6NKbE3KS9gngJ6lb6GPkMrWonQykRBae4SUEHQ_dm76Ma5_jvzZxLooe6v_PMVdx031Z5oslU7nHFDNIlpiqCgT01qI0pJeA2o78Wx9jW2-_UQUHyw8h2wqpObIqpdG4Zl1O3b6CKuJjCbhRrMcjaKJPqSYVpziJSWMrWnH8f7Pa4WwxNrc6vOeB5d68Vyc"
-                                category="Cybernetics"
-                                rating="5.0"
-                                reviews="150"
-                                duration="16h 45m"
-                                title="Neural Networks 101"
-                                desc="Introduction to building AI models that mimic human cognition."
-                                instructorName="Dr. K. Sato"
-                                instructorRole="AI Researcher"
-                                instructorImg="https://lh3.googleusercontent.com/aida-public/AB6AXuD_uhT2atQVb-1pVqQdrLOIB8-W3LHKxP8wRamEL9yLWduHQIcreGqIGAhYAXLATgsnmX3XRFbXv5nIy5kUIreHNN20PzwhsEV6o3tzM26sP219UzuzQhJn79FcJNte9_DH2Xy_tqYIP35PhdGJuc7jDOAzpom8tUzD6DaGyds6xgGk0r8zWaqwsa2OzATC5f09LIf0keBOCAHFncxWO5Xp9Lpb1V1ccPQqIi_Yv6ecX_kCZ97ZXHXUcSkPtoyn6ev2eqoc5AocDO0"
-                                price="65.00"
-                            />
-                            <CourseCard 
-                                image="https://lh3.googleusercontent.com/aida-public/AB6AXuAHYSoR8d6_DR90sFegjKnU8D9RMfkF-jaENTxgH8vVb84KnTn727kUijRqxoYVfrzABAhXsmtdP6YScEPDnicQ2FMGdRql46bt0MGwqI9ttdJknFkPnvAwDYDpzuS0rXDrEJm9BnNefvM4Fsm5bHAB_PlXhtgFSzpCukc8JMZCg56K9W4cXjD6jWdUgAyNWkSxL2N_c6C7mDl25bjvC0t11-Kbk3JH9X06gMdya_1pQYOBa3pGNtW7S4Qz_uhdA75FOTFp44rpFt8"
-                                category="Astrophysics"
-                                rating="4.6"
-                                reviews="540"
-                                duration="6h 30m"
-                                title="Exoplanet Habitability"
-                                desc="Analyzing atmospheric data to find life beyond Earth."
-                                instructorName="Mark T."
-                                instructorRole="Astronomer"
-                                instructorImg="https://lh3.googleusercontent.com/aida-public/AB6AXuAbFGnF3C61YJGjXgxE8pj3dseqju2K2TYW0zxJNOKVFJ3_dUrY58zofrpyXI0HkPg2W8u18YgMTFuBB_rQ1mctAVzxnQS0Pqu1T78VcZ5y4OZvouPEckXW72T42RWcQCotTpF_-YXthHjarnrqKZr4WD4RaS9XAK_P_w9HU9G2deyMJHTnuSs-2w5hpmGSGKeX5B1TE4mGf82O4Eu7w4poqLznSObtH2wBsc3g9ikke6Xq6H4ZT3SC32Q9w_slrihnHIq3jK8wNWA"
-                                price="34.99"
-                            />
-                            <CourseCard 
-                                image="https://lh3.googleusercontent.com/aida-public/AB6AXuAWxENdZPzrdLDD0BDidTbeLVd96MxM9eDxrwv1JKEIYPsbG-LSjKFfjWCXWJ1ynY1TXx42CR34aWInwktca4vGPGuASJBrx3bcrnuSvloV0z-8zEb9LjQD4G3BepEvRbsnyUI6AHvCey7lMHlZsS_Gbfy6z7C8ztQ17g6kwvAG0ezZyt3gAjIc0cPiLu9HoLo6k9NK4-UjhZ6V6DFDbB5zspAFQA8U8szKY_bJK5oy4Dl_ug1QmpP7Oiulug3v6LJckJiDeXX_TMU"
-                                category="Data"
-                                rating="4.9"
-                                reviews="2.1k"
-                                duration="45h 00m"
-                                title="Big Data Visualization"
-                                desc="Turning millions of data points into beautiful, actionable stories."
-                                instructorName="Elena R."
-                                instructorRole="Data Scientist"
-                                instructorImg="https://lh3.googleusercontent.com/aida-public/AB6AXuA8OngGDuWU2UhnF-MhoCu4dhfWJ3CuPekrcLaawBeKTFq1qJ8UElNilakbfSIQm-yYtqXNOasNUzMEIJahwMnK_clT2ax1Zbkp0d-2g13z-LGq2zm6BWDcUf2e3L_i22BD2dsMpRW2sVRZY_YdAOZ3YwpuXX6r2Kuun8xLUsPOm1TXJDUMnz8vI-LUKU5k2BdwJVebAYvKy0yyUQNgeORHPDOxSqaP8XAT-Nr0x9OoyEGjgVZuj6YthMwXl5sKADXZihMyI6B8vzM"
-                                price="99.99"
-                            />
-                        </motion.div>
+                        {/* Courses Grid - No Animation */}
+                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {loading ? (
+                                // Loading skeleton
+                                Array.from({ length: 8 }).map((_, i) => (
+                                    <div key={i} className="animate-pulse rounded-2xl bg-[#1A1333] border border-white/5">
+                                        <div className="aspect-video w-full bg-[#2a2a3a] rounded-t-2xl"></div>
+                                        <div className="p-5 space-y-3">
+                                            <div className="h-4 bg-[#2a2a3a] rounded w-3/4"></div>
+                                            <div className="h-4 bg-[#2a2a3a] rounded w-1/2"></div>
+                                            <div className="h-16 bg-[#2a2a3a] rounded"></div>
+                                            <div className="h-10 bg-[#2a2a3a] rounded"></div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : error ? (
+                                // Error state
+                                <div className="col-span-full flex flex-col items-center justify-center py-20">
+                                    <span className="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
+                                    <h3 className="text-xl font-bold text-white mb-2">Failed to load courses</h3>
+                                    <p className="text-slate-400">{error}</p>
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => window.location.reload()}
+                                        className="mt-4 px-6 py-2 bg-primary rounded-lg text-white font-semibold"
+                                    >
+                                        Retry
+                                    </motion.button>
+                                </div>
+                            ) : courses.length === 0 ? (
+                                // No courses state
+                                <div className="col-span-full flex flex-col items-center justify-center py-20">
+                                    <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">search_off</span>
+                                    <h3 className="text-xl font-bold text-white mb-2">No courses found</h3>
+                                    <p className="text-slate-400 mb-4">Try adjusting your filters or search terms</p>
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => {
+                                            setSelectedCategoryId('');
+                                            setSelectedLevel('');
+                                            setSelectedPrice('All Prices');
+                                        }}
+                                        className="px-6 py-2 bg-primary rounded-lg text-white font-semibold"
+                                    >
+                                        Clear Filters
+                                    </motion.button>
+                                </div>
+                            ) : (
+                                // Courses from database
+                                courses.map(course => (
+                                    <CourseCard 
+                                        key={course.id}
+                                        id={course.id}
+                                        image={course.image}
+                                        category={course.category}
+                                        level={course.level}
+                                        rating={course.rating.toString()}
+                                        reviews={course.reviews.toString()}
+                                        duration={course.duration}
+                                        title={course.title}
+                                        desc={course.description}
+                                        instructorName={course.instructorName}
+                                        instructorRole="Instructor"
+                                        instructorImg={course.instructorImg}
+                                        price={course.price}
+                                    />
+                                ))
+                            )}
+                        </div>
 
-                        {/* Pagination */}
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.8 }}
-                            className="mt-12 flex items-center justify-center gap-2 pb-10"
-                        >
-                            <PaginationButton>
-                                <span className="material-symbols-outlined text-sm">chevron_left</span>
-                            </PaginationButton>
-                            <PaginationButton active>1</PaginationButton>
-                            <PaginationButton>2</PaginationButton>
-                            <PaginationButton>3</PaginationButton>
-                            <span className="text-slate-500">...</span>
-                            <PaginationButton>
-                                <span className="material-symbols-outlined text-sm">chevron_right</span>
-                            </PaginationButton>
-                        </motion.div>
+                        {/* Pagination - No Animation */}
+                        {!loading && courses.length > 0 && pagination.totalPages > 1 && (
+                            <div className="mt-12 flex items-center justify-center gap-2 pb-10">
+                                {/* Previous Button */}
+                                <PaginationButton 
+                                    onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+                                    disabled={pagination.page === 1}
+                                >
+                                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                </PaginationButton>
+
+                                {/* Page Numbers */}
+                                {(() => {
+                                    const currentPage = pagination.page;
+                                    const totalPages = pagination.totalPages;
+                                    const pageNumbers = [];
+                                    
+                                    // Show max 5 page numbers
+                                    let startPage = Math.max(1, currentPage - 2);
+                                    let endPage = Math.min(totalPages, currentPage + 2);
+                                    
+                                    // Adjust if at the beginning or end
+                                    if (currentPage <= 3) {
+                                        endPage = Math.min(5, totalPages);
+                                    }
+                                    if (currentPage > totalPages - 3) {
+                                        startPage = Math.max(1, totalPages - 4);
+                                    }
+                                    
+                                    for (let i = startPage; i <= endPage; i++) {
+                                        pageNumbers.push(
+                                            <PaginationButton 
+                                                key={i}
+                                                active={i === currentPage}
+                                                onClick={() => setPagination(prev => ({ ...prev, page: i }))}
+                                            >
+                                                {i}
+                                            </PaginationButton>
+                                        );
+                                    }
+                                    
+                                    return pageNumbers;
+                                })()}
+                                
+                                {/* Show ellipsis if there are more pages */}
+                                {pagination.page < pagination.totalPages - 3 && (
+                                    <span className="text-slate-500">...</span>
+                                )}
+
+                                {/* Next Button */}
+                                <PaginationButton 
+                                    onClick={() => setPagination(prev => ({ ...prev, page: Math.min(pagination.totalPages, prev.page + 1) }))}
+                                    disabled={pagination.page === pagination.totalPages}
+                                >
+                                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                </PaginationButton>
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>
@@ -340,26 +541,212 @@ const CoursesPage = () => {
     );
 };
 
+
+// Level Filter Dropdown Component
+const LevelFilterDropdown = ({ selectedLevel, setSelectedLevel }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const levels = ['All Levels', 'Beginner', 'Intermediate', 'Advanced'];
+    
+    const levelIcons = {
+        'All Levels': 'list',
+        'Beginner': 'star_border',
+        'Intermediate': 'stars',
+        'Advanced': 'workspace_premium'
+    };
+    
+    const displayLevel = selectedLevel || 'All Levels';
+    
+    return (
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.17, duration: 0.3 }}
+            className="relative"
+        >
+            <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl bg-gradient-to-r from-[#1A1333] to-[#2a2447] border border-white/10 hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 min-w-[180px]"
+            >
+                <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-xl text-primary">
+                        {levelIcons[displayLevel] || 'list'}
+                    </span>
+                    <div className="text-left">
+                        <p className="text-xs text-slate-400 mb-0.5">Level</p>
+                        <p className="text-sm font-bold text-white">{displayLevel}</p>
+                    </div>
+                </div>
+                <motion.span 
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="material-symbols-outlined text-slate-400"
+                >
+                    expand_more
+                </motion.span>
+            </motion.button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsOpen(false)}
+                            className="fixed inset-0 z-40"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute left-0 mt-2 w-full min-w-[220px] z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl p-2"
+                        >
+                            {levels.map((level) => (
+                                <motion.button
+                                    key={level}
+                                    whileHover={{ x: 4 }}
+                                    onClick={() => {
+                                        setSelectedLevel(level === 'All Levels' ? '' : level);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                                        displayLevel === level
+                                            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20'
+                                            : 'hover:bg-white/5'
+                                    }`}
+                                >
+                                    <span className={`material-symbols-outlined text-lg ${
+                                        displayLevel === level ? 'text-white' : 'text-primary'
+                                    }`}>
+                                        {levelIcons[level] || 'list'}
+                                    </span>
+                                    <p className={`text-sm font-semibold ${
+                                        displayLevel === level ? 'text-white' : 'text-slate-200'
+                                    }`}>
+                                        {level}
+                                    </p>
+                                    {displayLevel === level && (
+                                        <span className="material-symbols-outlined text-white text-lg ml-auto">
+                                            check_circle
+                                        </span>
+                                    )}
+                                </motion.button>
+                            ))}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
+// Price Filter Dropdown Component
+const PriceFilterDropdown = ({ selectedPrice, setSelectedPrice }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const prices = ['All Prices', 'Free', 'Paid'];
+    
+    const priceIcons = {
+        'All Prices': 'attach_money',
+        'Free': 'money_off',
+        'Paid': 'payments'
+    };
+    
+    return (
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.3 }}
+            className="relative"
+        >
+            <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl bg-gradient-to-r from-[#1A1333] to-[#2a2447] border border-white/10 hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 min-w-[180px]"
+            >
+                <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-xl text-primary">
+                        {priceIcons[selectedPrice] || 'attach_money'}
+                    </span>
+                    <div className="text-left">
+                        <p className="text-xs text-slate-400 mb-0.5">Price</p>
+                        <p className="text-sm font-bold text-white">{selectedPrice}</p>
+                    </div>
+                </div>
+                <motion.span 
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="material-symbols-outlined text-slate-400"
+                >
+                    expand_more
+                </motion.span>
+            </motion.button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsOpen(false)}
+                            className="fixed inset-0 z-40"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute left-0 mt-2 w-full min-w-[200px] z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl p-2"
+                        >
+                            {prices.map((price) => (
+                                <motion.button
+                                    key={price}
+                                    whileHover={{ x: 4 }}
+                                    onClick={() => {
+                                        setSelectedPrice(price);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                                        selectedPrice === price
+                                            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20'
+                                            : 'hover:bg-white/5'
+                                    }`}
+                                >
+                                    <span className={`material-symbols-outlined text-lg ${
+                                        selectedPrice === price ? 'text-white' : 'text-primary'
+                                    }`}>
+                                        {priceIcons[price]}
+                                    </span>
+                                    <p className={`text-sm font-semibold ${
+                                        selectedPrice === price ? 'text-white' : 'text-slate-200'
+                                    }`}>
+                                        {price}
+                                    </p>
+                                    {selectedPrice === price && (
+                                        <span className="material-symbols-outlined text-white text-lg ml-auto">
+                                            check_circle
+                                        </span>
+                                    )}
+                                </motion.button>
+                            ))}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
 // Filter Section Component
 const FilterSection = ({ title, children, isLast = false }) => (
-    <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className={`mb-8 ${!isLast ? 'border-b border-white/5 pb-6' : ''}`}
-    >
-        <button className="flex w-full items-center justify-between text-sm font-medium text-slate-200 mb-4">
-            <span>{title}</span>
-            <motion.span 
-                whileHover={{ rotate: 180 }}
-                transition={{ duration: 0.3 }}
-                className="material-symbols-outlined text-slate-500 text-sm"
-            >
-                expand_less
-            </motion.span>
-        </button>
+    <div className={`mb-6 ${!isLast ? 'pb-6 border-b border-white/5' : ''}`}>
+        <h4 className="mb-4 font-medium text-white">{title}</h4>
         {children}
-    </motion.div>
+    </div>
 );
 
 // Checkbox Filter Component
@@ -410,73 +797,64 @@ const RadioFilter = ({ label, name, checked, onChange }) => (
 );
 
 // Pagination Button Component
-const PaginationButton = ({ children, active = false }) => (
+const PaginationButton = ({ children, active = false, onClick, disabled = false }) => (
     <motion.button
-        whileHover={{ scale: 1.1, y: -2 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={!disabled ? { scale: 1.1, y: -2 } : {}}
+        whileTap={!disabled ? { scale: 0.95 } : {}}
+        onClick={onClick}
+        disabled={disabled}
         className={`flex h-10 w-10 items-center justify-center rounded-lg transition-all ${
             active 
                 ? 'bg-primary text-white font-medium shadow-lg shadow-primary/20' 
-                : 'border border-white/5 bg-[#1A1333] text-slate-400 hover:bg-[#2e2447] hover:text-white'
+                : disabled
+                ? 'border border-white/5 bg-[#1A1333]/50 text-slate-600 cursor-not-allowed'
+                : 'border border-white/5 bg-[#1A1333] text-slate-400 hover:bg-[#2e2447] hover:text-white cursor-pointer'
         }`}
     >
         {children}
     </motion.button>
 );
 
-// Enhanced Course Card Component
-const CourseCard = ({ image, category, rating, reviews, duration, title, desc, instructorName, instructorRole, instructorImg, price }) => {
-    const [isHovered, setIsHovered] = useState(false);
+// Enhanced Course Card Component (No Animation)
+const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, instructorImg, price }) => {
+    const navigate = useNavigate();
+
+    const handleCardClick = () => {
+        navigate(`/courses/${id}`);
+    };
+
+    // Format price to Vietnamese format (20000 -> 20.000)
+    const formatVNPrice = (price) => {
+        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+        return numPrice.toLocaleString('vi-VN');
+    };
 
     return (
-        <motion.div 
-            variants={cardItem}
-            whileHover={{ 
-                y: -8,
-                transition: { duration: 0.3, ease: "easeOut" }
-            }}
-            onHoverStart={() => setIsHovered(true)}
-            onHoverEnd={() => setIsHovered(false)}
-            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#1A1333] transition-all hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10"
+        <div 
+            onClick={handleCardClick}
+            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#1A1333] transition-all hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 cursor-pointer hover:-translate-y-2"
         >
-            {/* Animated gradient border effect */}
-            <motion.div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{
-                    background: 'linear-gradient(45deg, rgba(168,85,247,0.3), rgba(236,72,153,0.3), rgba(168,85,247,0.3))',
-                    backgroundSize: '200% 200%',
-                }}
-                animate={isHovered ? {
-                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                } : {}}
-                transition={{
-                    duration: 3,
-                    ease: "linear",
-                    repeat: Infinity
-                }}
-            />
-
             <div className="relative aspect-video w-full overflow-hidden">
-                <motion.img 
+                <img 
                     alt={title} 
-                    className="h-full w-full object-cover" 
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
                     src={image}
-                    animate={isHovered ? { scale: 1.1 } : { scale: 1 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
                 />
-                <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: isHovered ? 1 : 0 }}
-                    className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"
-                />
-                <motion.div 
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    whileInView={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="absolute right-3 top-3 rounded-lg bg-black/60 px-2 py-1 text-xs font-bold text-white backdrop-blur-md border border-white/10"
-                >
+                {/* Level Badge - Top Left */}
+                {level && (
+                    <div className={`absolute left-3 top-3 rounded-lg px-2 py-1 text-xs font-bold text-white backdrop-blur-md border ${
+                        level === 'Beginner' ? 'bg-green-600/80 border-green-400/30' :
+                        level === 'Intermediate' ? 'bg-yellow-600/80 border-yellow-400/30' :
+                        level === 'Advanced' ? 'bg-red-600/80 border-red-400/30' :
+                        'bg-black/60 border-white/10'
+                    }`}>
+                        {level}
+                    </div>
+                )}
+                {/* Category Badge - Top Right */}
+                <div className="absolute right-3 top-3 rounded-lg bg-black/60 px-2 py-1 text-xs font-bold text-white backdrop-blur-md border border-white/10">
                     {category}
-                </motion.div>
+                </div>
             </div>
 
             <div className="flex flex-1 flex-col p-5 relative z-10">
@@ -492,20 +870,16 @@ const CourseCard = ({ image, category, rating, reviews, duration, title, desc, i
                     </div>
                 </div>
 
-                <motion.h3 
-                    className="mb-2 text-lg font-bold leading-tight text-white transition-colors"
-                    animate={{ color: isHovered ? '#a855f7' : '#ffffff' }}
-                >
+                <h3 className="mb-2 text-lg font-bold leading-tight text-white group-hover:text-primary transition-colors">
                     {title}
-                </motion.h3>
+                </h3>
                 <p className="mb-4 text-xs text-slate-400 line-clamp-2">{desc}</p>
 
                 <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
                     <div className="flex items-center gap-2">
-                        <motion.img 
-                            whileHover={{ scale: 1.1 }}
+                        <img 
                             alt={instructorName} 
-                            className="h-8 w-8 rounded-full border border-white/10 object-cover" 
+                            className="h-8 w-8 rounded-full border border-white/10 object-cover transition-transform hover:scale-110" 
                             src={instructorImg} 
                         />
                         <div className="flex flex-col">
@@ -513,32 +887,17 @@ const CourseCard = ({ image, category, rating, reviews, duration, title, desc, i
                             <span className="text-[10px] text-slate-500">{instructorRole}</span>
                         </div>
                     </div>
-                    <motion.span 
-                        animate={{ scale: isHovered ? 1.1 : 1 }}
-                        className="text-lg font-bold text-white"
-                    >
-                        ${price}
-                    </motion.span>
+                    <span className="text-lg font-bold text-white transition-transform group-hover:scale-110">
+                        {formatVNPrice(price)}₫
+                    </span>
                 </div>
 
-                <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-all hover:shadow-violet-500/50 hover:brightness-110 cursor-pointer relative overflow-hidden"
-                >
-                    <span className="relative z-10">Add to Cart</span>
-                    <span className="material-symbols-outlined text-[18px] relative z-10">add_shopping_cart</span>
-                    
-                    {/* Shine effect */}
-                    <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                        initial={{ x: '-100%' }}
-                        whileHover={{ x: '100%' }}
-                        transition={{ duration: 0.6 }}
-                    />
-                </motion.button>
+                <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-all hover:shadow-violet-500/50 hover:brightness-110 cursor-pointer">
+                    <span>Add to Cart</span>
+                    <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                </button>
             </div>
-        </motion.div>
+        </div>
     );
 };
 
