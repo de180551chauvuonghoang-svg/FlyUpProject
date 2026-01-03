@@ -64,9 +64,16 @@ export const getCourseById = async (req, res) => {
     const { id } = req.params;
     const course = await courseService.getCourseById(id);
     
+    // Convert BigInt to string for JSON serialization
+    const serializedCourse = JSON.parse(
+      JSON.stringify(course, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+      )
+    );
+    
     res.json({
       success: true,
-      data: course
+      data: serializedCourse
     });
   } catch (error) {
     console.error('Get course error:', error);

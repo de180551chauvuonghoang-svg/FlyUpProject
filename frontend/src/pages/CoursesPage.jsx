@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import Header from '../components/Header/Header';
+import { fetchCourses } from '../services/courseService';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -14,71 +16,99 @@ const CoursesPage = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    // Data states
-    const [categories, setCategories] = useState([]);
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    
+    // Pagination state
     const [pagination, setPagination] = useState({
         page: 1,
-        limit: 24,
-        totalCount: 0,
-        totalPages: 0
+        limit: 8,
+        totalPages: 1,
+        totalCount: 0
     });
 
-    // Fetch categories on mount
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await fetch(`${API_URL}/courses/categories`);
-                const data = await response.json();
-                if (data.success) {
-                    setCategories(data.data);
-                }
-            } catch (error) {
-                console.error('Error fetching categories:', error);
-            }
-        };
+    // Debounce search query
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
-        fetchCategories();
-    }, []);
-
-    // Fetch courses when filters change
     useEffect(() => {
-        const fetchCourses = async () => {
-            setLoading(true);
-            setError(null);
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Reset page when filters change
+    useEffect(() => {
+        setPagination(prev => ({ ...prev, page: 1 }));
+    }, [selectedCategoryId, selectedLevel, selectedPrice, debouncedSearchQuery]);
+
+    // --- React Query Implementation ---
+
+    // 1. Fetch Categories
+    const { data: categoriesData } = useQuery({
+        queryKey: ['categories'],
+        queryFn: async () => {
+            const res = await fetch(`${API_URL}/courses/categories`);
+            const data = await res.json();
+            return data.success ? data.data : [];
+        },
+        staleTime: 1000 * 60 * 60, // 1 hour for categories
+    });
+    
+    const categories = categoriesData || [];
+
+    // 2. Fetch Courses
+    const fetchCoursesParams = {
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString(),
+        ...(selectedCategoryId && { categoryId: selectedCategoryId }),
+        ...(selectedLevel && { level: selectedLevel }),
+        ...(selectedPrice === 'Free' && { maxPrice: '0' }),
+        ...(selectedPrice === 'Paid' && { minPrice: '0.01' }),
+        ...(debouncedSearchQuery && { search: debouncedSearchQuery })
+    };
+
+    const { 
+        data: coursesData, 
+        isLoading: isCoursesLoading, 
+        isError, 
+        error: coursesError 
+    } = useQuery({
+        queryKey: ['courses', fetchCoursesParams],
+        queryFn: () => fetchCourses(fetchCoursesParams),
+        placeholderData: keepPreviousData, // Keep showing old data while fetching new
+        staleTime: 1000 * 60 * 5, // 5 mins
+    });
+
+    const courses = coursesData?.courses || [];
+    const loading = isCoursesLoading; // Backward compatibility for UI
+    const error = isError ? (coursesError?.message || 'Failed to fetch') : null;
+
+    // Update pagination state from response (optional, but good for total pages)
+    // Update pagination state from response (optional, but good for total pages)
+    useEffect(() => {
+        if (coursesData?.pagination) {
+             setPagination(prev => ({ ...prev, ...coursesData.pagination }));
+        }
+    }, [coursesData?.pagination]);
+
+    // --- Predictive Prefetching ---
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (coursesData?.pagination && pagination.page < pagination.totalPages) {
+            const nextPage = pagination.page + 1;
+            const nextPageParams = {
+                ...fetchCoursesParams,
+                page: nextPage.toString()
+            };
             
-            try {
-                const params = new URLSearchParams({
-                    page: pagination.page.toString(),
-                    limit: pagination.limit.toString(),
-                    ...(selectedCategoryId && { categoryId: selectedCategoryId }),
-                    ...(selectedLevel && { level: selectedLevel }),
-                    ...(selectedPrice === 'Free' && { maxPrice: '0' }),
-                    ...(selectedPrice === 'Paid' && { minPrice: '0.01' }),
-                    ...(searchQuery && { search: searchQuery })
-                });
-
-                const response = await fetch(`${API_URL}/courses?${params.toString()}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    setCourses(data.courses);
-                    setPagination(data.pagination);
-                } else {
-                    setError(data.error || 'Failed to fetch courses');
-                }
-            } catch (error) {
-                console.error('Error fetching courses:', error);
-                setError('Failed to connect to server');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCourses();
-    }, [selectedCategoryId, selectedLevel, selectedPrice, searchQuery, pagination.page, pagination.limit]);
+            // Prefetch the next page
+            queryClient.prefetchQuery({
+                queryKey: ['courses', nextPageParams],
+                queryFn: () => fetchCourses(nextPageParams),
+                staleTime: 1000 * 60 * 5, // 5 mins
+            });
+        }
+    }, [coursesData, pagination.page, pagination.totalPages, queryClient]);
 
     return (
         <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
@@ -218,27 +248,19 @@ const CoursesPage = () => {
                                 </span>
                             </button>
 
-                                {/* Dropdown Menu */}
-                                <AnimatePresence>
-                                    {isFilterOpen && (
-                                        <>
-                                            {/* Backdrop */}
-                                            <motion.div
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                onClick={() => setIsFilterOpen(false)}
-                                                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
-                                            />
+                                {/* Dropdown Menu - Optimized without heavy animations */}
+                                {isFilterOpen && (
+                                    <>
+                                        {/* Backdrop */}
+                                        <div
+                                            onClick={() => setIsFilterOpen(false)}
+                                            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-200"
+                                        />
 
-                                            {/* Dropdown List */}
-                                            <motion.div
-                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                transition={{ duration: 0.2 }}
-                                                className="absolute left-0 mt-2 w-[420px] max-h-[500px] overflow-y-auto z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl"
-                                            >
+                                        {/* Dropdown List */}
+                                        <div
+                                            className="absolute left-0 mt-2 w-[420px] max-h-[500px] overflow-y-auto z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-200"
+                                        >
                                                 <div className="p-2">
                                                     {/* Search Header */}
                                                     <div className="px-3 py-2 mb-2 border-b border-white/5">
@@ -247,13 +269,12 @@ const CoursesPage = () => {
                                                     </div>
 
                                                     {/* All Courses Option */}
-                                                    <motion.button
-                                                        whileHover={{ x: 4 }}
+                                                    <button
                                                         onClick={() => {
                                                             setSelectedCategoryId('');
                                                             setIsFilterOpen(false);
                                                         }}
-                                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:translate-x-1 ${
                                                             selectedCategoryId === ''
                                                                 ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20'
                                                                 : 'hover:bg-white/5'
@@ -285,7 +306,7 @@ const CoursesPage = () => {
                                                                 check_circle
                                                             </span>
                                                         )}
-                                                    </motion.button>
+                                                    </button>
 
                                                     {/* Category List */}
                                                     <div className="mt-2 space-y-1">
@@ -307,14 +328,13 @@ const CoursesPage = () => {
                                                             };
 
                                                             return (
-                                                                <motion.button
+                                                                <button
                                                                     key={cat.Id}
-                                                                    whileHover={{ x: 4 }}
                                                                     onClick={() => {
                                                                         setSelectedCategoryId(cat.Id);
                                                                         setIsFilterOpen(false);
                                                                     }}
-                                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:translate-x-1 ${
                                                                         selectedCategoryId === cat.Id
                                                                             ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20'
                                                                             : 'hover:bg-white/5'
@@ -346,15 +366,14 @@ const CoursesPage = () => {
                                                                             check_circle
                                                                         </span>
                                                                     )}
-                                                                </motion.button>
+                                                                </button>
                                                             );
                                                         })}
                                                     </div>
                                                 </div>
-                                            </motion.div>
+                                            </div>
                                         </>
-                                    )}
-                                </AnimatePresence>
+                                     )}
                             </div>
 
                             <LevelFilterDropdown 
@@ -408,7 +427,7 @@ const CoursesPage = () => {
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {loading ? (
                                 // Loading skeleton
-                                Array.from({ length: 8 }).map((_, i) => (
+                                Array.from({ length: 6 }).map((_, i) => (
                                     <div key={i} className="animate-pulse rounded-2xl bg-[#1A1333] border border-white/5">
                                         <div className="aspect-video w-full bg-[#2a2a3a] rounded-t-2xl"></div>
                                         <div className="p-5 space-y-3">
@@ -469,7 +488,7 @@ const CoursesPage = () => {
                                         desc={course.description}
                                         instructorName={course.instructorName}
                                         instructorRole="Instructor"
-                                        instructorImg={course.instructorImg}
+
                                         price={course.price}
                                     />
                                 ))
@@ -815,8 +834,19 @@ const PaginationButton = ({ children, active = false, onClick, disabled = false 
     </motion.button>
 );
 
+// Helper to resolve image URLs
+const getImageUrl = (path) => {
+    if (!path) return 'https://via.placeholder.com/150';
+    if (path.startsWith('http')) return path;
+    // Remove /api from API_URL to get base URL
+    const baseUrl = API_URL.replace(/\/api\/?$/, '');
+    // Ensure path doesn't start with / if we are appending to public/
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `${baseUrl}/public/${cleanPath}`;
+};
+
 // Enhanced Course Card Component (No Animation)
-const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, instructorImg, price }) => {
+const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price }) => {
     const navigate = useNavigate();
 
     const handleCardClick = () => {
@@ -838,7 +868,8 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
                 <img 
                     alt={title} 
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                    src={image}
+                    src={getImageUrl(image)}
+                    loading="lazy"
                 />
                 {/* Level Badge - Top Left */}
                 {level && (
@@ -877,11 +908,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
 
                 <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
                     <div className="flex items-center gap-2">
-                        <img 
-                            alt={instructorName} 
-                            className="h-8 w-8 rounded-full border border-white/10 object-cover transition-transform hover:scale-110" 
-                            src={instructorImg} 
-                        />
+
                         <div className="flex flex-col">
                             <span className="text-xs font-medium text-slate-300">{instructorName}</span>
                             <span className="text-[10px] text-slate-500">{instructorRole}</span>
@@ -890,6 +917,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
                     <span className="text-lg font-bold text-white transition-transform group-hover:scale-110">
                         {formatVNPrice(price)}₫
                     </span>
+
                 </div>
 
                 <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-all hover:shadow-violet-500/50 hover:brightness-110 cursor-pointer">

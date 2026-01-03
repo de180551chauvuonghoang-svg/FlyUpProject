@@ -1,8 +1,15 @@
 import prisma from '../lib/prisma.js';
+import NodeCache from 'node-cache';
+
+const cache = new NodeCache({ stdTTL: 300 }); // Cache for 5 minutes
 
 // Get all categories with course counts
 export const getCategories = async () => {
   try {
+    const cacheKey = 'categories_all';
+    const cachedResult = cache.get(cacheKey);
+    if (cachedResult) return cachedResult;
+
     const categories = await prisma.categories.findMany({
       where: {
         IsLeaf: true // Only leaf categories that have courses
@@ -19,6 +26,7 @@ export const getCategories = async () => {
       }
     });
 
+    cache.set(cacheKey, categories);
     return categories;
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -36,8 +44,17 @@ export const getCourses = async (filters = {}) => {
       maxPrice,
       search,
       page = 1,
-      limit = 24
+      limit = 12 // Reduced from 24 to 12 for faster loading
     } = filters;
+
+    // Create a unique cache key based on filters
+    const cacheKey = `courses_${JSON.stringify(filters)}`;
+    const cachedResult = cache.get(cacheKey);
+
+    if (cachedResult) {
+      console.log('Serving courses from cache');
+      return cachedResult;
+    }
 
     // Build where clause - Match actual database values
     const where = {
@@ -74,13 +91,27 @@ export const getCourses = async (filters = {}) => {
     // Calculate pagination
     const skip = (page - 1) * limit;
 
-    // Fetch courses with related data
+    // Fetch courses with selective fields for performance
+    console.time('DB_QUERY_TIME');
     const [courses, totalCount] = await Promise.all([
       prisma.courses.findMany({
         where,
         skip,
         take: limit,
-        include: {
+        select: {
+          Id: true,
+          Title: true,
+          Intro: true,
+          Description: true,
+          ThumbUrl: true,
+          Price: true,
+          Discount: true,
+          Level: true,
+          RatingCount: true,
+          TotalRating: true,
+          LectureCount: true,
+          LearnerCount: true,
+          CreationTime: true,
           Categories: {
             select: {
               Id: true,
@@ -88,10 +119,9 @@ export const getCourses = async (filters = {}) => {
             }
           },
           Instructors: {
-            include: {
+            select: {
               Users_Instructors_CreatorIdToUsers: {
                 select: {
-                  Id: true,
                   FullName: true,
                   AvatarUrl: true
                 }
@@ -105,6 +135,7 @@ export const getCourses = async (filters = {}) => {
       }),
       prisma.courses.count({ where })
     ]);
+    console.timeEnd('DB_QUERY_TIME');
 
     // Transform data to match frontend expectations
     const transformedCourses = courses.map(course => {
@@ -134,7 +165,7 @@ export const getCourses = async (filters = {}) => {
       };
     });
 
-    return {
+    const result = {
       courses: transformedCourses,
       pagination: {
         page,
@@ -143,6 +174,9 @@ export const getCourses = async (filters = {}) => {
         totalPages: Math.ceil(totalCount / limit)
       }
     };
+
+    cache.set(cacheKey, result);
+    return result;
   } catch (error) {
     console.error('Error fetching courses:', error);
     throw error;
@@ -152,29 +186,77 @@ export const getCourses = async (filters = {}) => {
 // Get single course by ID
 export const getCourseById = async (courseId) => {
   try {
-    const course = await prisma.courses.findUnique({
+    console.log('[courseService] Fetching course:', courseId);
+    
+    const course = await prisma.courses.findFirst({
       where: {
         Id: courseId,
-        ApprovalStatus: 'Approved',
-        Status: 'Published'
+        ApprovalStatus: 'APPROVED', // Match actual DB value
+        Status: 'Ongoing' // Match actual DB value
       },
-      include: {
-        Categories: true,
+      select: {
+        // Core fields
+        Id: true,
+        Title: true,
+        Intro: true,
+        Description: true,
+        ThumbUrl: true,
+        Price: true,
+        Discount: true,
+        Level: true,
+        Status: true,
+        
+        // Stats
+        RatingCount: true,
+        TotalRating: true,
+        LectureCount: true,
+        LearnerCount: true,
+        
+        // Timestamps
+        CreationTime: true,
+        
+        // Relations with selective fields
+        Categories: {
+          select: {
+            Id: true,
+            Title: true,
+            Description: true
+          }
+        },
         Instructors: {
-          include: {
-            Users_Instructors_CreatorIdToUsers: true
+          select: {
+            Id: true,
+            CreatorId: true,
+            Users_Instructors_CreatorIdToUsers: {
+              select: {
+                Id: true,
+                FullName: true,
+                AvatarUrl: true
+              }
+            }
           }
         },
         Sections: {
-          include: {
-            Lectures: true
+          select: {
+            Id: true,
+            Title: true,
+            CreationTime: true,
+            // Only fetch lecture count, not full lecture content
+            Lectures: {
+              select: {
+                Id: true,
+                Title: true
+              }
+            }
           },
           orderBy: {
-            Index: 'asc'
+            CreationTime: 'asc'
           }
         }
       }
     });
+
+    console.log('[courseService] Course found:', course ? 'Yes' : 'No');
 
     if (!course) {
       throw new Error('Course not found');
@@ -182,7 +264,7 @@ export const getCourseById = async (courseId) => {
 
     return course;
   } catch (error) {
-    console.error('Error fetching course:', error);
+    console.error('[courseService] Error fetching course:', error);
     throw error;
   }
 };

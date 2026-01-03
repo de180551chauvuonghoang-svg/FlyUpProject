@@ -8,6 +8,7 @@ import { dirname, join } from 'path';
 import authRouter from './routers/auth.js';
 import usersRouter from './routers/users.js';
 import coursesRouter from './routers/courses.js';
+import { getCourses, getCategories } from './services/courseService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,6 +30,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use('/public', express.static(join(__dirname, '../public')));
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -63,6 +65,20 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Warm up cache
+  (async () => {
+    try {
+      console.log('🔥 Warming up cache...');
+      console.log('🔥 Warming up cache...');
+      // Run sequentially to avoid DB connection timeout
+      await getCategories();
+      await getCourses({ page: 1, limit: 12 });
+      console.log('✅ Cache warmed up successfully!');
+    } catch (error) {
+      console.warn('⚠️ Cache warmup partial failure (non-critical):', error.message);
+    }
+  })();
 });
 
 export default app;

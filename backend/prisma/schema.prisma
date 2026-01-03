@@ -299,6 +299,10 @@ model Courses {
   @@index([InstructorId], map: "IX_Courses_InstructorId")
   @@index([LeafCategoryId], map: "IX_Courses_LeafCategoryId")
   @@index([Status], map: "IX_Courses_Status")
+  @@index([ApprovalStatus, Status], map: "IX_Courses_ApprovalStatus_Status")
+  @@index([CreationTime], map: "IX_Courses_CreationTime")
+  @@index([Price], map: "IX_Courses_Price")
+  @@index([Level], map: "IX_Courses_Level")
 }
 
 model Enrollments {

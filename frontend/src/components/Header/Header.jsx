@@ -1,13 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
+import { fetchCourses } from '../../services/courseService';
 import defaultAvatar from '../../assets/default-avatar.png';
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handlePrefetchCourses = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['courses', { page: '1', limit: '8' }],
+      queryFn: () => fetchCourses({ page: '1', limit: '8' }),
+      staleTime: 1000 * 60 * 5, // 5 mins
+    });
+  };
   const dropdownRef = useRef(null);
+
+  // Prefetch courses on mount for instant loading
+  useEffect(() => {
+    handlePrefetchCourses();
+  }, []); // Run once on mount
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -64,7 +80,13 @@ const Header = () => {
         </div>
         <div className="flex items-center gap-4 lg:gap-8">
           <nav className="hidden lg:flex items-center gap-6">
-            <Link className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" to="/courses">Courses</Link>
+            <Link 
+              className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" 
+              to="/courses"
+              onMouseEnter={handlePrefetchCourses}
+            >
+              Courses
+            </Link>
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Browse</a>
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">My Learning</a>
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Mentors</a>
