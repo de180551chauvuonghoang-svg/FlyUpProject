@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import Header from '../components/Header/Header';
-import { fetchCourses } from '../services/courseService';
+import { fetchCourses, fetchCourseById } from '../services/courseService';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -78,7 +78,7 @@ const CoursesPage = () => {
         staleTime: 1000 * 60 * 5, // 5 mins
     });
 
-    const courses = coursesData?.courses || [];
+    const courses = useMemo(() => coursesData?.courses || [], [coursesData]);
     const loading = isCoursesLoading; // Backward compatibility for UI
     const error = isError ? (coursesError?.message || 'Failed to fetch') : null;
 
@@ -109,6 +109,20 @@ const CoursesPage = () => {
             });
         }
     }, [coursesData, pagination.page, pagination.totalPages, queryClient]);
+
+    // --- Bulk Prefetching for Visible Courses ---
+    useEffect(() => {
+        if (courses.length > 0) {
+            // Prefetch details for all visible courses immediately
+            courses.forEach(course => {
+                queryClient.prefetchQuery({
+                    queryKey: ['course', course.id],
+                    queryFn: () => fetchCourseById(course.id),
+                    staleTime: 1000 * 60 * 5, // 5 mins
+                });
+            });
+        }
+    }, [courses, queryClient]);
 
     return (
         <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">

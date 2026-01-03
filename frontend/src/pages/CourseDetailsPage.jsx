@@ -13,6 +13,7 @@ import {
   staggerItem
 } from '../utils/animations';
 import Header from '../components/Header/Header';
+import { fetchCourseById } from '../services/courseService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -35,16 +36,7 @@ export default function CourseDetailsPage() {
   // React Query for caching
   const { data, isLoading, error: queryError } = useQuery({
     queryKey: ['course', courseId],
-    queryFn: async () => {
-      const response = await fetch(`${API_URL}/courses/${courseId}`);
-      if (!response.ok) {
-        if (response.status === 404) throw new Error('Course not found');
-        throw new Error('Failed to fetch course');
-      }
-      const json = await response.json();
-      if (json.success && json.data) return json.data;
-      throw new Error('Invalid course data');
-    },
+    queryFn: () => fetchCourseById(courseId),
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1
   });

@@ -188,6 +188,14 @@ export const getCourseById = async (courseId) => {
   try {
     console.log('[courseService] Fetching course:', courseId);
     
+    const cacheKey = `course_${courseId}`;
+    const cachedResult = cache.get(cacheKey);
+
+    if (cachedResult) {
+       console.log('[courseService] Serving course from cache:', courseId);
+       return cachedResult;
+    }
+    
     const course = await prisma.courses.findFirst({
       where: {
         Id: courseId,
@@ -262,6 +270,7 @@ export const getCourseById = async (courseId) => {
       throw new Error('Course not found');
     }
 
+    cache.set(cacheKey, course);
     return course;
   } catch (error) {
     console.error('[courseService] Error fetching course:', error);
