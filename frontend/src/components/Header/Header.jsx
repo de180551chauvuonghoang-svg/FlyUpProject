@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -11,19 +11,20 @@ const Header = () => {
   const queryClient = useQueryClient();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const handlePrefetchCourses = () => {
+  const handlePrefetchCourses = useCallback(() => {
     queryClient.prefetchQuery({
       queryKey: ['courses', { page: '1', limit: '8' }],
       queryFn: () => fetchCourses({ page: '1', limit: '8' }),
       staleTime: 1000 * 60 * 5, // 5 mins
     });
-  };
+  }, [queryClient]);
+
   const dropdownRef = useRef(null);
 
   // Prefetch courses on mount for instant loading
   useEffect(() => {
     handlePrefetchCourses();
-  }, []); // Run once on mount
+  }, [handlePrefetchCourses]);
 
   // Handle click outside to close dropdown
   useEffect(() => {

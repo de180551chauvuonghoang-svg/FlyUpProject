@@ -38,6 +38,8 @@ const logoVariants = {
   }
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const RegisterPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -71,7 +73,7 @@ const RegisterPage = () => {
     const toastId = toast.loading('Creating your account...');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

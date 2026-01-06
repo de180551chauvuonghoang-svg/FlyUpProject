@@ -40,6 +40,8 @@ const logoVariants = {
   }
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const LoginPage = () => {
   const { signIn } = useAuth(); 
   const navigate = useNavigate();
@@ -54,7 +56,7 @@ const LoginPage = () => {
     setIsLoading(true);
     const toastId = toast.loading('Verifying Google Login...');
     try {
-        const res = await fetch('http://localhost:5000/api/auth/google', {
+        const res = await fetch(`${API_URL}/auth/google`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
