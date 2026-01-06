@@ -224,3 +224,35 @@ export const googleLogin = async (req, res) => {
     res.status(500).json({ error: 'Login failed due to system error', details: error.message });
   }
 };
+
+export const githubLogin = async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ error: 'GitHub authorization code is required' });
+    }
+
+    const user = await authService.loginWithGithub(code);
+
+    res.json({
+      message: 'Login successful',
+      user: {
+        id: user.Id,
+        email: user.Email,
+        fullName: user.FullName,
+        avatarUrl: user.AvatarUrl,
+        role: user.Role
+      },
+      session: {
+        accessToken: user.accessToken,
+        refreshToken: user.plainRefreshToken,
+        tokenType: 'Bearer',
+        expiresIn: 1800
+      }
+    });
+  } catch (error) {
+    console.error('GitHub login error:', error);
+    res.status(500).json({ error: 'Login failed', details: error.message });
+  }
+};

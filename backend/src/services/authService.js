@@ -392,3 +392,150 @@ export const loginWithGoogle = async (credential) => {
 
   return user;
 };
+
+export const loginWithGithub = async (code) => {
+  // 1. Exchange code for access token
+  const tokenUrl = 'https://github.com/login/oauth/access_token';
+  const tokenResponse = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      client_id: process.env.GITHUB_CLIENT_ID,
+      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      code
+    })
+  });
+
+  const tokenData = await tokenResponse.json();
+
+  if (tokenData.error) {
+    throw new Error(`GitHub OAuth error: ${tokenData.error_description || tokenData.error}`);
+  }
+
+  const accessToken = tokenData.access_token;
+
+  // 2. Fetch user profile
+  const userUrl = 'https://api.github.com/user';
+  const userResponse = await fetch(userUrl, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+
+  if (!userResponse.ok) {
+    throw new Error('Failed to fetch GitHub user profile');
+  }
+
+  const githubUser = await userResponse.json();
+
+  // 3. Fetch user emails (if primary email is private)
+  let email = githubUser.email;
+  if (!email) {
+    const emailsUrl = 'https://api.github.com/user/emails';
+    const emailsResponse = await fetch(emailsUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+
+    if (emailsResponse.ok) {
+      const emails = await emailsResponse.json();
+      // Find primary and verified email
+      const primaryEmail = emails.find(e => e.primary && e.verified) || emails.find(e => e.verified) || emails[0];
+      if (primaryEmail) {
+        email = primaryEmail.email;
+      }
+    }
+  }
+
+  if (!email) {
+    throw new Error('GitHub account does not have a verified email');
+  }
+
+  const fullName = githubUser.name || githubUser.login;
+  const avatarUrl = githubUser.avatar_url;
+
+  // 4. Find or Create User (similar to Google login)
+  let user = await prisma.users.findFirst({
+    where: { Email: email.toLowerCase() }
+  });
+
+  if (!user) {
+      // Create new user
+      const userId = uuidv4();
+      const baseUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+      const uniqueUsername = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
+
+      // Generate JWT tokens
+      const accessTokenJwt = generateAccessToken({ 
+        userId, 
+        email: email.toLowerCase(), 
+        role: 'learner' 
+      });
+      
+      const refreshToken = generateRefreshToken({ 
+        userId, 
+        email: email.toLowerCase() 
+      });
+
+      const hashedRefreshToken = hashRefreshToken(refreshToken);
+
+      user = await prisma.users.create({
+          data: {
+              Id: userId,
+              UserName: uniqueUsername,
+              Password: '', // No password for OAuth users
+              Email: email.toLowerCase(),
+              FullName: fullName,
+              MetaFullName: removeAccents(fullName),
+              AvatarUrl: avatarUrl || '',
+              Role: 'learner',
+              Token: '',
+              RefreshToken: hashedRefreshToken,
+              IsVerified: true,
+              IsApproved: true,
+              AccessFailedCount: 0,
+              LoginProvider: 'GitHub',
+              ProviderKey: githubUser.id.toString(),
+              SystemBalance: BigInt(0),
+          }
+      });
+
+      // Attach plain refresh token for response
+      user.plainRefreshToken = refreshToken;
+      user.accessToken = accessTokenJwt;
+  } else {
+      // Generate new tokens for existing user
+      const accessTokenJwt = generateAccessToken({ 
+        userId: user.Id, 
+        email: user.Email, 
+        role: user.Role 
+      });
+      
+      const refreshToken = generateRefreshToken({ 
+        userId: user.Id, 
+        email: user.Email 
+      });
+
+      const hashedRefreshToken = hashRefreshToken(refreshToken);
+
+      // Update refresh token
+      await prisma.users.update({
+        where: { Id: user.Id },
+        data: { 
+          RefreshToken: hashedRefreshToken,
+          LoginProvider: 'GitHub',
+          IsVerified: true 
+        }
+      });
+
+      user.accessToken = accessTokenJwt;
+      user.RefreshToken = refreshToken;
+      user.plainRefreshToken = refreshToken;
+  }
+
+  return user;
+};
