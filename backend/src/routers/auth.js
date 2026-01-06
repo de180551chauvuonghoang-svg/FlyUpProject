@@ -29,4 +29,7 @@ router.post('/refresh', authController.refreshToken);
 // Google Login
 router.post('/google', authController.googleLogin);
 
+// GitHub Login
+router.post('/github', authController.githubLogin);
+
 export default router;
