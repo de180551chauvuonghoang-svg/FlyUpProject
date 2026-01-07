@@ -14,6 +14,7 @@ import {
 } from '../utils/animations';
 import Header from '../components/Header/Header';
 import { fetchCourseById } from '../services/courseService';
+import useCart from '../hooks/useCart';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -32,6 +33,27 @@ export default function CourseDetailsPage() {
   
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedSections, setExpandedSections] = useState({});
+  const { addToCart } = useCart();
+
+  // Helper to resolve image URLs
+  // (Redefined here if needed or just use the global one if it is safe, but assuming we can use member vars)
+  // Actually course is available here.
+
+  const handleAddToCart = () => {
+      // Map course data to match what cart expects
+      const cartItem = {
+          id: course.Id,
+          title: course.Title,
+          price: course.Price,
+          image: course.ThumbUrl || course.Image, 
+          instructorName: instructor.FullName || 'Unknown',
+          instructorRole: 'Instructor',
+          rating: rating,
+          reviews: course.RatingCount,
+          duration: `${course.Sections?.reduce((acc, sec) => acc + (sec.Lectures?.length || 0), 0)} lectures`
+      };
+      addToCart(cartItem);
+  };
 
   // React Query for caching
   const { data, isLoading, error: queryError } = useQuery({
@@ -381,6 +403,7 @@ export default function CourseDetailsPage() {
             {/* Action Buttons */}
             <div className="space-y-3 mb-6">
               <motion.button 
+                onClick={handleAddToCart}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 animate={{ 
@@ -398,6 +421,10 @@ export default function CourseDetailsPage() {
                 Add to Cart
               </motion.button>
               <motion.button 
+                onClick={() => {
+                  handleAddToCart();
+                  navigate('/cart');
+                }}
                 whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors"

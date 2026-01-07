@@ -111,13 +111,23 @@ router.get('/:id/enrollments', async (req, res) => {
     ]);
 
     res.json({
-      enrollments: enrollments.map(e => ({
-        ...e,
-        course: {
+      enrollments: enrollments.map(e => {
+        const course = {
           ...e.Courses,
+          TotalRating: e.Courses?.TotalRating?.toString() || '0',
           instructor: e.Courses?.Instructors?.Users_Instructors_CreatorIdToUsers
+        };
+        // Remove raw Instructors object which contains BigInt Balance
+        // We only need the mapped 'instructor' (user) details
+        if (course.Instructors) {
+            delete course.Instructors;
         }
-      })),
+        const { Courses, ...rest } = e;
+        return {
+          ...rest,
+          course
+        };
+      }),
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
