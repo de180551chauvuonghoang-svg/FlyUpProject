@@ -14,36 +14,43 @@ const CheckoutPage = () => {
     const [loading, setLoading] = useState(true);
     const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
 
-    // Polling setup
+    const processedRef = React.useRef(false);
+
+    // Initial Fetch
     useEffect(() => {
-        const fetchStatus = async () => {
+        const initCheckout = async () => {
             try {
                 const res = await getCheckoutStatus(checkoutId);
                 setCheckout(res.data);
-                
-                if (res.data.status === 'COMPLETED') {
-                   toast.success('Payment successful!');
-                   clearCart(); // Clear cart on success
-                }
             } catch (error) {
-                console.error('Status check failed:', error);
+                console.error('Failed to load checkout:', error);
             } finally {
                 setLoading(false);
             }
         };
+        initCheckout();
+    }, [checkoutId]);
 
-        fetchStatus(); // Initial fetch
+    // Polling Logic (Only runs if checkout exists and is NOT completed)
+    useEffect(() => {
+        if (!checkout || checkout.status === 'COMPLETED') return;
 
-        const interval = setInterval(() => {
-            if (checkout?.status !== 'COMPLETED') {
-                fetchStatus();
+        const interval = setInterval(async () => {
+             try {
+                const res = await getCheckoutStatus(checkoutId);
+                // Only update if status changed to avoid redundant renders
+                if (res.data.status !== checkout.status) {
+                    setCheckout(res.data);
+                }
+            } catch {
+                // Silent error on polling
             }
-        }, 3000); // Poll every 3 seconds
+        }, 3000);
 
         return () => clearInterval(interval);
-    }, [checkoutId, checkout?.status, clearCart]);
+    }, [checkoutId, checkout?.status]);
 
-    // Timer countdown
+    // Timer countdown (Restored)
     useEffect(() => {
         if (timeLeft > 0 && checkout?.status === 'PENDING') {
             const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
@@ -51,15 +58,20 @@ const CheckoutPage = () => {
         }
     }, [timeLeft, checkout?.status]);
 
-    // Auto-redirect on success
+    // Handle Success Side Effects (Toast + Redirect + Clear Cart)
     useEffect(() => {
-        if (checkout?.status === 'COMPLETED') {
+        if (checkout?.status === 'COMPLETED' && !processedRef.current) {
+            processedRef.current = true; // Mark as handled
+            toast.success('Payment successful!');
+            clearCart();
+            
+            // Redirect after delay
             const timer = setTimeout(() => {
                 navigate('/my-learning');
-            }, 3000); // Redirect after 3 seconds
+            }, 3000);
             return () => clearTimeout(timer);
         }
-    }, [checkout?.status, navigate]);
+    }, [checkout?.status, navigate, clearCart]);
 
     const handleSimulateSuccess = async () => {
         try {
