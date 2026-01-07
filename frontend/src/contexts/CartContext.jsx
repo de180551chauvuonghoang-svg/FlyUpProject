@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import toast from 'react-hot-toast';
+import { useQuery } from '@tanstack/react-query';
+import { fetchUserEnrollments } from '../services/userService';
 import { CartContext } from './cartContextDef';
 import { AuthContext } from './authContextDef';
 
@@ -20,10 +22,35 @@ export const CartProvider = ({ children }) => {
         localStorage.setItem('cart', JSON.stringify(cart));
     }, [cart]);
 
+    // Fetch user enrollments to check for duplicates
+    // eslint-disable-next-line no-unused-vars
+    const { data: enrollmentData } = useQuery({
+        queryKey: ['userEnrollments', user?.id],
+        queryFn: () => fetchUserEnrollments(user.id),
+        enabled: !!user,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+
+    const enrolledCourseIds = new Set(enrollmentData?.enrollments?.map(e => e.CourseId) || []);
+
     const addToCart = (course) => {
         if (!user) {
             toast.error('Please login to add to cart', {
                 icon: '🔒',
+                style: {
+                    borderRadius: '10px',
+                    background: '#1A1333',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                },
+            });
+            return;
+        }
+
+        // Check if already enrolled
+        if (enrolledCourseIds.has(course.id || course.Id)) { // Handle both id cases just in case
+             toast.error('Course already registered, please choose another course', {
+                icon: '🚫',
                 style: {
                     borderRadius: '10px',
                     background: '#1A1333',

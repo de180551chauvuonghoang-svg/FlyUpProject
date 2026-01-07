@@ -121,8 +121,18 @@ export const webhookPayment = async (req, res) => {
         // 3. Create Enrollments
         const courseIds = JSON.parse(checkout.CourseIds);
         const enrollments = await Promise.all(courseIds.map(courseId => 
-            tx.enrollments.create({
-                data: {
+            tx.enrollments.upsert({
+                where: {
+                    CreatorId_CourseId: {
+                        CreatorId: checkout.UserId,
+                        CourseId: courseId
+                    }
+                },
+                update: {
+                    Status: 'Active',
+                    BillId: bill.Id
+                },
+                create: {
                     CreatorId: checkout.UserId,
                     CourseId: courseId,
                     BillId: bill.Id,
