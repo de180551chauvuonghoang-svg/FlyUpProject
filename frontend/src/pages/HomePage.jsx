@@ -1,12 +1,25 @@
-import React from 'react';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCourses } from '../services/courseService';
+import { getImageUrl } from '../utils/imageUtils';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import StatsSection from '../components/StatsSection';
 import LearningPathsSection from '../components/LearningPathsSection';
 import CourseBenefitsSection from '../components/CourseBenefitsSection';
 
+// ... (remaining imports)
+// I will just replace the top imports and the CourseCard/FeaturedCoursesSection
+// functionality. Wait, `replace_file_content` works on contiguous blocks.
+// I'll do imports first, then the sections.
+
+// Actually I can do one `replace_file_content` for imports, and another for the components if they are far apart.
+// Lines 1-9 are imports.
+// Lines 42-83 are COURSES constant.
+// Lines 194-218 are CourseCard.
+// Lines 221-235 are FeaturedCoursesSection.
+
+// I will do imports first.
 
 // Image URLs from the template
 const IMAGES = {
@@ -39,48 +52,7 @@ const CATEGORIES = [
 ];
 
 // Courses data
-const COURSES = [
-  {
-    title: 'Complete Web Development Bootcamp 2024',
-    category: 'Development',
-    categoryColor: 'bg-cyan-500/20 text-cyan-400',
-    image: IMAGES.course1,
-    rating: '4.9',
-    instructor: 'Dr. Angela Yu',
-    instructorImage: IMAGES.instructor1,
-    price: '$89.99',
-  },
-  {
-    title: 'UI/UX Design Masterclass: From Zero to Hero',
-    category: 'Design',
-    categoryColor: 'bg-purple-500/20 text-purple-400',
-    image: IMAGES.course2,
-    rating: '4.8',
-    instructor: 'Sarah Jones',
-    instructorImage: IMAGES.instructor2,
-    price: '$49.99',
-  },
-  {
-    title: 'Business Strategy: Start Your Own Agency',
-    category: 'Business',
-    categoryColor: 'bg-green-500/20 text-green-400',
-    image: IMAGES.course3,
-    rating: '4.7',
-    instructor: 'Michael Scott',
-    instructorImage: IMAGES.instructor3,
-    price: '$65.00',
-  },
-  {
-    title: 'Digital Marketing & SEO Analytics',
-    category: 'Marketing',
-    categoryColor: 'bg-orange-500/20 text-orange-400',
-    image: IMAGES.course4,
-    rating: '5.0',
-    instructor: 'Emily Chen',
-    instructorImage: IMAGES.instructor4,
-    price: '$39.99',
-  },
-];
+
 
 // Testimonials data
 const TESTIMONIALS = [
@@ -190,49 +162,88 @@ const CategoriesSection = () => (
   </section>
 );
 
+const formatVNPrice = (price) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    return numPrice.toLocaleString('vi-VN');
+};
+
 // Course Card Component
-const CourseCard = ({ course }) => (
-  <article className="group flex flex-col bg-[#16161e] rounded-2xl overflow-hidden border border-[#2a2a3a] hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/20">
-    <div className="relative aspect-video overflow-hidden">
-      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{backgroundImage: `url('${course.image}')`}}></div>
-      <div className="absolute top-3 right-3 bg-black/80 backdrop-blur text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 text-white">
-        <span className="material-symbols-outlined text-yellow-400 text-sm">star</span>
-        {course.rating}
+const CourseCard = ({ course }) => {
+    const navigate = useNavigate();
+
+    return (
+      <div 
+        onClick={() => navigate(`/courses/${course.id}`)}
+        className="group flex flex-col bg-[#16161e] rounded-2xl overflow-hidden border border-[#2a2a3a] hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/20 cursor-pointer h-full"
+      >
+        <div className="relative aspect-video overflow-hidden">
+          <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{backgroundImage: `url('${getImageUrl(course.image)}')`}}></div>
+          <div className="absolute top-3 right-3 bg-black/80 backdrop-blur text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 text-white">
+            <span className="material-symbols-outlined text-yellow-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+            {course.rating}
+          </div>
+        </div>
+        <div className="flex flex-col flex-1 p-5 gap-4">
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-bold uppercase tracking-wider bg-white/5 text-slate-300 px-2 py-1 rounded`}>{course.category}</span>
+          </div>
+          <h3 className="text-lg font-bold leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">{course.title}</h3>
+          <div className="flex items-center gap-2 text-sm text-gray-400 mt-auto">
+            <span>{course.instructorName}</span>
+          </div>
+          <div className="flex items-center justify-between pt-4 border-t border-[#2a2a3a]">
+            <span className="text-xl font-bold text-white">{formatVNPrice(course.price)}₫</span>
+            <button className="bg-primary/10 hover:bg-primary text-primary hover:text-white font-bold text-sm px-4 py-2 rounded-full transition-all">Enroll Now</button>
+          </div>
+        </div>
       </div>
-    </div>
-    <div className="flex flex-col flex-1 p-5 gap-4">
-      <div className="flex items-center gap-2">
-        <span className={`text-[10px] font-bold uppercase tracking-wider ${course.categoryColor} px-2 py-1 rounded`}>{course.category}</span>
-      </div>
-      <h3 className="text-lg font-bold leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">{course.title}</h3>
-      <div className="flex items-center gap-2 text-sm text-gray-400 mt-auto">
-        <img alt="Instructor" className="w-6 h-6 rounded-full" src={course.instructorImage}/>
-        <span>{course.instructor}</span>
-      </div>
-      <div className="flex items-center justify-between pt-4 border-t border-[#2a2a3a]">
-        <span className="text-xl font-bold text-white">{course.price}</span>
-        <button className="bg-primary/10 hover:bg-primary text-primary hover:text-white font-bold text-sm px-4 py-2 rounded-full transition-all">Enroll Now</button>
-      </div>
-    </div>
-  </article>
-);
+    );
+};
 
 // Featured Courses Section Component
-const FeaturedCoursesSection = () => (
-  <section className="px-4 md:px-10 py-12">
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-bold tracking-tight text-white">Featured Courses</h2>
-        <p className="text-gray-400">Hand-picked by our experts for you.</p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {COURSES.map((course, index) => (
-          <CourseCard key={index} course={course} />
-        ))}
-      </div>
-    </div>
-  </section>
-);
+const FeaturedCoursesSection = () => {
+    const { data: coursesData, isLoading, error } = useQuery({
+        queryKey: ['featuredCourses'],
+        queryFn: () => fetchCourses({ page: 1, limit: 4 }), // Fetch top 4 courses
+        staleTime: 1000 * 60 * 5,
+    });
+
+    const courses = coursesData?.courses || [];
+
+    return (
+      <section className="px-4 md:px-10 py-12">
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-3xl font-bold tracking-tight text-white">Featured Courses</h2>
+            <p className="text-gray-400">Hand-picked by our experts for you.</p>
+          </div>
+          
+          {isLoading ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-[#16161e] rounded-2xl overflow-hidden border border-[#2a2a3a] h-[380px] animate-pulse">
+                        <div className="h-48 bg-white/5"></div>
+                        <div className="p-5 space-y-4">
+                            <div className="h-4 bg-white/5 rounded w-1/3"></div>
+                            <div className="h-6 bg-white/5 rounded w-3/4"></div>
+                            <div className="h-4 bg-white/5 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                ))}
+             </div>
+          ) : error ? (
+              <div className="text-center py-10 text-red-400">Failed to load courses. Please try again later.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {courses.map((course) => (
+                <CourseCard key={course.id} course={course} />
+                ))}
+            </div>
+          )}
+        </div>
+      </section>
+    );
+};
 
 // Why Choose Section Component
 const WhyChooseSection = () => (

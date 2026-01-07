@@ -1,12 +1,35 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import useCart from '../hooks/useCart';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCourses } from '../services/courseService';
 import { getImageUrl } from '../utils/imageUtils';
+import { createCheckout } from '../services/checkoutService';
+import toast from 'react-hot-toast';
 
 const CartPage = () => {
     const { cart, removeFromCart, cartTotal, cartCount, addToCart, clearCart } = useCart();
+    const navigate = useNavigate();
+
+    const handleCheckout = async () => {
+        try {
+            if (cart.length === 0) return;
+            
+            toast.loading('Creating checkout session...');
+            const res = await createCheckout({
+                courseIds: cart.map(item => item.id),
+                totalAmount: cartTotal
+            });
+            
+            toast.dismiss();
+            if (res.success) {
+                navigate(`/checkout/${res.data.checkoutId}`);
+            }
+        } catch (error) {
+            toast.dismiss();
+            toast.error(error.message || 'Checkout creation failed');
+        }
+    };
 
 
     // Fetch recommendations
@@ -181,7 +204,10 @@ const CartPage = () => {
                                     <span className="text-3xl font-black text-white">{formatVNPrice(cartTotal)}₫</span>
                                 </div>
                             </div>
-                            <button className="w-full relative group overflow-hidden rounded-full p-[1px]">
+                            <button 
+                                onClick={handleCheckout}
+                                className="w-full relative group overflow-hidden rounded-full p-[1px]"
+                            >
                                 <span className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 group-hover:from-violet-500 group-hover:to-fuchsia-500 transition-all duration-300"></span>
                                 <div className="relative bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-full py-4 px-6 flex items-center justify-center gap-2 shadow-lg shadow-violet-500/30 group-hover:shadow-violet-500/50 transition-all duration-300 transform group-hover:scale-[1.01]">
                                     <span className="text-white font-bold tracking-wide">Checkout</span>
