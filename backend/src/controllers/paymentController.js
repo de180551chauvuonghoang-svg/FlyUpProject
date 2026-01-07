@@ -9,6 +9,13 @@ export const handleCassoWebhook = async (req, res) => {
     // 1. Verify Secure Token
     const secureToken = req.headers['secure-token'];
     
+    // DEBUG LOGS (Remove in production later)
+    console.log('🔔 Webhook Received!');
+    console.log('Headers:', JSON.stringify(req.headers));
+    console.log('Body:', JSON.stringify(req.body));
+    console.log('Received Token:', secureToken);
+    console.log('Expected Token:', process.env.CASSO_SECURE_TOKEN);
+
     if (!secureToken || secureToken !== process.env.CASSO_SECURE_TOKEN) {
       console.warn('⚠️ Casso Webhook: Invalid Secure Token');
       return res.status(401).json({ error: 'Unauthorized' });
@@ -32,6 +39,9 @@ export const handleCassoWebhook = async (req, res) => {
       // Use regex to find checkout ID (Check case-insensitive)
       const match = description.match(/ORDER\s+([a-zA-Z0-9-]+)/i);
       
+      console.log(`Processing Trx: ${description}`);
+      console.log(`Regex Match:`, match);
+
       if (!match) {
         console.log(`ℹ️ Ignored non-order transaction: ${description}`);
         continue;
