@@ -29,8 +29,8 @@ export const handleCassoWebhook = async (req, res) => {
       const description = transaction.description;
       const amount = transaction.amount;
       
-      // Use regex to find checkout ID
-      const match = description.match(/ORDER\s+([a-zA-Z0-9-]+)/);
+      // Use regex to find checkout ID (Check case-insensitive)
+      const match = description.match(/ORDER\s+([a-zA-Z0-9-]+)/i);
       
       if (!match) {
         console.log(`ℹ️ Ignored non-order transaction: ${description}`);
