@@ -7,6 +7,7 @@ import { dirname, join } from 'path';
 // Import routers
 import authRouter from './routers/auth.js';
 import usersRouter from './routers/users.js';
+import checkoutRouter from './routers/checkout.js';
 import coursesRouter from './routers/courses.js';
 import { getCourses, getCategories } from './services/courseService.js';
 
@@ -41,6 +42,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/courses', coursesRouter);
+app.use('/api/checkout', checkoutRouter);
 
 // Error handling middleware
 // Error handling middleware
