@@ -4,12 +4,14 @@ import useAuth from '../../hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { fetchCourses } from '../../services/courseService';
 import defaultAvatar from '../../assets/default-avatar.png';
+import useCart from '../../hooks/useCart';
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { cartCount } = useCart();
 
   const handlePrefetchCourses = useCallback(() => {
     queryClient.prefetchQuery({
@@ -94,8 +96,13 @@ const Header = () => {
             <a className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" href="#">Community</a>
           </nav>
           <div className="flex gap-3 relative">
-            <Link to="/cart" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e] border border-transparent hover:border-[#2a2a3a] text-white transition-all">
+            <Link to="/cart" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e] border border-transparent hover:border-[#2a2a3a] text-white transition-all relative">
               <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-fuchsia-600 text-[10px] font-bold">
+                  {cartCount}
+                </span>
+              )}
             </Link>
             {user ? (
               <div ref={dropdownRef} className="relative group">

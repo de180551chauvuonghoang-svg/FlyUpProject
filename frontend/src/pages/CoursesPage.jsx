@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import Header from '../components/Header/Header';
 import { fetchCourses, fetchCourseById } from '../services/courseService';
+import useCart from '../hooks/useCart';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -848,20 +849,15 @@ const PaginationButton = ({ children, active = false, onClick, disabled = false 
     </motion.button>
 );
 
-// Helper to resolve image URLs
-const getImageUrl = (path) => {
-    if (!path) return 'https://via.placeholder.com/150';
-    if (path.startsWith('http')) return path;
-    // Remove /api from API_URL to get base URL
-    const baseUrl = API_URL.replace(/\/api\/?$/, '');
-    // Ensure path doesn't start with / if we are appending to public/
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    return `${baseUrl}/public/${cleanPath}`;
-};
+import { getImageUrl } from '../utils/imageUtils';
 
 // Enhanced Course Card Component (No Animation)
 const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price }) => {
     const navigate = useNavigate();
+    const { addToCart, cart } = useCart();
+    
+    // Check if course is already in cart
+    const isInCart = cart.some(item => item.id === id);
 
     const handleCardClick = () => {
         navigate(`/courses/${id}`);
@@ -934,9 +930,22 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
 
                 </div>
 
-                <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-all hover:shadow-violet-500/50 hover:brightness-110 cursor-pointer">
-                    <span>Add to Cart</span>
-                    <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                <button 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (isInCart) return;
+                        addToCart({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price });
+                    }}
+                    className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer ${
+                        isInCart 
+                            ? 'bg-green-600/80 shadow-green-500/30 cursor-default hover:shadow-green-500/30 hover:brightness-100' 
+                            : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110'
+                    }`}
+                >
+                    <span>{isInCart ? 'In Cart' : 'Add to Cart'}</span>
+                    <span className="material-symbols-outlined text-[18px]">
+                        {isInCart ? 'check_circle' : 'add_shopping_cart'}
+                    </span>
                 </button>
             </div>
         </div>
