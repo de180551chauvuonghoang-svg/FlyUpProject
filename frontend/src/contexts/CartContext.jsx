@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import toast from 'react-hot-toast';
 import { CartContext } from './cartContextDef';
+import { AuthContext } from './authContextDef';
 
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(() => {
@@ -12,6 +13,7 @@ export const CartProvider = ({ children }) => {
             return [];
         }
     });
+    const { user } = useContext(AuthContext);
 
     // Persist cart to localStorage whenever it changes
     useEffect(() => {
@@ -19,21 +21,9 @@ export const CartProvider = ({ children }) => {
     }, [cart]);
 
     const addToCart = (course) => {
-        setCart((prevCart) => {
-            if (prevCart.find((item) => item.id === course.id)) {
-                toast.error('Course already in cart!', {
-                    icon: '🛒',
-                    style: {
-                        borderRadius: '10px',
-                        background: '#1A1333',
-                        color: '#fff',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                    },
-                });
-                return prevCart;
-            }
-            toast.success('Added to cart!', {
-                icon: '🚀',
+        if (!user) {
+            toast.error('Please login to add to cart', {
+                icon: '🔒',
                 style: {
                     borderRadius: '10px',
                     background: '#1A1333',
@@ -41,7 +31,32 @@ export const CartProvider = ({ children }) => {
                     border: '1px solid rgba(255,255,255,0.1)',
                 },
             });
-            return [...prevCart, course];
+            return;
+        }
+
+        if (cart.find((item) => item.id === course.id)) {
+            toast.error('Course already in cart!', {
+                icon: '🛒',
+                style: {
+                    borderRadius: '10px',
+                    background: '#1A1333',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                },
+            });
+            return;
+        }
+
+        setCart((prevCart) => [...prevCart, course]);
+
+        toast.success('Added to cart!', {
+            icon: '🚀',
+            style: {
+                borderRadius: '10px',
+                background: '#1A1333',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.1)',
+            },
         });
     };
 
