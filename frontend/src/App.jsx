@@ -13,6 +13,7 @@ import CourseDetailsPage from './pages/CourseDetailsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import MyLearningPage from './pages/MyLearningPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout/:checkoutId" element={<CheckoutPage />} />
           <Route path="/my-learning" element={<MyLearningPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
         </Router>
       </CartProvider>

@@ -1,40 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AuthContext } from './authContextDef.js';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState(localStorage.getItem('accessToken'));
+  const [loading, setLoading] = useState(!!accessToken);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        try {
-          const response = await fetch(`${API_URL}/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data.user);
-          } else {
+  const refreshUser = useCallback(async () => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      try {
+        const response = await fetch(`${API_URL}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+        } else {
+          // Only clear if 401 Unauthorized, otherwise might be temporary network error
+          if (response.status === 401) {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             setAccessToken(null);
+            setUser(null);
           }
-        } catch (error) {
-          console.error('Auth check failed:', error);
         }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    };
-
-    checkAuth();
+    }
   }, []);
+
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
 
   const signUp = async (email, password, fullName) => {
     try {
@@ -135,6 +140,7 @@ const AuthProvider = ({ children }) => {
     signInWithFacebook,
     signOut,
     resetPassword,
+    refreshUser
   };
 
   return (

@@ -135,7 +135,16 @@ const Header = () => {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-white truncate">{user.fullName}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-white truncate">{user.fullName}</p>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                            (user.role || user.Role) === 'ADMIN' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                            (user.role || user.Role) === 'INSTRUCTOR' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                            'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                          }`}>
+                            {user.role || user.Role || 'LEARNER'}
+                          </span>
+                        </div>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
                       </div>
                     </div>

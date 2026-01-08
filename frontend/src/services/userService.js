@@ -18,3 +18,22 @@ export const fetchUserEnrollments = async (userId, page = 1, limit = 10) => {
     }
     return res.json();
 };
+
+export const updateUserProfile = async (userId, data) => {
+    const token = localStorage.getItem('accessToken');
+    const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+    };
+
+    const res = await fetch(`${API_URL}/users/${userId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data)
+    });
+
+    if (!res.ok) {
+        throw new Error('Failed to update profile');
+    }
+    return res.json();
+};
