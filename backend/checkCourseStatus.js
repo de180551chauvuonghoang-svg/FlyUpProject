@@ -11,6 +11,7 @@ async function checkCourseStatuses() {
       },
       distinct: ['ApprovalStatus']
     });
+    // llllll
 
     console.log('\n=== APPROVAL STATUSES IN DATABASE ===');
     console.log(approvalStatuses.map(c => c.ApprovalStatus));
