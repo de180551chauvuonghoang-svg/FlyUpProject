@@ -81,6 +81,7 @@ router.get('/:id/enrollments', async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
+    console.log(`[API] Get Enrollments for User ${id} - Page ${page}`);
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const [enrollments, total] = await Promise.all([
@@ -109,6 +110,11 @@ router.get('/:id/enrollments', async (req, res) => {
       }),
       prisma.enrollments.count({ where: { CreatorId: id } })
     ]);
+    
+    console.log(`[API] Found ${total} enrollments. Returning ${enrollments.length} items.`);
+    if (enrollments.length > 0 && !enrollments[0].Courses) {
+        console.error('[API] CRITICAL: Enrollment found but Course data is missing (null relation)!');
+    }
 
     res.json({
       enrollments: enrollments.map(e => {
