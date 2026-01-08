@@ -7,7 +7,7 @@ import defaultAvatar from '../../assets/default-avatar.png';
 import useCart from '../../hooks/useCart';
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -104,7 +104,12 @@ const Header = () => {
                 </span>
               )}
             </Link>
-            {user ? (
+            {loading ? (
+              <div className="flex items-center gap-3">
+                 <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse"></div>
+                 <div className="hidden sm:block w-24 h-4 bg-white/10 rounded animate-pulse"></div>
+              </div>
+            ) : user ? (
               <div ref={dropdownRef} className="relative group">
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}

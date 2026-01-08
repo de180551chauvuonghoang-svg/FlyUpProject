@@ -85,6 +85,8 @@ const CheckoutPage = () => {
         }
     };
 
+    const [selectedBank, setSelectedBank] = useState(PAYMENT_CONFIG.BANKS[0]);
+
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -95,7 +97,7 @@ const CheckoutPage = () => {
     if (!checkout) return <div className="min-h-screen bg-[#0D071E] flex items-center justify-center text-white">Checkout not found</div>;
 
     // VietQR URL generation
-    const qrUrl = `https://img.vietqr.io/image/${PAYMENT_CONFIG.BANK_ID}-${PAYMENT_CONFIG.ACCOUNT_NO}-${PAYMENT_CONFIG.TEMPLATE}.png?amount=${checkout.totalAmount}&addInfo=ORDER ${checkout.id}&accountName=${encodeURIComponent(PAYMENT_CONFIG.ACCOUNT_NAME)}`;
+    const qrUrl = `https://img.vietqr.io/image/${selectedBank.id}-${selectedBank.accountNo}-${PAYMENT_CONFIG.TEMPLATE}.png?amount=${checkout.totalAmount}&addInfo=ORDER ${checkout.id}&accountName=${encodeURIComponent(selectedBank.accountName)}`;
 
     return (
         <div className="min-h-screen bg-[#0D071E] font-display text-white">
@@ -134,6 +136,30 @@ const CheckoutPage = () => {
                                     <span className="text-slate-400">Order ID</span>
                                     <span className="font-mono text-sm bg-white/5 px-2 py-1 rounded text-slate-300">{checkout.id.slice(0, 8)}...</span>
                                 </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400">Bank</span>
+                                    <span className="font-bold text-white">{selectedBank.shortName}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400">Account No.</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono font-bold text-white">{selectedBank.accountNo}</span>
+                                        <button 
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(selectedBank.accountNo);
+                                                toast.success('Copied account number');
+                                            }}
+                                            className="text-slate-500 hover:text-white transition-colors"
+                                            title="Copy"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">content_copy</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400">Account Name</span>
+                                    <span className="font-bold text-white text-right text-sm">{selectedBank.accountName}</span>
+                                </div>
                                 <div className="flex justify-between items-center py-2">
                                     <span className="text-slate-400">Time Remaining</span>
                                     <span className={`font-mono text-xl font-bold ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-primary'}`}>
@@ -162,6 +188,21 @@ const CheckoutPage = () => {
                         <div className="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center justify-center relative group">
                             <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-[2rem] opacity-30 blur-lg group-hover:opacity-50 transition-opacity"></div>
                             <div className="relative bg-white p-4 rounded-xl w-full">
+                                <div className="grid grid-cols-2 gap-2 mb-4">
+                                    {PAYMENT_CONFIG.BANKS.map((bank) => (
+                                        <button
+                                            key={bank.id}
+                                            onClick={() => setSelectedBank(bank)}
+                                            className={`py-2 px-3 rounded-lg text-sm font-bold border transition-all ${
+                                                selectedBank.id === bank.id
+                                                ? 'bg-slate-900 border-slate-900 text-white shadow-lg'
+                                                : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+                                            }`}
+                                        >
+                                            {bank.shortName}
+                                        </button>
+                                    ))}
+                                </div>
                                 <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center mb-4 relative">
                                     {/* Logo Overlay */}
                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">

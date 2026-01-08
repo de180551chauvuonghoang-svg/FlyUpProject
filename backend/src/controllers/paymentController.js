@@ -44,6 +44,7 @@ export const handleCassoWebhook = async (req, res) => {
 
       if (!match) {
         console.log(`ℹ️ Ignored non-order transaction: ${description}`);
+        console.log(`Expected format: /ORDER\\s+([a-zA-Z0-9-]+)/i`);
         continue;
       }
 
