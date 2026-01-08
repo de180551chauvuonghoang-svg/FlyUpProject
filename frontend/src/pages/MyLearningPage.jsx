@@ -153,7 +153,7 @@ const MyLearningPage = () => {
                             {enrollments.map((enrollment) => {
                                 const progress = calculateProgress(enrollment);
                                 return (
-                                <article key={enrollment.Id} className="group relative flex flex-col bg-surface-dark border border-white/5 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-neon hover:-translate-y-1">
+                                <article key={enrollment.CourseId} className="group relative flex flex-col bg-surface-dark border border-white/5 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-neon hover:-translate-y-1">
                                     <div className="relative h-48 w-full overflow-hidden">
                                         <div 
                                             className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
