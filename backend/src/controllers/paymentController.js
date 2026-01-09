@@ -41,25 +41,31 @@ export const handleCassoWebhook = async (req, res) => {
       const match = description.match(/ORDER\s+([a-zA-Z0-9-]+)/i);
       
       console.log(`Processing Trx: ${description}`);
-      console.log(`Regex Match:`, match);
+      console.log(`Amount: ${amount}`);
 
       if (!match) {
         console.log(`ℹ️ Ignored non-order transaction: ${description}`);
-        console.log(`Expected format: /ORDER\\s+([a-zA-Z0-9-]+)/i`);
         continue;
       }
 
       const checkoutId = match[1];
 
       // 3. Find Checkout Record
-      const checkout = await prisma.cartCheckout.findUnique({
+      let checkout = await prisma.cartCheckout.findUnique({
         where: { Id: checkoutId }
       });
+
+      if (!checkout) {
+        checkout = await prisma.cartCheckout.findFirst({
+           where: { Id: checkoutId }
+        });
+      }
 
       if (!checkout) {
         console.error(`❌ Checkout not found for ID: ${checkoutId}`);
         continue;
       }
+      console.log(`✅ Found Checkout: ${checkout.Id}, Status: ${checkout.Status}, TotalAmount: ${checkout.TotalAmount}`);
 
       if (checkout.Status === 'COMPLETED') {
         console.log(`✅ Checkout ${checkoutId} already completed.`);
@@ -73,6 +79,7 @@ export const handleCassoWebhook = async (req, res) => {
         // Optionally mark as partial payment or ignore
         continue;
       }
+      console.log(`🚀 All checks passed, starting transaction for ${checkoutId}`);
 
       // 5. Execute Success Logic (Transaction)
       const result = await prisma.$transaction(async (tx) => {
@@ -90,16 +97,29 @@ export const handleCassoWebhook = async (req, res) => {
 
         // Create Enrollments
         const courseIds = JSON.parse(checkout.CourseIds);
-        await Promise.all(courseIds.map(courseId => 
-          tx.enrollments.create({
-            data: {
-              CreatorId: checkout.UserId,
-              CourseId: courseId,
-              BillId: bill.Id,
-              Status: 'Active' // Or 'Pending' if you want manual approval
+        await Promise.all(courseIds.map(async (courseId) => {
+          // Check if already enrolled to avoid unique constraint error
+          const existing = await tx.enrollments.findUnique({
+            where: {
+              CreatorId_CourseId: {
+                CreatorId: checkout.UserId,
+                CourseId: courseId
+              }
             }
-          })
-        ));
+          });
+
+          if (!existing) {
+            return tx.enrollments.create({
+              data: {
+                CreatorId: checkout.UserId,
+                CourseId: courseId,
+                BillId: bill.Id,
+                Status: 'Active'
+              }
+            });
+          }
+          return existing;
+        }));
 
         // Update Checkout Status
         await tx.cartCheckout.update({
@@ -140,7 +160,7 @@ export const handleCassoWebhook = async (req, res) => {
           });
         }
       } catch (emailErr) {
-        console.error('⚠️ Failed to send success email:', emailErr);
+        console.error('⚠️ Failed to send success email:', emailErr.message);
       }
 
       console.log(`🎉 Payment successful for checkout ${checkoutId}`);
