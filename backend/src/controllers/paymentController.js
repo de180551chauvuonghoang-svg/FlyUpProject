@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import { sendPurchaseSuccessEmail } from '../services/emailService.js';
 
 /**
  * Handle Casso Webhook
@@ -109,11 +110,41 @@ export const handleCassoWebhook = async (req, res) => {
           }
         });
 
-        return { checkoutId, status: 'COMPLETED' };
+        return { 
+          checkoutId, 
+          status: 'COMPLETED',
+          userId: checkout.UserId,
+          courseIds,
+          totalAmount: amount
+        };
       });
 
+      // 6. Send Email Notification
+      try {
+        // Fetch User and Course details for email
+        const user = await prisma.users.findUnique({
+          where: { Id: result.userId },
+          select: { Email: true, FullName: true }
+        });
+
+        const courses = await prisma.courses.findMany({
+          where: { Id: { in: result.courseIds } },
+          select: { Title: true, Price: true }
+        });
+
+        if (user) {
+          await sendPurchaseSuccessEmail(user.Email, user.FullName, {
+            orderId: result.checkoutId,
+            totalAmount: Number(result.totalAmount),
+            courses: courses.map(c => ({ title: c.Title, price: Number(c.Price) }))
+          });
+        }
+      } catch (emailErr) {
+        console.error('⚠️ Failed to send success email:', emailErr);
+      }
+
       console.log(`🎉 Payment successful for checkout ${checkoutId}`);
-      results.push(result);
+      results.push({ checkoutId: result.checkoutId, status: result.status });
     }
 
     res.json({ error: 0, message: 'Webhook processed', data: results });
