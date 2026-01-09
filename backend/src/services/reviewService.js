@@ -119,16 +119,16 @@ export const getCourseReviews = async (courseId, page = 1, limit = 10) => {
 
   return {
     reviews: reviews.map(r => ({
-      id: r.Id,
+      Id: r.Id,
       user: {
-        id: r.Users.Id,
-        name: r.Users.FullName,
-        avatar: r.Users.AvatarUrl || 'https://via.placeholder.com/40?text=User'
+        Id: r.Users.Id,
+        FullName: r.Users.FullName,
+        AvatarUrl: r.Users.AvatarUrl || 'https://via.placeholder.com/40?text=User'
       },
-      rating: r.Rating,
-      content: r.Content,
-      createdAt: r.CreationTime,
-      lastUpdated: r.LastModificationTime
+      Rating: r.Rating,
+      Content: r.Content,
+      CreationTime: r.CreationTime,
+      LastModificationTime: r.LastModificationTime
     })),
     pagination: {
       page,

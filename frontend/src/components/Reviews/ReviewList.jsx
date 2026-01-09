@@ -33,7 +33,7 @@ const ReviewList = ({ reviews, isLoading }) => {
     <div className="space-y-6">
       {reviews.map((review, index) => (
         <Motion.div
-          key={review.id}
+          key={review.Id}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
@@ -41,8 +41,8 @@ const ReviewList = ({ reviews, isLoading }) => {
         >
           <div className="flex items-start gap-4">
             <div className="size-10 rounded-full overflow-hidden bg-white/10 shrink-0 border border-white/10">
-              {review.user?.avatar ? (
-                 <img src={review.user.avatar} alt={review.user.name} className="w-full h-full object-cover" />
+              {review.user?.AvatarUrl ? (
+                 <img src={review.user.AvatarUrl} alt={review.user.FullName} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-slate-400">
                   <User size={20} />
@@ -52,14 +52,14 @@ const ReviewList = ({ reviews, isLoading }) => {
             <div className="flex-1">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h4 className="font-bold text-white text-sm">{review.user?.name || 'Anonymous User'}</h4>
+                  <h4 className="font-bold text-white text-sm">{review.user?.FullName || 'Anonymous User'}</h4>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}
                           className={`w-3.5 h-3.5 ${
-                            star <= review.rating
+                            star <= review.Rating
                               ? 'text-yellow-500 fill-yellow-500'
                               : 'text-slate-600 fill-slate-900'
                           }`}
@@ -67,13 +67,13 @@ const ReviewList = ({ reviews, isLoading }) => {
                       ))}
                     </div>
                     <span className="text-xs text-slate-500">
-                      {new Date(review.createdAt).toLocaleDateString()}
+                      {new Date(review.CreationTime).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
               </div>
               <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">
-                {review.content}
+                {review.Content}
               </p>
             </div>
           </div>
