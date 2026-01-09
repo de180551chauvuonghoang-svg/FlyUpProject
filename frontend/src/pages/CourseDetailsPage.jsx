@@ -13,8 +13,12 @@ import {
   staggerItem
 } from '../utils/animations';
 import Header from '../components/Header/Header';
-import { fetchCourseById } from '../services/courseService';
+import { fetchCourseById, fetchCourseReviews } from '../services/courseService';
+import { fetchUserEnrollments } from '../services/userService';
 import useCart from '../hooks/useCart';
+import useAuth from '../hooks/useAuth';
+import ReviewList from '../components/Reviews/ReviewList';
+import ReviewForm from '../components/Reviews/ReviewForm';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -34,6 +38,16 @@ export default function CourseDetailsPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedSections, setExpandedSections] = useState({});
   const { addToCart } = useCart();
+  const { user, accessToken } = useAuth();
+
+  // Check enrollment
+  const { data: enrollmentData } = useQuery({
+      queryKey: ['userEnrollments', user?.id],
+      queryFn: () => fetchUserEnrollments(user.id),
+      enabled: !!user
+  });
+  
+  const isEnrolled = enrollmentData?.enrollments?.some(e => e.CourseId === courseId);
 
   // Helper to resolve image URLs
   // (Redefined here if needed or just use the global one if it is safe, but assuming we can use member vars)
@@ -62,6 +76,15 @@ export default function CourseDetailsPage() {
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1
   });
+
+  const { data: reviewsData, isLoading: reviewsLoading, refetch: refetchReviews } = useQuery({
+    queryKey: ['reviews', courseId],
+    queryFn: () => fetchCourseReviews(courseId),
+    enabled: !!courseId,
+    staleTime: 1000 * 60 * 5
+  });
+
+  const reviews = reviewsData?.reviews || [];
 
   const course = data || null;
   const loading = isLoading;
@@ -370,6 +393,44 @@ export default function CourseDetailsPage() {
                 </div>
               </motion.div>
             </div>
+
+            {/* Reviews Tab */}
+            {activeTab === 'reviews' && (
+              <div className="animate-fade-in">
+                 <h3 className="text-xl font-bold text-white mb-6">Student Reviews</h3>
+                 <div className="space-y-8">
+                    {/* Review Form Logic */}
+                    {isEnrolled ? (
+                      <ReviewForm 
+                        courseId={courseId} 
+                        token={accessToken}
+                        onReviewSubmitted={() => {
+                          refetchReviews();
+                          // Optional: Show success toast
+                        }}
+                      />
+                    ) : (
+                      user ? (
+                        <div className="bg-[#1A1333] p-6 rounded-xl border border-white/5 text-center mb-6">
+                           <p className="text-slate-300 mb-2">Enroll in this course to leave a rating and review.</p>
+                        </div>
+                      ) : (
+                        <div className="bg-[#1A1333] p-6 rounded-xl border border-white/5 text-center mb-6">
+                           <p className="text-slate-300 mb-4">Please log in to review this course.</p>
+                           <button 
+                             onClick={() => navigate('/login')}
+                             className="px-6 py-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white font-bold transition-colors"
+                           >
+                             Log In
+                           </button>
+                        </div>
+                      )
+                    )}
+
+                    <ReviewList reviews={reviews} isLoading={reviewsLoading} />
+                 </div>
+              </div>
+            )}
           </div>
         </div>
 

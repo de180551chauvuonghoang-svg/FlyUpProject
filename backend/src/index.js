@@ -9,6 +9,7 @@ import authRouter from './routers/auth.js';
 import usersRouter from './routers/users.js';
 import checkoutRouter from './routers/checkout.js';
 import coursesRouter from './routers/courses.js';
+import commentRouter from './routers/comments.js';
 import { getCourses, getCategories } from './services/courseService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -43,6 +44,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api/checkout', checkoutRouter);
+app.use('/api/comments', commentRouter);
 
 // Error handling middleware
 // Error handling middleware
