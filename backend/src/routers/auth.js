@@ -32,4 +32,7 @@ router.post('/google', authController.googleLogin);
 // GitHub Login
 router.post('/github', authController.githubLogin);
 
+// Change password
+router.post('/change-password', authenticateJWT, authController.changePassword);
+
 export default router;

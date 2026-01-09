@@ -155,17 +155,17 @@ const Header = () => {
                     </div>
                   </div>
                   <div className="p-2">
-                    <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                    <Link to="/settings?tab=profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
                       <span className="material-symbols-outlined text-[20px]">person</span>
                       <span className="text-sm font-medium">Information Setting</span>
                     </Link>
-                    <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">settings</span>
-                      <span className="text-sm font-medium">Settings</span>
-                    </Link>
-                    <Link to="/change-password" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                    <Link to="/settings?tab=security" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
                       <span className="material-symbols-outlined text-[20px]">shield</span>
                       <span className="text-sm font-medium">Change Password</span>
+                    </Link>
+                    <Link to="/settings" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">settings</span>
+                      <span className="text-sm font-medium">Settings</span>
                     </Link>
                   </div>
                   <div className="p-2 border-t border-[#2a2a3a] bg-[#0a0a14]/30">

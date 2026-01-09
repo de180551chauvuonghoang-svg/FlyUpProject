@@ -44,7 +44,8 @@ export const getCourses = async (filters = {}) => {
       maxPrice,
       search,
       page = 1,
-      limit = 12 // Reduced from 24 to 12 for faster loading
+      limit = 12, // Reduced from 24 to 12 for faster loading
+      sortBy = 'newest'
     } = filters;
 
     // Create a unique cache key based on filters
@@ -129,9 +130,16 @@ export const getCourses = async (filters = {}) => {
             }
           }
         },
-        orderBy: {
-          CreationTime: 'desc'
-        }
+        orderBy: (function() {
+          switch (sortBy) {
+            case 'price_asc': return { Price: 'asc' };
+            case 'price_desc': return { Price: 'desc' };
+            case 'popular': return { LearnerCount: 'desc' };
+            case 'rating': return { TotalRating: 'desc' };
+            case 'newest': 
+            default: return { CreationTime: 'desc' };
+          }
+        })()
       }),
       prisma.courses.count({ where })
     ]);

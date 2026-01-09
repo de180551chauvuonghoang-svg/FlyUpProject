@@ -25,7 +25,11 @@ export const register = async (req, res) => {
         email: newUser.Email,
         fullName: newUser.FullName,
         role: newUser.Role,
-        username: newUser.UserName
+        username: newUser.UserName,
+        avatarUrl: newUser.AvatarUrl,
+        bio: newUser.Bio,
+        phone: newUser.Phone,
+        dateOfBirth: newUser.DateOfBirth
       },
       session: {
         accessToken: newUser.accessToken,
@@ -65,7 +69,11 @@ export const login = async (req, res) => {
         id: user.Id,
         email: user.Email,
         fullName: user.FullName,
-        role: user.Role
+        role: user.Role,
+        avatarUrl: user.AvatarUrl,
+        bio: user.Bio,
+        phone: user.Phone,
+        dateOfBirth: user.DateOfBirth
       },
       session: {
         accessToken: user.accessToken,
@@ -112,6 +120,9 @@ export const getMe = async (req, res) => {
         fullName: user.FullName,
         role: user.Role,
         avatarUrl: user.AvatarUrl,
+        bio: user.Bio,
+        phone: user.Phone,
+        dateOfBirth: user.DateOfBirth,
         createdAt: user.CreationTime
       }
     });
@@ -205,7 +216,10 @@ export const googleLogin = async (req, res) => {
         email: user.Email,
         fullName: user.FullName,
         avatarUrl: user.AvatarUrl,
-        role: user.Role
+        role: user.Role,
+        bio: user.Bio,
+        phone: user.Phone,
+        dateOfBirth: user.DateOfBirth
       },
       session: {
         accessToken: user.accessToken,
@@ -242,7 +256,10 @@ export const githubLogin = async (req, res) => {
         email: user.Email,
         fullName: user.FullName,
         avatarUrl: user.AvatarUrl,
-        role: user.Role
+        role: user.Role,
+        bio: user.Bio,
+        phone: user.Phone,
+        dateOfBirth: user.DateOfBirth
       },
       session: {
         accessToken: user.accessToken,
@@ -254,5 +271,24 @@ export const githubLogin = async (req, res) => {
   } catch (error) {
     console.error('GitHub login error:', error);
     res.status(500).json({ error: 'Login failed', details: error.message });
+  }
+};
+export const changePassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    const userId = req.user.userId;
+
+    if (!newPassword) {
+      return res.status(400).json({ error: 'New password is required' });
+    }
+
+    await authService.changePassword(userId, newPassword);
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    if (error.message === 'Current password is incorrect' || error.message.includes('logged in via')) {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
