@@ -15,6 +15,7 @@ const CoursesPage = () => {
     const [selectedLevel, setSelectedLevel] = useState('');
     const [selectedPrice, setSelectedPrice] = useState('All Prices');
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
+    const [selectedSortOrder, setSelectedSortOrder] = useState('newest'); // Added sortBy state
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     
@@ -39,7 +40,7 @@ const CoursesPage = () => {
     // Reset page when filters change
     useEffect(() => {
         setPagination(prev => ({ ...prev, page: 1 }));
-    }, [selectedCategoryId, selectedLevel, selectedPrice, debouncedSearchQuery]);
+    }, [selectedCategoryId, selectedLevel, selectedPrice, debouncedSearchQuery, selectedSortOrder]); // Added selectedSortOrder dependency
 
     // --- React Query Implementation ---
 
@@ -57,15 +58,16 @@ const CoursesPage = () => {
     const categories = categoriesData || [];
 
     // 2. Fetch Courses
-    const fetchCoursesParams = {
+    const fetchCoursesParams = useMemo(() => ({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
         ...(selectedCategoryId && { categoryId: selectedCategoryId }),
         ...(selectedLevel && { level: selectedLevel }),
         ...(selectedPrice === 'Free' && { maxPrice: '0' }),
         ...(selectedPrice === 'Paid' && { minPrice: '0.01' }),
-        ...(debouncedSearchQuery && { search: debouncedSearchQuery })
-    };
+        ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
+        sortBy: selectedSortOrder
+    }), [pagination.page, pagination.limit, selectedCategoryId, selectedLevel, selectedPrice, debouncedSearchQuery, selectedSortOrder]);
 
     const { 
         data: coursesData, 
@@ -109,7 +111,7 @@ const CoursesPage = () => {
                 staleTime: 1000 * 60 * 5, // 5 mins
             });
         }
-    }, [coursesData, pagination.page, pagination.totalPages, queryClient]);
+    }, [coursesData, pagination.page, pagination.totalPages, queryClient, fetchCoursesParams]); // Added fetchCoursesParams dependency for linting
 
     // --- Bulk Prefetching for Visible Courses ---
     useEffect(() => {
@@ -246,41 +248,39 @@ const CoursesPage = () => {
                                                         if (cat.Title.toLowerCase().includes(key.toLowerCase())) return icon;
                                                     }
                                                     return 'school';
-                                                 })() : 'school'
-                                                }
+                                                 })() : 'apps'}
                                             </span>
                                         </div>
                                         <div className="text-left">
-                                            <p className="text-xs text-slate-400 mb-0.5">Category</p>
-                                            <p className="text-sm font-bold text-white truncate max-w-[140px]">
-                                                {selectedCategoryId === '' ? 'All Courses' : 
-                                                 categories.find(c => c.Id === selectedCategoryId)?.Title || 'All Courses'}
-                                            </p>
+                                            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Category</div>
+                                            <div className="text-white font-bold truncate max-w-[140px]">
+                                                {selectedCategoryId === '' ? 'All Categories' : (categories.find(c => c.Id === selectedCategoryId)?.Title || 'Unknown')}
+                                            </div>
                                         </div>
                                     </div>
-                                <span className="material-symbols-outlined text-slate-400" style={{ transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
-                                    expand_more
-                                </span>
-                            </button>
+                                    <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`}>
+                                        expand_more
+                                    </span>
+                                </button>
 
-                                {/* Dropdown Menu - Optimized without heavy animations */}
-                                {isFilterOpen && (
-                                    <>
-                                        {/* Backdrop */}
-                                        <div
-                                            onClick={() => setIsFilterOpen(false)}
-                                            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-200"
-                                        />
-
-                                        {/* Dropdown List */}
-                                        <div
-                                            className="absolute left-0 mt-2 w-[420px] max-h-[500px] overflow-y-auto z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-200"
-                                        >
+                                <AnimatePresence>
+                                    {isFilterOpen && (
+                                        <>
+                                            <div
+                                                onClick={() => setIsFilterOpen(false)}
+                                                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-200"
+                                            />
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="absolute left-0 mt-2 w-[420px] max-h-[500px] overflow-y-auto z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-200"
+                                            >
                                                 <div className="p-2">
-                                                    {/* Search Header */}
                                                     <div className="px-3 py-2 mb-2 border-b border-white/5">
                                                         <h3 className="text-sm font-bold text-white">Browse Categories</h3>
-                                                        <p className="text-xs text-slate-500 mt-0.5">{categories.length + 1} categories available</p>
+                                                        <p className="text-xs text-slate-500 mt-0.5">{categories.length} categories available</p>
                                                     </div>
 
                                                     {/* All Courses Option */}
@@ -386,10 +386,16 @@ const CoursesPage = () => {
                                                         })}
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         </>
-                                     )}
+                                    )}
+                                </AnimatePresence>
                             </div>
+
+                            <SortFilterDropdown 
+                                selectedSortOrder={selectedSortOrder}
+                                setSelectedSortOrder={setSelectedSortOrder}
+                            />
 
                             <LevelFilterDropdown 
                                 selectedLevel={selectedLevel}
@@ -575,6 +581,106 @@ const CoursesPage = () => {
     );
 };
 
+
+// Sort Filter Dropdown Component
+const SortFilterDropdown = ({ selectedSortOrder, setSelectedSortOrder }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const sortOptions = [
+        { value: 'newest', label: 'Newest', icon: 'new_releases' },
+        { value: 'popular', label: 'Popular', icon: 'trending_up' },
+        { value: 'price_asc', label: 'Price: Low to High', icon: 'arrow_upward' },
+        { value: 'price_desc', label: 'Price: High to Low', icon: 'arrow_downward' }
+    ];
+    
+    // Find current label and icon
+    const currentOption = sortOptions.find(opt => opt.value === selectedSortOrder) || sortOptions[0];
+    
+    return (
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.3 }}
+            className="relative"
+        >
+            <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl bg-gradient-to-r from-[#1A1333] to-[#2a2447] border border-white/10 hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 min-w-[200px]"
+            >
+                <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-xl text-primary">
+                        {currentOption.icon}
+                    </span>
+                    <div className="text-left">
+                        <p className="text-xs text-slate-400 mb-0.5">Sort By</p>
+                        <p className="text-sm font-bold text-white">{currentOption.label}</p>
+                    </div>
+                </div>
+                <motion.span 
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="material-symbols-outlined text-slate-400"
+                >
+                    expand_more
+                </motion.span>
+            </motion.button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsOpen(false)}
+                            className="fixed inset-0 z-40"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute left-0 mt-2 w-full min-w-[220px] z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl p-2"
+                        >
+                            {sortOptions.map((option) => (
+                                <motion.button
+                                    key={option.value}
+                                    whileHover={{ x: 4 }}
+                                    onClick={() => {
+                                        setSelectedSortOrder(option.value);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                                        selectedSortOrder === option.value
+                                            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20'
+                                            : 'hover:bg-white/5'
+                                    }`}
+                                >
+                                    <span className={`material-symbols-outlined text-lg ${
+                                        selectedSortOrder === option.value ? 'text-white' : 'text-primary'
+                                    }`}>
+                                        {option.icon}
+                                    </span>
+                                    <p className={`text-sm font-semibold ${
+                                        selectedSortOrder === option.value ? 'text-white' : 'text-slate-200'
+                                    }`}>
+                                        {option.label}
+                                    </p>
+                                    {selectedSortOrder === option.value && (
+                                        <span className="material-symbols-outlined text-white text-lg ml-auto">
+                                            check_circle
+                                        </span>
+                                    )}
+                                </motion.button>
+                            ))}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
 
 // Level Filter Dropdown Component
 const LevelFilterDropdown = ({ selectedLevel, setSelectedLevel }) => {

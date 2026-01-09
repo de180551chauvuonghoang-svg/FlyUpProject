@@ -3,8 +3,8 @@ import { PrismaClient } from '@prisma/client';
 const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL;
   const url = connectionString.includes('?') 
-    ? `${connectionString}&connection_limit=5` 
-    : `${connectionString}?connection_limit=5`;
+    ? `${connectionString}&connection_limit=15&pool_timeout=20` 
+    : `${connectionString}?connection_limit=15&pool_timeout=20`;
 
   return new PrismaClient({
     log: ['query', 'info', 'warn', 'error'],

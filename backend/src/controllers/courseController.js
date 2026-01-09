@@ -86,7 +86,8 @@ export const getCourses = async (req, res) => {
       maxPrice,
       search,
       page,
-      limit
+      limit,
+      sortBy
     } = req.query;
 
     const filters = {
@@ -96,7 +97,8 @@ export const getCourses = async (req, res) => {
       maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
       search,
       page: page ? parseInt(page) : 1,
-      limit: limit ? parseInt(limit) : 24
+      limit: limit ? parseInt(limit) : 24,
+      sortBy
     };
 
     const result = await courseService.getCourses(filters);
