@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { getCheckoutStatus, simulatePayment } from '../services/checkoutService';
 import { PAYMENT_CONFIG } from '../config/paymentConfig';
 import Header from '../components/Header';
@@ -58,12 +59,17 @@ const CheckoutPage = () => {
         }
     }, [timeLeft, checkout?.status]);
 
-    // Handle Success Side Effects (Toast + Redirect + Clear Cart)
+    const queryClient = useQueryClient();
+
+    // Handle Success Side Effects (Toast + Redirect + Clear Cart + Invalidate Cache)
     useEffect(() => {
         if (checkout?.status === 'COMPLETED' && !processedRef.current) {
             processedRef.current = true; // Mark as handled
             toast.success('Payment successful!');
             clearCart();
+            
+            // Invalidate enrollments cache so My Learning page fetches new data immediately
+            queryClient.invalidateQueries({ queryKey: ['userEnrollments'] });
             
             // Redirect after delay
             const timer = setTimeout(() => {
@@ -71,7 +77,7 @@ const CheckoutPage = () => {
             }, 3000);
             return () => clearTimeout(timer);
         }
-    }, [checkout?.status, navigate, clearCart]);
+    }, [checkout?.status, navigate, clearCart, queryClient]);
 
     const handleSimulateSuccess = async () => {
         try {

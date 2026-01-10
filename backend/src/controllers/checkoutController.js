@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import { sendPurchaseSuccessEmail } from '../services/emailService.js';
 
 // Create a new checkout session
 export const createCheckout = async (req, res) => {
@@ -150,8 +151,44 @@ export const webhookPayment = async (req, res) => {
             }
         });
 
-        return { success: true, enrollmentsCount: enrollments.length };
+        return { 
+          success: true, 
+          enrollmentsCount: enrollments.length,
+          userId: checkout.UserId,
+          totalAmount: checkout.TotalAmount.toString(),
+          courseIds: courseIds 
+        };
+    }, {
+      maxWait: 5000, // Wait max 5s for connection
+      timeout: 20000 // Transaction timeout 20s
     });
+
+  // 5. Send Email Notification (Simulated)
+      try {
+        if (!result.alreadyCompleted && result.userId) {
+          const user = await prisma.users.findUnique({
+            where: { Id: result.userId },
+            select: { Email: true, FullName: true }
+          });
+
+          const courses = await prisma.courses.findMany({
+            where: { Id: { in: result.courseIds } },
+            select: { Title: true, Price: true }
+          });
+
+          if (user) {
+            await sendPurchaseSuccessEmail(user.Email, user.FullName, {
+              orderId: checkoutId,
+              totalAmount: Number(result.totalAmount),
+              courses: courses.map(c => ({ title: c.Title, price: Number(c.Price) }))
+            });
+          }
+        } else if (result.alreadyCompleted) {
+           console.log('ℹ️ Payment already completed, skipping email.');
+        }
+      } catch (emailErr) {
+        console.error('⚠️ Failed to send simulation success email:', emailErr.message);
+      }
 
     res.json({ success: true, data: result });
 
