@@ -19,6 +19,15 @@ const createTransporter = () => {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_PASS,
     },
+    tls: {
+      ciphers: 'SSLv3', // Help with some older/strict server negotiations
+      rejectUnauthorized: false // Sometimes helpful for self-signed or proxy certs issues in dev/cloud
+    },
+    family: 4, // Force IPv4 (Crucial for Render/AWS sometimes)
+    logger: true, // Log info to console
+    debug: true, // Include SMTP traffic in logs
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000, // 5 seconds
   });
 };
 
