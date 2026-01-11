@@ -13,21 +13,21 @@ const createTransporter = () => {
 
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_PASS,
     },
     tls: {
-      ciphers: 'SSLv3', // Help with some older/strict server negotiations
-      rejectUnauthorized: false // Sometimes helpful for self-signed or proxy certs issues in dev/cloud
+      rejectUnauthorized: false 
     },
-    family: 4, // Force IPv4 (Crucial for Render/AWS sometimes)
-    logger: true, // Log info to console
-    debug: true, // Include SMTP traffic in logs
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 5000, // 5 seconds
+    family: 4, // Force IPv4 
+    logger: true, 
+    debug: true, 
+    connectionTimeout: 30000, // 30 seconds
+    greetingTimeout: 30000, 
+    socketTimeout: 30000 
   });
 };
 
