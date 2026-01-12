@@ -1,57 +1,82 @@
-import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
 // Email sender configuration
-const FROM_EMAIL = process.env.EMAIL_FROM || process.env.GMAIL_USER;
+const FROM_EMAIL = process.env.GMAIL_USER || process.env.EMAIL_FROM;
 const FROM_NAME = 'Fly Up Team';
 
-// Create Gmail SMTP transporter
-const createTransporter = () => {
-  // If no email credentials, return null (will use dev mode)
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+// OAuth2 Configuration
+const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
+const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
+const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
+
+const createGmailClient = () => {
+  if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN || !FROM_EMAIL) {
     return null;
   }
-
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false 
-    },
-    family: 4, // Force IPv4 
-    logger: true, 
-    debug: true, 
-    connectionTimeout: 30000, // 30 seconds
-    greetingTimeout: 30000, 
-    socketTimeout: 30000 
-  });
+  const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET);
+  oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+  return google.gmail({ version: 'v1', auth: oAuth2Client });
 };
+
+// Helper to encode message to base64url format required by Gmail API
+const makeBody = (to, from, subject, message) => {
+  const str = [
+    `To: ${to}`,
+    `From: ${from}`,
+    `Subject: =?utf-8?B?${Buffer.from(subject).toString('base64')}?=`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=utf-8',
+    '',
+    message
+  ].join('\n');
+
+  return Buffer.from(str)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+};
+
+const sendEmailViaGmail = async (to, subject, htmlBody) => {
+    const gmail = createGmailClient();
+    
+    if (!gmail) {
+        console.warn('⚠️ GMAIL API credentials missing. Emails will not send.');
+        return false;
+    }
+
+    try {
+        const raw = makeBody(to, `"${FROM_NAME}" <${FROM_EMAIL}>`, subject, htmlBody);
+        const res = await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: {
+                raw: raw,
+            },
+        });
+        console.log(`✅ Email sent to ${to} (ID: ${res.data.id})`);
+        return true;
+    } catch (error) {
+        console.error('❌ Error sending email via Gmail API:', error.message);
+        if (error.response) {
+            console.error('API Error Details:', error.response.data);
+        }
+        return false;
+    }
+}
 
 export const sendWelcomeEmail = async (to, name, clientURL = 'http://localhost:5173') => {
   try {
-    const transporter = createTransporter();
+    const gmail = createGmailClient();
     
-    // Development fallback if Gmail is not configured
-    if (!transporter) {
+    if (!gmail) {
       console.log('📧 [DEV MODE] Welcome email would be sent to:', to);
-      console.log('📧 Name:', name);
-      console.log('📧 Client URL:', clientURL);
+      console.warn('⚠️ GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN missing. Add to .env.');
       return true;
     }
 
-    const info = await transporter.sendMail({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: to,
-      subject: 'Welcome to Fly Up!',
-      html: createWelcomeEmailTemplate(name, clientURL)
-    });
+    const html = createWelcomeEmailTemplate(name, clientURL);
+    return await sendEmailViaGmail(to, 'Welcome to Fly Up!', html);
 
-    console.log('✅ Welcome email sent to', to, '- Message ID:', info.messageId);
-    return true;
   } catch (error) {
     console.error('Error sending welcome email:', error);
     return false;
@@ -60,31 +85,25 @@ export const sendWelcomeEmail = async (to, name, clientURL = 'http://localhost:5
 
 export const sendPurchaseSuccessEmail = async (to, name, orderData) => {
   try {
-    const transporter = createTransporter();
+    const gmail = createGmailClient();
     
-    // Development fallback if Gmail is not configured
-    if (!transporter) {
+    // Development fallback
+    if (!gmail) {
       console.log('\n💳 ═══════════════════════════════════════════════════════');
       console.log('📧 [DEV MODE] Purchase Success Email');
       console.log('───────────────────────────────────────────────────────');
       console.log('📬 To:', to);
       console.log('👤 Name:', name);
       console.log('📦 Order ID:', orderData.orderId);
-      console.log('📚 Courses:', orderData.courses.map(c => c.title).join(', '));
       console.log('💰 Total:', orderData.totalAmount);
       console.log('═══════════════════════════════════════════════════════\n');
+      console.warn('⚠️ GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN missing. Add to .env.');
       return true;
     }
 
-    const info = await transporter.sendMail({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: to,
-      subject: 'Purchase Successful - Fly Up',
-      html: createPurchaseSuccessEmailTemplate(name, orderData)
-    });
+    const html = createPurchaseSuccessEmailTemplate(name, orderData);
+    return await sendEmailViaGmail(to, 'Purchase Successful - Fly Up', html);
 
-    console.log('✅ Purchase success email sent to', to, '- Message ID:', info.messageId);
-    return true;
   } catch (error) {
     console.error('Error sending purchase success email:', error);
     return false;
@@ -93,35 +112,23 @@ export const sendPurchaseSuccessEmail = async (to, name, orderData) => {
 
 export const sendPasswordResetEmail = async (to, resetLink) => {
   try {
-    const transporter = createTransporter();
+    const gmail = createGmailClient();
     
-    // Development fallback if Gmail is not configured
-    if (!transporter) {
+    if (!gmail) {
       console.log('\n🔐 ═══════════════════════════════════════════════════════');
       console.log('📧 [DEV MODE] Password Reset Email');
-      console.log('───────────────────────────────────────────────────────');
-      console.log('📬 To:', to);
-      console.log('🔗 Reset Link:', resetLink);
+      console.log('🔗 Link:', resetLink);
       console.log('═══════════════════════════════════════════════════════\n');
+      console.warn('⚠️ GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN missing. Add to .env.');
       return true;
     }
 
-    const info = await transporter.sendMail({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: to,
-      subject: 'Password Reset Request',
-      html: createPasswordResetEmailTemplate(resetLink)
-    });
+    const html = createPasswordResetEmailTemplate(resetLink);
+    return await sendEmailViaGmail(to, 'Password Reset Request', html);
 
-    console.log('✅ Password reset email sent to', to, '- Message ID:', info.messageId);
-    return true;
   } catch (error) {
     console.error('Error sending password reset email:', error);
-    // Fallback: log the link to console
-    console.log('\n🔐 ═══════════════════════════════════════════════════════');
-    console.log('⚠️  Email failed to send, but here\'s the reset link:');
-    console.log('🔗 Reset Link:', resetLink);
-    console.log('═══════════════════════════════════════════════════════\n');
+    console.log('🔗 Backup Reset Link Log:', resetLink);
     return true;
   }
 };
