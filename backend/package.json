@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "check-course-status": "node scripts/checkCourseStatus.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.0",
