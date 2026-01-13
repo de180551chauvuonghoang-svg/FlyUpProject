@@ -142,6 +142,14 @@ export const webhookPayment = async (req, res) => {
             })
         ));
 
+        // 4. Remove from Wishlist if exists
+        await tx.wishlist.deleteMany({
+            where: {
+                UserId: checkout.UserId,
+                CourseId: { in: courseIds }
+            }
+        });
+
         // 4. Update Checkout Status
         await tx.cartCheckout.update({
             where: { Id: checkoutId },

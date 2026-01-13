@@ -80,7 +80,7 @@ export default function CourseDetailsPage() {
         const result = await toggleWishlist(courseId);
         
         // Invalidate wishlist query to keep other parts of app in sync
-        queryClient.invalidateQueries(['wishlist']);
+        queryClient.invalidateQueries({ queryKey: ['wishlist'] });
 
         if (result.isInWishlist) {
             toast.success('Added to wishlist');

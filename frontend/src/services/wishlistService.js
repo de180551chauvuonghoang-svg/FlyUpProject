@@ -31,13 +31,4 @@ export const getWishlist = async () => {
     return res.json();
 };
 
-export const checkWishlistStatus = async (courseId) => {
-    const res = await fetch(`${API_URL}/wishlist/${courseId}`, {
-        headers: getAuthHeader()
-    });
 
-    if (!res.ok) {
-        throw new Error('Failed to check wishlist status');
-    }
-    return res.json();
-};

@@ -121,6 +121,14 @@ export const handleCassoWebhook = async (req, res) => {
           return existing;
         }));
 
+        // Remove from Wishlist if exists
+        await tx.wishlist.deleteMany({
+            where: {
+                UserId: checkout.UserId,
+                CourseId: { in: courseIds }
+            }
+        });
+
         // Update Checkout Status
         await tx.cartCheckout.update({
           where: { Id: checkoutId },

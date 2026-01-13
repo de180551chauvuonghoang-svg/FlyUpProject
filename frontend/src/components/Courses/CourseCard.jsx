@@ -69,7 +69,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
             }
 
             // Invalidate to ensure we have the correct server state eventually
-            queryClient.invalidateQueries(['wishlist']);
+            queryClient.invalidateQueries({ queryKey: ['wishlist'] });
         } catch (error) {
             console.error("Failed to toggle wishlist", error);
             toast.error('Failed to update wishlist');
@@ -83,7 +83,9 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
 
     // Format price to Vietnamese format (20000 -> 20.000)
     const formatVNPrice = (price) => {
+        if (price === null || price === undefined) return "0";
         const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+        if (!Number.isFinite(numPrice)) return "0";
         return numPrice.toLocaleString('vi-VN');
     };
 
