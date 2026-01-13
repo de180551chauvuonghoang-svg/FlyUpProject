@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import Header from '../components/Header/Header';
 import { fetchCourses, fetchCourseById } from '../services/courseService';
-import useCart from '../hooks/useCart';
+import CourseCard from '../components/Courses/CourseCard';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -955,107 +954,6 @@ const PaginationButton = ({ children, active = false, onClick, disabled = false 
     </motion.button>
 );
 
-import { getImageUrl } from '../utils/imageUtils';
-
-// Enhanced Course Card Component (No Animation)
-const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price }) => {
-    const navigate = useNavigate();
-    const { addToCart, cart } = useCart();
-    
-    // Check if course is already in cart
-    const isInCart = cart.some(item => item.id === id);
-
-    const handleCardClick = () => {
-        navigate(`/courses/${id}`);
-    };
-
-    // Format price to Vietnamese format (20000 -> 20.000)
-    const formatVNPrice = (price) => {
-        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-        return numPrice.toLocaleString('vi-VN');
-    };
-
-    return (
-        <div 
-            onClick={handleCardClick}
-            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#1A1333] transition-all hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 cursor-pointer hover:-translate-y-2"
-        >
-            <div className="relative aspect-video w-full overflow-hidden">
-                <img 
-                    alt={title} 
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                    src={getImageUrl(image)}
-                    loading="lazy"
-                />
-                {/* Level Badge - Top Left */}
-                {level && (
-                    <div className={`absolute left-3 top-3 rounded-lg px-2 py-1 text-xs font-bold text-white backdrop-blur-md border ${
-                        level === 'Beginner' ? 'bg-green-600/80 border-green-400/30' :
-                        level === 'Intermediate' ? 'bg-yellow-600/80 border-yellow-400/30' :
-                        level === 'Advanced' ? 'bg-red-600/80 border-red-400/30' :
-                        'bg-black/60 border-white/10'
-                    }`}>
-                        {level}
-                    </div>
-                )}
-                {/* Category Badge - Top Right */}
-                <div className="absolute right-3 top-3 rounded-lg bg-black/60 px-2 py-1 text-xs font-bold text-white backdrop-blur-md border border-white/10">
-                    {category}
-                </div>
-            </div>
-
-            <div className="flex flex-1 flex-col p-5 relative z-10">
-                <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-yellow-400">
-                        <span className="material-symbols-outlined text-[16px] fill-current" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                        <span className="text-xs font-bold text-white ml-1">{rating}</span>
-                        <span className="text-xs text-slate-500">({reviews})</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="material-symbols-outlined text-[16px]">schedule</span>
-                        {duration}
-                    </div>
-                </div>
-
-                <h3 className="mb-2 text-lg font-bold leading-tight text-white group-hover:text-primary transition-colors">
-                    {title}
-                </h3>
-                <p className="mb-4 text-xs text-slate-400 line-clamp-2">{desc}</p>
-
-                <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
-                    <div className="flex items-center gap-2">
-
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-slate-300">{instructorName}</span>
-                            <span className="text-[10px] text-slate-500">{instructorRole}</span>
-                        </div>
-                    </div>
-                    <span className="text-lg font-bold text-white transition-transform group-hover:scale-110">
-                        {formatVNPrice(price)}₫
-                    </span>
-
-                </div>
-
-                <button 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (isInCart) return;
-                        addToCart({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price });
-                    }}
-                    className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer ${
-                        isInCart 
-                            ? 'bg-green-600/80 shadow-green-500/30 cursor-default hover:shadow-green-500/30 hover:brightness-100' 
-                            : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110'
-                    }`}
-                >
-                    <span>{isInCart ? 'In Cart' : 'Add to Cart'}</span>
-                    <span className="material-symbols-outlined text-[18px]">
-                        {isInCart ? 'check_circle' : 'add_shopping_cart'}
-                    </span>
-                </button>
-            </div>
-        </div>
-    );
-};
+// CourseCard moved to components/Courses/CourseCard.jsx
 
 export default CoursesPage;

@@ -1,15 +1,18 @@
-import React, { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import useAuth from '../hooks/useAuth';
 import { fetchUserEnrollments } from '../services/userService';
+import { getWishlist } from '../services/wishlistService';
 import { getImageUrl } from '../utils/imageUtils';
+import CourseCard from '../components/Courses/CourseCard';
 
 const MyLearningPage = () => {
     const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('in_progress');
 
     // Redirect if not logged in
     useEffect(() => {
@@ -21,6 +24,12 @@ const MyLearningPage = () => {
     const { data, isLoading, error } = useQuery({
         queryKey: ['userEnrollments', user?.id],
         queryFn: () => fetchUserEnrollments(user.id),
+        enabled: !!user,
+    });
+
+    const { data: wishlistCourses, isLoading: wishlistLoading } = useQuery({
+        queryKey: ['wishlist'],
+        queryFn: getWishlist,
         enabled: !!user,
     });
 
@@ -134,15 +143,26 @@ const MyLearningPage = () => {
                     {/* Tabs & Filters */}
                     <div className="border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-0">
                         <div className="flex gap-8 overflow-x-auto w-full sm:w-auto no-scrollbar">
-                            <button className="relative pb-4 text-white text-sm font-bold tracking-wide whitespace-nowrap group cursor-pointer">
+                            <button 
+                                onClick={() => setActiveTab('in_progress')}
+                                className={`relative pb-4 text-sm font-bold tracking-wide whitespace-nowrap group cursor-pointer transition-colors ${activeTab === 'in_progress' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
+                            >
                                 <span className="flex items-center gap-2">In Progress <span className="bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded-full">{inProgressCount}</span></span>
-                                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_10px_#6e3cec]"></span>
+                                {activeTab === 'in_progress' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_10px_#6e3cec]"></span>}
                             </button>
-                            <button className="relative pb-4 text-slate-400 hover:text-white transition-colors text-sm font-medium tracking-wide whitespace-nowrap cursor-pointer">
+                            <button 
+                                onClick={() => setActiveTab('completed')}
+                                className={`relative pb-4 text-sm font-medium tracking-wide whitespace-nowrap cursor-pointer transition-colors ${activeTab === 'completed' ? 'text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+                            >
                                 Completed
+                                {activeTab === 'completed' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_10px_#6e3cec]"></span>}
                             </button>
-                            <button className="relative pb-4 text-slate-400 hover:text-white transition-colors text-sm font-medium tracking-wide whitespace-nowrap cursor-pointer">
-                                Wishlist
+                            <button 
+                                onClick={() => setActiveTab('wishlist')}
+                                className={`relative pb-4 text-sm font-medium tracking-wide whitespace-nowrap cursor-pointer transition-colors ${activeTab === 'wishlist' ? 'text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                <span className="flex items-center gap-2">Wishlist <span className="bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded-full">{wishlistCourses?.length || 0}</span></span>
+                                {activeTab === 'wishlist' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_10px_#6e3cec]"></span>}
                             </button>
                         </div>
                     </div>
@@ -150,7 +170,7 @@ const MyLearningPage = () => {
                     {/* Course Grid (In Progress) */}
                     {enrollments.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {enrollments.map((enrollment) => {
+                            {activeTab === 'in_progress' && enrollments.filter(e => calculateProgress(e) < 100).map((enrollment) => {
                                 const progress = calculateProgress(enrollment);
                                 return (
                                 <article key={enrollment.CourseId} className="group relative flex flex-col bg-surface-dark border border-white/5 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-neon hover:-translate-y-1">
@@ -201,17 +221,71 @@ const MyLearningPage = () => {
                             })}
                         </div>
                     ) : (
-                        <div className="text-center py-20 text-slate-400">
-                            <span className="material-symbols-outlined text-6xl mb-4 opacity-50">school</span>
-                            <p className="text-xl font-medium text-white mb-2">No courses enrolled yet</p>
-                            <p>Explore our courses and start your learning journey today.</p>
-                            <button 
-                                onClick={() => navigate('/courses')}
-                                className="mt-6 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all"
-                            >
-                                Browse Courses
-                            </button>
-                        </div>
+                         activeTab === 'in_progress' && (
+                            <div className="text-center py-20 text-slate-400">
+                                <span className="material-symbols-outlined text-6xl mb-4 opacity-50">school</span>
+                                <p className="text-xl font-medium text-white mb-2">No courses in progress</p>
+                                <p>Explore our courses and start your learning journey today.</p>
+                                <button 
+                                    onClick={() => navigate('/courses')}
+                                    className="mt-6 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all"
+                                >
+                                    Browse Courses
+                                </button>
+                            </div>
+                        )
+                    )}
+
+                    {activeTab === 'wishlist' && (
+                        wishlistLoading ? (
+                             <div className="text-center py-20 text-white">Loading wishlist...</div>
+                        ) : wishlistCourses && wishlistCourses.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {wishlistCourses.map(course => (
+                                    <CourseCard 
+                                        key={course.Id}
+                                        id={course.Id}
+                                        image={course.ThumbUrl}
+                                        category={course.Categories?.Title || 'General'}
+                                        level={course.Level}
+                                        rating={course.RatingCount > 0 ? (Number(course.TotalRating) / course.RatingCount).toFixed(1) : "0.0"}
+                                        reviews={course.RatingCount || 0}
+                                        duration={`${course.LectureCount || 0} lectures`}
+                                        title={course.Title}
+                                        desc={course.Description}
+                                        instructorName={course.Instructors?.Users_Instructors_CreatorIdToUsers?.FullName || 'Unknown'}
+                                        instructorRole="Instructor"
+                                        price={course.Price}
+                                        showWishlist={true}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                             <div className="text-center py-20 text-slate-400">
+                                 <span className="material-symbols-outlined text-6xl mb-4 opacity-50">favorite</span>
+                                 <p className="text-xl font-medium text-white mb-2">Your wishlist is empty</p>
+                                 <button 
+                                     onClick={() => navigate('/courses')}
+                                     className="mt-6 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all"
+                                 >
+                                     Explore Courses
+                                 </button>
+                             </div>
+                        )
+                    )}
+
+                    {activeTab === 'completed' && (
+                         <div className="text-center py-20 text-slate-400">
+                             <span className="material-symbols-outlined text-6xl mb-4 opacity-50">emoji_events</span>
+                             <p className="text-xl font-medium text-white mb-2">No completed courses yet</p>
+                             <p>Keep learning to earn certificates!</p>
+                             <button 
+                                 onClick={() => setActiveTab('in_progress')}
+                                 className="mt-6 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all"
+                             >
+                                 Go to In Progress
+                             </button>
+                         </div>
                     )}
 
                     {/* Recently Completed (Mini Section below) */}

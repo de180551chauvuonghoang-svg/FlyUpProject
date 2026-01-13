@@ -96,6 +96,11 @@ const Header = () => {
             <Link className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" to="/community">Community</Link>
           </nav>
           <div className="flex gap-3 relative">
+            {user && (
+              <Link to="/my-learning?tab=wishlist" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e] border border-transparent hover:border-[#2a2a3a] text-white transition-all relative">
+                <span className="material-symbols-outlined text-[24px]">favorite</span>
+              </Link>
+            )}
             <Link to="/cart" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e] border border-transparent hover:border-[#2a2a3a] text-white transition-all relative">
               <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
               {cartCount > 0 && (
@@ -155,6 +160,10 @@ const Header = () => {
                     </div>
                   </div>
                   <div className="p-2">
+                    <Link to="/my-learning?tab=wishlist" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">favorite</span>
+                      <span className="text-sm font-medium">My Wishlist</span>
+                    </Link>
                     <Link to="/settings?tab=profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
                       <span className="material-symbols-outlined text-[20px]">person</span>
                       <span className="text-sm font-medium">Information Setting</span>

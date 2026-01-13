@@ -16,6 +16,8 @@ import MyLearningPage from './pages/MyLearningPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 
+
+
 function App() {
   return (
     <AuthProvider>
@@ -35,6 +37,7 @@ function App() {
           <Route path="/my-learning" element={<MyLearningPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+
         </Routes>
         </Router>
       </CartProvider>
