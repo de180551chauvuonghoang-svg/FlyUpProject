@@ -130,6 +130,24 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const changePassword = async (newPassword) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/change-password`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ newPassword })
+      });
+      const data = await response.json();
+      if (!response.ok) return { data: null, error: { message: data.error || data.message } };
+      return { data, error: null };
+    } catch (error) {
+      return { data: null, error: { message: error.message } };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -140,6 +158,7 @@ const AuthProvider = ({ children }) => {
     signInWithFacebook,
     signOut,
     resetPassword,
+    changePassword,
     refreshUser
   };
 

@@ -1,6 +1,19 @@
 export const PAYMENT_CONFIG = {
-    BANK_ID: 'MB', // Default to MB Bank
-    ACCOUNT_NO: '0763593290', // Placeholder
-    ACCOUNT_NAME: 'CHAU VUONG HOANG', // Placeholder
-    TEMPLATE: 'compact2' // 'compact', 'compact2', 'qr_only', 'print'
+    TEMPLATE: 'compact2',
+    BANKS: [
+        {
+            id: 'MB',
+            name: 'MB Bank',
+            accountNo: '0763593290',
+            accountName: 'CHAU VUONG HOANG',
+            shortName: 'MB'
+        },
+        {
+            id: 'BIDV',
+            name: 'BIDV',
+            accountNo: 'V3CASS5660465542',
+            accountName: 'CHAU VUONG HOANG',
+            shortName: 'BIDV'
+        }
+    ]
 };

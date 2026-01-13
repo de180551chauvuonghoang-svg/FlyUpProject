@@ -28,7 +28,7 @@ export const registerUser = async ({ email, password, fullName, role }) => {
 
   // Check if email already exists
   const existingUser = await prisma.users.findFirst({
-    where: { Email: email.toLowerCase() }
+    where: { Email: { equals: email.toLowerCase(), mode: 'insensitive' } }
   });
 
   if (existingUser) {
@@ -88,9 +88,9 @@ export const registerUser = async ({ email, password, fullName, role }) => {
 };
 
 export const loginUser = async ({ email, password }) => {
-  // Find user by email
+  // Find user by email (case-insensitive)
   const user = await prisma.users.findFirst({
-    where: { Email: email.toLowerCase() }
+    where: { Email: { equals: email.toLowerCase(), mode: 'insensitive' } }
   });
 
   if (!user) {
@@ -538,4 +538,28 @@ export const loginWithGithub = async (code) => {
   }
 
   return user;
+};
+export const changePassword = async (userId, newPassword) => {
+  const user = await prisma.users.findUnique({
+    where: { Id: userId }
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Google/Github users might not have a password
+  if (!user.Password && user.LoginProvider) {
+    throw new Error(`Accounts logged in via ${user.LoginProvider} cannot change password here.`);
+  }
+
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+  await prisma.users.update({
+    where: { Id: userId },
+    data: { Password: hashedPassword }
+  });
+
+  return true;
 };

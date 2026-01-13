@@ -286,6 +286,7 @@ model Courses {
   ApprovalStatus       String                @default("Pending") @db.VarChar(50)
   CAT_Logs             CAT_Logs[]
   CAT_Results          CAT_Results[]
+  Wishlist             Wishlist[]
   CourseMeta           CourseMeta[]
   CourseNotifications  CourseNotifications[]
   CourseReviews        CourseReviews[]
@@ -560,6 +561,7 @@ model Users {
   Reactions                                     Reactions[]
   Submissions                                   Submissions[]
   UserAbilities                                 UserAbilities[]
+  Wishlist                                      Wishlist[]
   Instructors_Users_InstructorIdToInstructors   Instructors?            @relation("Users_InstructorIdToInstructors", fields: [InstructorId], references: [Id], onUpdate: NoAction, map: "FK_Users_Instructors")
 
   @@index([Email], map: "IX_Users_Email")
@@ -572,4 +574,16 @@ model EFMigrationsHistory {
   ProductVersion String @db.VarChar(32)
 
   @@map("__EFMigrationsHistory")
+}
+
+model Wishlist {
+  UserId       String   @db.Uuid
+  CourseId     String   @db.Uuid
+  CreationTime DateTime @default(now()) @db.Timestamp(6)
+  Users        Users    @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Wishlist_Users")
+  Courses      Courses  @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Wishlist_Courses")
+
+  @@id([UserId, CourseId], map: "PK_Wishlist")
+  @@index([CourseId], map: "IX_Wishlist_CourseId")
+  @@index([UserId], map: "IX_Wishlist_UserId")
 }

@@ -1,4 +1,61 @@
 import * as courseService from '../services/courseService.js';
+import * as reviewService from '../services/reviewService.js';
+
+// Add Review
+export const addReview = async (req, res) => {
+  try {
+    const { id: courseId } = req.params;
+    const { rating, content } = req.body;
+    const userId = req.user.userId; // From authMiddleware
+
+    console.log(`[CourseController] addReview Request - User: ${userId}, Course: ${courseId}, Body:`, req.body);
+
+    const review = await reviewService.createReview(userId, courseId, { rating, content });
+
+    // Serialize BigInt if any (though review mostly uses Int/String)
+    const serializedReview = JSON.parse(
+      JSON.stringify(review, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+      )
+    );
+
+    res.status(201).json({
+      success: true,
+      data: serializedReview
+    });
+  } catch (error) {
+    console.error('Add review error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+// Get Reviews
+export const getReviews = async (req, res) => {
+  try {
+    const { id: courseId } = req.params;
+    const { page, limit } = req.query;
+
+    const result = await reviewService.getCourseReviews(
+      courseId, 
+      parseInt(page) || 1, 
+      parseInt(limit) || 10
+    );
+
+    res.json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error('Get reviews error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch reviews'
+    });
+  }
+};
 
 // Get all categories
 export const getCategories = async (req, res) => {
@@ -29,7 +86,8 @@ export const getCourses = async (req, res) => {
       maxPrice,
       search,
       page,
-      limit
+      limit,
+      sortBy
     } = req.query;
 
     const filters = {
@@ -39,7 +97,8 @@ export const getCourses = async (req, res) => {
       maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
       search,
       page: page ? parseInt(page) : 1,
-      limit: limit ? parseInt(limit) : 24
+      limit: limit ? parseInt(limit) : 24,
+      sortBy
     };
 
     const result = await courseService.getCourses(filters);

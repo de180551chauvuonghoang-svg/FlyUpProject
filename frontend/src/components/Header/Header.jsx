@@ -7,7 +7,7 @@ import defaultAvatar from '../../assets/default-avatar.png';
 import useCart from '../../hooks/useCart';
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -96,6 +96,11 @@ const Header = () => {
             <Link className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" to="/community">Community</Link>
           </nav>
           <div className="flex gap-3 relative">
+            {user && (
+              <Link to="/my-learning?tab=wishlist" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e] border border-transparent hover:border-[#2a2a3a] text-white transition-all relative">
+                <span className="material-symbols-outlined text-[24px]">favorite</span>
+              </Link>
+            )}
             <Link to="/cart" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e] border border-transparent hover:border-[#2a2a3a] text-white transition-all relative">
               <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
               {cartCount > 0 && (
@@ -104,7 +109,12 @@ const Header = () => {
                 </span>
               )}
             </Link>
-            {user ? (
+            {loading ? (
+              <div className="flex items-center gap-3">
+                 <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse"></div>
+                 <div className="hidden sm:block w-24 h-4 bg-white/10 rounded animate-pulse"></div>
+              </div>
+            ) : user ? (
               <div ref={dropdownRef} className="relative group">
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -150,17 +160,21 @@ const Header = () => {
                     </div>
                   </div>
                   <div className="p-2">
-                    <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                    <Link to="/my-learning?tab=wishlist" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">favorite</span>
+                      <span className="text-sm font-medium">My Wishlist</span>
+                    </Link>
+                    <Link to="/settings?tab=profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
                       <span className="material-symbols-outlined text-[20px]">person</span>
                       <span className="text-sm font-medium">Information Setting</span>
                     </Link>
-                    <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">settings</span>
-                      <span className="text-sm font-medium">Settings</span>
-                    </Link>
-                    <Link to="/change-password" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                    <Link to="/settings?tab=security" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
                       <span className="material-symbols-outlined text-[20px]">shield</span>
                       <span className="text-sm font-medium">Change Password</span>
+                    </Link>
+                    <Link to="/settings" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">settings</span>
+                      <span className="text-sm font-medium">Settings</span>
                     </Link>
                   </div>
                   <div className="p-2 border-t border-[#2a2a3a] bg-[#0a0a14]/30">

@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import Header from '../components/Header/Header';
 import { fetchCourses, fetchCourseById } from '../services/courseService';
-import useCart from '../hooks/useCart';
+import CourseCard from '../components/Courses/CourseCard';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -15,6 +14,7 @@ const CoursesPage = () => {
     const [selectedLevel, setSelectedLevel] = useState('');
     const [selectedPrice, setSelectedPrice] = useState('All Prices');
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
+    const [selectedSortOrder, setSelectedSortOrder] = useState('newest'); // Added sortBy state
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     
@@ -39,7 +39,7 @@ const CoursesPage = () => {
     // Reset page when filters change
     useEffect(() => {
         setPagination(prev => ({ ...prev, page: 1 }));
-    }, [selectedCategoryId, selectedLevel, selectedPrice, debouncedSearchQuery]);
+    }, [selectedCategoryId, selectedLevel, selectedPrice, debouncedSearchQuery, selectedSortOrder]); // Added selectedSortOrder dependency
 
     // --- React Query Implementation ---
 
@@ -57,15 +57,16 @@ const CoursesPage = () => {
     const categories = categoriesData || [];
 
     // 2. Fetch Courses
-    const fetchCoursesParams = {
+    const fetchCoursesParams = useMemo(() => ({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
         ...(selectedCategoryId && { categoryId: selectedCategoryId }),
         ...(selectedLevel && { level: selectedLevel }),
         ...(selectedPrice === 'Free' && { maxPrice: '0' }),
         ...(selectedPrice === 'Paid' && { minPrice: '0.01' }),
-        ...(debouncedSearchQuery && { search: debouncedSearchQuery })
-    };
+        ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
+        sortBy: selectedSortOrder
+    }), [pagination.page, pagination.limit, selectedCategoryId, selectedLevel, selectedPrice, debouncedSearchQuery, selectedSortOrder]);
 
     const { 
         data: coursesData, 
@@ -109,7 +110,7 @@ const CoursesPage = () => {
                 staleTime: 1000 * 60 * 5, // 5 mins
             });
         }
-    }, [coursesData, pagination.page, pagination.totalPages, queryClient]);
+    }, [coursesData, pagination.page, pagination.totalPages, queryClient, fetchCoursesParams]); // Added fetchCoursesParams dependency for linting
 
     // --- Bulk Prefetching for Visible Courses ---
     useEffect(() => {
@@ -246,41 +247,39 @@ const CoursesPage = () => {
                                                         if (cat.Title.toLowerCase().includes(key.toLowerCase())) return icon;
                                                     }
                                                     return 'school';
-                                                 })() : 'school'
-                                                }
+                                                 })() : 'apps'}
                                             </span>
                                         </div>
                                         <div className="text-left">
-                                            <p className="text-xs text-slate-400 mb-0.5">Category</p>
-                                            <p className="text-sm font-bold text-white truncate max-w-[140px]">
-                                                {selectedCategoryId === '' ? 'All Courses' : 
-                                                 categories.find(c => c.Id === selectedCategoryId)?.Title || 'All Courses'}
-                                            </p>
+                                            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Category</div>
+                                            <div className="text-white font-bold truncate max-w-[140px]">
+                                                {selectedCategoryId === '' ? 'All Categories' : (categories.find(c => c.Id === selectedCategoryId)?.Title || 'Unknown')}
+                                            </div>
                                         </div>
                                     </div>
-                                <span className="material-symbols-outlined text-slate-400" style={{ transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
-                                    expand_more
-                                </span>
-                            </button>
+                                    <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`}>
+                                        expand_more
+                                    </span>
+                                </button>
 
-                                {/* Dropdown Menu - Optimized without heavy animations */}
-                                {isFilterOpen && (
-                                    <>
-                                        {/* Backdrop */}
-                                        <div
-                                            onClick={() => setIsFilterOpen(false)}
-                                            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-200"
-                                        />
-
-                                        {/* Dropdown List */}
-                                        <div
-                                            className="absolute left-0 mt-2 w-[420px] max-h-[500px] overflow-y-auto z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-200"
-                                        >
+                                <AnimatePresence>
+                                    {isFilterOpen && (
+                                        <>
+                                            <div
+                                                onClick={() => setIsFilterOpen(false)}
+                                                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-200"
+                                            />
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="absolute left-0 mt-2 w-[420px] max-h-[500px] overflow-y-auto z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-200"
+                                            >
                                                 <div className="p-2">
-                                                    {/* Search Header */}
                                                     <div className="px-3 py-2 mb-2 border-b border-white/5">
                                                         <h3 className="text-sm font-bold text-white">Browse Categories</h3>
-                                                        <p className="text-xs text-slate-500 mt-0.5">{categories.length + 1} categories available</p>
+                                                        <p className="text-xs text-slate-500 mt-0.5">{categories.length} categories available</p>
                                                     </div>
 
                                                     {/* All Courses Option */}
@@ -386,10 +385,16 @@ const CoursesPage = () => {
                                                         })}
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         </>
-                                     )}
+                                    )}
+                                </AnimatePresence>
                             </div>
+
+                            <SortFilterDropdown 
+                                selectedSortOrder={selectedSortOrder}
+                                setSelectedSortOrder={setSelectedSortOrder}
+                            />
 
                             <LevelFilterDropdown 
                                 selectedLevel={selectedLevel}
@@ -575,6 +580,106 @@ const CoursesPage = () => {
     );
 };
 
+
+// Sort Filter Dropdown Component
+const SortFilterDropdown = ({ selectedSortOrder, setSelectedSortOrder }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const sortOptions = [
+        { value: 'newest', label: 'Newest', icon: 'new_releases' },
+        { value: 'popular', label: 'Popular', icon: 'trending_up' },
+        { value: 'price_asc', label: 'Price: Low to High', icon: 'arrow_upward' },
+        { value: 'price_desc', label: 'Price: High to Low', icon: 'arrow_downward' }
+    ];
+    
+    // Find current label and icon
+    const currentOption = sortOptions.find(opt => opt.value === selectedSortOrder) || sortOptions[0];
+    
+    return (
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.3 }}
+            className="relative"
+        >
+            <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl bg-gradient-to-r from-[#1A1333] to-[#2a2447] border border-white/10 hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 min-w-[200px]"
+            >
+                <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-xl text-primary">
+                        {currentOption.icon}
+                    </span>
+                    <div className="text-left">
+                        <p className="text-xs text-slate-400 mb-0.5">Sort By</p>
+                        <p className="text-sm font-bold text-white">{currentOption.label}</p>
+                    </div>
+                </div>
+                <motion.span 
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="material-symbols-outlined text-slate-400"
+                >
+                    expand_more
+                </motion.span>
+            </motion.button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsOpen(false)}
+                            className="fixed inset-0 z-40"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute left-0 mt-2 w-full min-w-[220px] z-50 rounded-xl bg-[#0D071E]/95 backdrop-blur-xl border border-white/10 shadow-2xl p-2"
+                        >
+                            {sortOptions.map((option) => (
+                                <motion.button
+                                    key={option.value}
+                                    whileHover={{ x: 4 }}
+                                    onClick={() => {
+                                        setSelectedSortOrder(option.value);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                                        selectedSortOrder === option.value
+                                            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20'
+                                            : 'hover:bg-white/5'
+                                    }`}
+                                >
+                                    <span className={`material-symbols-outlined text-lg ${
+                                        selectedSortOrder === option.value ? 'text-white' : 'text-primary'
+                                    }`}>
+                                        {option.icon}
+                                    </span>
+                                    <p className={`text-sm font-semibold ${
+                                        selectedSortOrder === option.value ? 'text-white' : 'text-slate-200'
+                                    }`}>
+                                        {option.label}
+                                    </p>
+                                    {selectedSortOrder === option.value && (
+                                        <span className="material-symbols-outlined text-white text-lg ml-auto">
+                                            check_circle
+                                        </span>
+                                    )}
+                                </motion.button>
+                            ))}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
 
 // Level Filter Dropdown Component
 const LevelFilterDropdown = ({ selectedLevel, setSelectedLevel }) => {
@@ -849,107 +954,6 @@ const PaginationButton = ({ children, active = false, onClick, disabled = false 
     </motion.button>
 );
 
-import { getImageUrl } from '../utils/imageUtils';
-
-// Enhanced Course Card Component (No Animation)
-const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price }) => {
-    const navigate = useNavigate();
-    const { addToCart, cart } = useCart();
-    
-    // Check if course is already in cart
-    const isInCart = cart.some(item => item.id === id);
-
-    const handleCardClick = () => {
-        navigate(`/courses/${id}`);
-    };
-
-    // Format price to Vietnamese format (20000 -> 20.000)
-    const formatVNPrice = (price) => {
-        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-        return numPrice.toLocaleString('vi-VN');
-    };
-
-    return (
-        <div 
-            onClick={handleCardClick}
-            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#1A1333] transition-all hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 cursor-pointer hover:-translate-y-2"
-        >
-            <div className="relative aspect-video w-full overflow-hidden">
-                <img 
-                    alt={title} 
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                    src={getImageUrl(image)}
-                    loading="lazy"
-                />
-                {/* Level Badge - Top Left */}
-                {level && (
-                    <div className={`absolute left-3 top-3 rounded-lg px-2 py-1 text-xs font-bold text-white backdrop-blur-md border ${
-                        level === 'Beginner' ? 'bg-green-600/80 border-green-400/30' :
-                        level === 'Intermediate' ? 'bg-yellow-600/80 border-yellow-400/30' :
-                        level === 'Advanced' ? 'bg-red-600/80 border-red-400/30' :
-                        'bg-black/60 border-white/10'
-                    }`}>
-                        {level}
-                    </div>
-                )}
-                {/* Category Badge - Top Right */}
-                <div className="absolute right-3 top-3 rounded-lg bg-black/60 px-2 py-1 text-xs font-bold text-white backdrop-blur-md border border-white/10">
-                    {category}
-                </div>
-            </div>
-
-            <div className="flex flex-1 flex-col p-5 relative z-10">
-                <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-yellow-400">
-                        <span className="material-symbols-outlined text-[16px] fill-current" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                        <span className="text-xs font-bold text-white ml-1">{rating}</span>
-                        <span className="text-xs text-slate-500">({reviews})</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="material-symbols-outlined text-[16px]">schedule</span>
-                        {duration}
-                    </div>
-                </div>
-
-                <h3 className="mb-2 text-lg font-bold leading-tight text-white group-hover:text-primary transition-colors">
-                    {title}
-                </h3>
-                <p className="mb-4 text-xs text-slate-400 line-clamp-2">{desc}</p>
-
-                <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
-                    <div className="flex items-center gap-2">
-
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-slate-300">{instructorName}</span>
-                            <span className="text-[10px] text-slate-500">{instructorRole}</span>
-                        </div>
-                    </div>
-                    <span className="text-lg font-bold text-white transition-transform group-hover:scale-110">
-                        {formatVNPrice(price)}₫
-                    </span>
-
-                </div>
-
-                <button 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (isInCart) return;
-                        addToCart({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price });
-                    }}
-                    className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer ${
-                        isInCart 
-                            ? 'bg-green-600/80 shadow-green-500/30 cursor-default hover:shadow-green-500/30 hover:brightness-100' 
-                            : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110'
-                    }`}
-                >
-                    <span>{isInCart ? 'In Cart' : 'Add to Cart'}</span>
-                    <span className="material-symbols-outlined text-[18px]">
-                        {isInCart ? 'check_circle' : 'add_shopping_cart'}
-                    </span>
-                </button>
-            </div>
-        </div>
-    );
-};
+// CourseCard moved to components/Courses/CourseCard.jsx
 
 export default CoursesPage;
