@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { toast } from 'react-hot-toast';
 import { useParams, useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   Rocket, ChevronRight, Star, StarHalf, Clock, Globe, Video, 
   FileDown, Infinity as InfinityIcon, Smartphone, Award, Check, ChevronDown, 
-  Play, Users, PlayCircle 
+  Play, Users, PlayCircle, Heart
 } from 'lucide-react';
 import { 
   staggerContainer, 
@@ -19,6 +20,7 @@ import useCart from '../hooks/useCart';
 import useAuth from '../hooks/useAuth';
 import ReviewList from '../components/Reviews/ReviewList';
 import ReviewForm from '../components/Reviews/ReviewForm';
+import { toggleWishlist, getWishlist } from '../services/wishlistService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -34,11 +36,66 @@ const getImageUrl = (path) => {
 export default function CourseDetailsPage() {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedSections, setExpandedSections] = useState({});
   const { addToCart } = useCart();
   const { user, accessToken } = useAuth();
+  
+  // Use query to check wishlist status from cache
+  const { data: wishlistCourses } = useQuery({
+      queryKey: ['wishlist'],
+      queryFn: getWishlist,
+      enabled: !!user,
+      staleTime: 5 * 60 * 1000, 
+  });
+
+  const isInWishlist = useMemo(() => {
+      if (!wishlistCourses) return false;
+      return wishlistCourses.some(course => course.Id === courseId);
+  }, [wishlistCourses, courseId]);
+
+  const handleWishlistToggle = async () => {
+    if (!user) {
+        navigate('/login');
+        return;
+    }
+
+    // Optimistic update
+    const previousWishlist = queryClient.getQueryData(['wishlist']);
+    
+    // Optimistically update the cache
+    queryClient.setQueryData(['wishlist'], (old) => {
+        if (!old) return [];
+        const isCurrentlyIn = old.some(c => c.Id === courseId);
+        if (isCurrentlyIn) {
+            return old.filter(c => c.Id !== courseId);
+        } else {
+            return [...old, { Id: courseId }]; 
+        }
+    });
+    
+    try {
+        const result = await toggleWishlist(courseId);
+        
+        // Invalidate wishlist query to keep other parts of app in sync
+        queryClient.invalidateQueries(['wishlist']);
+
+        if (result.isInWishlist) {
+            toast.success('Added to wishlist');
+        } else {
+            toast.success('Removed from wishlist');
+        }
+    } catch (error) {
+        console.error("Wishlist toggle failed", error);
+        toast.error('Failed to update wishlist');
+        // Revert on error
+        if (previousWishlist) {
+            queryClient.setQueryData(['wishlist'], previousWishlist);
+        }
+    }
+  };
 
   // Check enrollment
   const { data: enrollmentData } = useQuery({
@@ -438,8 +495,17 @@ export default function CourseDetailsPage() {
         <div className="relative">
           <motion.div 
             whileHover={{ y: -4 }}
-            className="sticky top-24 bg-[#1A1333] border border-white/5 rounded-2xl p-6 shadow-xl shadow-black/40"
+            className="sticky top-24 bg-[#1A1333] border border-white/5 rounded-2xl p-6 shadow-xl shadow-black/40 relative"
           >
+            {/* Wishlist Button */}
+             <button 
+                onClick={handleWishlistToggle}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors z-10"
+                title={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+             >
+                <Heart className={`w-6 h-6 transition-colors ${isInWishlist ? 'text-red-500 fill-red-500' : 'text-slate-400'}`} />
+             </button>
+
             {/* Pricing */}
             <div className="flex items-end gap-3 mb-6">
               <span className="text-4xl font-bold text-white">{formatVNPrice(course.Price)}₫</span>
