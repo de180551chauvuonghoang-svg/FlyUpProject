@@ -164,6 +164,10 @@ const Header = () => {
                       <span className="material-symbols-outlined text-[20px]">favorite</span>
                       <span className="text-sm font-medium">My Wishlist</span>
                     </Link>
+                    <Link to="/settings?tab=transactions" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                      <span className="text-sm font-medium">Transaction History</span>
+                    </Link>
                     <Link to="/settings?tab=profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
                       <span className="material-symbols-outlined text-[20px]">person</span>
                       <span className="text-sm font-medium">Information Setting</span>

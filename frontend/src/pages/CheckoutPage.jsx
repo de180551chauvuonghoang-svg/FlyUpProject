@@ -70,6 +70,7 @@ const CheckoutPage = () => {
             
             // Invalidate enrollments cache so My Learning page fetches new data immediately
             queryClient.invalidateQueries({ queryKey: ['userEnrollments'] });
+            queryClient.invalidateQueries({ queryKey: ['wishlist'] });
             
             // Redirect after delay
             const timer = setTimeout(() => {
@@ -116,12 +117,20 @@ const CheckoutPage = () => {
                         </div>
                         <h1 className="text-4xl font-black mb-4 text-white">Payment Successful!</h1>
                         <p className="text-slate-400 mb-8 max-w-md mx-auto">Thank you for your purchase. You have been seamlessly enrolled in your courses.</p>
-                        <button 
-                            onClick={() => navigate('/my-learning')}
-                            className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(110,60,236,0.3)] hover:shadow-[0_0_30px_rgba(110,60,236,0.5)] transform hover:-translate-y-1"
-                        >
-                            Go to My Learning
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button 
+                                onClick={() => navigate('/my-learning')}
+                                className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(110,60,236,0.3)] hover:shadow-[0_0_30px_rgba(110,60,236,0.5)] transform hover:-translate-y-1"
+                            >
+                                Go to My Learning
+                            </button>
+                            <button 
+                                onClick={() => navigate('/settings?tab=transactions')}
+                                className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-8 rounded-xl transition-all border border-white/10 hover:border-white/30"
+                            >
+                                View Transaction History
+                            </button>
+                        </div>
                         <p className="text-slate-500 text-sm mt-4 animate-pulse">Redirecting you automatically...</p>
                     </div>
                 ) : (
