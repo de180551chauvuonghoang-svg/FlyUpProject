@@ -1,4 +1,7 @@
-﻿-- CreateTable
+﻿-- Enable uuid-ossp extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- CreateTable
 CREATE TABLE "Articles" (
     "Id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "Content" VARCHAR(3000) NOT NULL,
@@ -455,7 +458,7 @@ CREATE TABLE "Users" (
     "Email" VARCHAR(45) NOT NULL,
     "FullName" VARCHAR(45) NOT NULL,
     "MetaFullName" VARCHAR(45) NOT NULL,
-    "AvatarUrl" VARCHAR(100) NOT NULL,
+    "AvatarUrl" VARCHAR(255) NOT NULL,
     "Role" TEXT NOT NULL,
     "Token" VARCHAR(100) NOT NULL,
     "RefreshToken" VARCHAR(100) NOT NULL,
@@ -472,7 +475,7 @@ CREATE TABLE "Users" (
     "CreationTime" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "LastModificationTime" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "SystemBalance" BIGINT NOT NULL DEFAULT 0,
-    "avatar_url" VARCHAR(255),
+
     "last_seen" TIMESTAMP(6),
 
     CONSTRAINT "PK_Users" PRIMARY KEY ("Id")

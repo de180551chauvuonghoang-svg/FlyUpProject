@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Camera, User, Briefcase, Calendar, Phone, Mail, ChevronRight, Save, CreditCard } from 'lucide-react';
+import { Camera, User, Briefcase, Calendar, Phone, Mail, ChevronRight, Save } from 'lucide-react';
 import TransactionHistory from '../components/Profile/TransactionHistory';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header/Header';

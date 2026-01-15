@@ -526,7 +526,7 @@
     Email                                         String                  @db.VarChar(45)
     FullName                                      String                  @db.VarChar(45)
     MetaFullName                                  String                  @db.VarChar(45)
-    AvatarUrl                                     String                  @db.VarChar(100)
+    AvatarUrl                                     String                  @db.VarChar(255)
     Role                                          String
     Token                                         String                  @db.VarChar(100)
     RefreshToken                                  String                  @db.VarChar(100)
@@ -543,7 +543,6 @@
     CreationTime                                  DateTime                @default(now()) @db.Timestamp(6)
     LastModificationTime                          DateTime                @default(now()) @db.Timestamp(6)
     SystemBalance                                 BigInt                  @default(0)
-    avatar_url                                    String?                 @db.VarChar(255)
     last_seen                                     DateTime?               @db.Timestamp(6)
     Articles                                      Articles[]
     AssignmentCompletions                         AssignmentCompletions[]

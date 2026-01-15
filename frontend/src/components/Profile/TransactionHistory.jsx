@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchTransactionHistory } from '../../services/transactionService';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { ShoppingBag, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 const TransactionHistory = () => {
@@ -72,7 +72,11 @@ const TransactionHistory = () => {
             </div>
             <div className="text-left md:text-right">
               <p className="text-sm text-slate-400">Date</p>
-              <p className="text-white">{format(new Date(transaction.date), 'MMM dd, yyyy • HH:mm')}</p>
+              <p className="text-white">
+                {transaction.date && isValid(new Date(transaction.date)) 
+                  ? format(new Date(transaction.date), 'MMM dd, yyyy • HH:mm')
+                  : '-'}
+              </p>
             </div>
           </div>
 
