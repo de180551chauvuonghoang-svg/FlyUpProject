@@ -70,6 +70,8 @@
     IsSuccessful        Boolean       @default(false)
     CreationTime        DateTime      @default(now()) @db.Timestamp(6)
     CreatorId           String        @db.Uuid
+    DiscountAmount      BigInt        @default(0)
+    CouponCode          String?       @db.VarChar(50)
     Users               Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Bills_Users")
     Enrollments         Enrollments[]
 
@@ -125,10 +127,32 @@
     ProcessedTime DateTime? @db.Timestamp(6)
     Notes         String?   @db.VarChar(500)
     SessionId     String?   @db.VarChar(100)
+    CouponId      String?   @db.Uuid
+    DiscountAmount BigInt    @default(0)
+    Coupons       Coupons?  @relation(fields: [CouponId], references: [Id], onUpdate: NoAction, map: "FK_CartCheckout_Coupons")
     Users         Users     @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CartCheckout_Users")
 
     @@index([Status], map: "IX_CartCheckout_Status")
     @@index([UserId], map: "IX_CartCheckout_UserId")
+    @@index([CouponId], map: "IX_CartCheckout_CouponId")
+  }
+
+  model Coupons {
+    Id            String         @id(map: "PK_Coupons") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Code          String         @unique @db.VarChar(50)
+    DiscountType  String         @default("PERCENTAGE") @db.VarChar(20) // PERCENTAGE or FIXED
+    DiscountValue Float          @default(0)
+    MaxUses       Int?
+    UsedCount     Int            @default(0)
+    ExpiryDate    DateTime?      @db.Timestamp(6)
+    IsActive      Boolean        @default(true)
+    IsPublic      Boolean        @default(false)
+    Title         String?        @db.VarChar(100)
+    Description   String?        @db.VarChar(255)
+    CreationTime  DateTime       @default(now()) @db.Timestamp(6)
+    CreatorId     String?        @db.Uuid
+    Users         Users?         @relation(fields: [CreatorId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Coupons_Users")
+    CartCheckout  CartCheckout[]
   }
 
   model Categories {
@@ -555,6 +579,7 @@
     Comments                                      Comments[]
     ConversationMembers                           ConversationMembers[]
     Conversations                                 Conversations[]
+    Coupons                                       Coupons[]
     CourseReviews                                 CourseReviews[]
     Courses                                       Courses[]
     Enrollments                                   Enrollments[]

@@ -4,12 +4,39 @@ import useCart from '../hooks/useCart';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCourses } from '../services/courseService';
 import { getImageUrl } from '../utils/imageUtils';
-import { createCheckout } from '../services/checkoutService';
+import { createCheckout, checkCoupon } from '../services/checkoutService';
 import toast from 'react-hot-toast';
+import { useState, useEffect } from 'react';
 
 const CartPage = () => {
     const { cart, removeFromCart, cartTotal, cartCount, addToCart, clearCart } = useCart();
     const navigate = useNavigate();
+    const [couponCode, setCouponCode] = useState('');
+    const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    
+    // Clear coupon when cart changes to avoid stale validation
+    useEffect(() => {
+        if (appliedCoupon) {
+            setAppliedCoupon(null);
+            toast.custom((t) => (
+                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-[#1A1333] shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+                  <div className="flex-1 w-0 p-4">
+                    <div className="flex items-start">
+                      <div className="ml-3 flex-1">
+                        <p className="text-sm font-medium text-white">
+                          Cart Updated
+                        </p>
+                        <p className="mt-1 text-sm text-gray-400">
+                          Coupon removed. Please re-apply if valid.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ), { duration: 3000 });
+        }
+    }, [cart.length, cartTotal, appliedCoupon]); // Watch cart changes
 
     const handleCheckout = async () => {
         try {
@@ -18,7 +45,8 @@ const CartPage = () => {
             toast.loading('Creating checkout session...');
             const res = await createCheckout({
                 courseIds: cart.map(item => item.id),
-                totalAmount: cartTotal
+                totalAmount: cartTotal,
+                couponCode: appliedCoupon ? appliedCoupon.code : null
             });
             
             toast.dismiss();
@@ -28,6 +56,24 @@ const CartPage = () => {
         } catch (error) {
             toast.dismiss();
             toast.error(error.message || 'Checkout creation failed');
+        }
+    };
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setIsCheckingCoupon(true);
+        try {
+            const courseIds = cart.map(c => c.id);
+            const res = await checkCoupon(couponCode, courseIds);
+            if (res.success && res.data.isValid) {
+                setAppliedCoupon(res.data); // data: { isValid, code, discountAmount, newTotal }
+                toast.success(`Coupon applied! Saved ${res.data.discountAmount.toLocaleString('vi-VN')}₫`);
+            }
+        } catch (error) {
+            toast.error(error.message);
+            setAppliedCoupon(null);
+        } finally {
+            setIsCheckingCoupon(false);
         }
     };
 
@@ -178,8 +224,8 @@ const CartPage = () => {
                                     <span className="text-white font-medium">{formatVNPrice(cartTotal)}₫</span>
                                 </div>
                                 <div className="flex justify-between items-center text-green-400 text-sm">
-                                    <span>Discount (0% OFF)</span>
-                                    <span className="font-medium">-0₫</span>
+                                    <span>Discount {appliedCoupon ? `(${appliedCoupon.code})` : ''}</span>
+                                    <span className="font-medium">-{appliedCoupon ? appliedCoupon.discountAmount.toLocaleString('vi-VN') : '0'}₫</span>
                                 </div>
                                 <div className="flex justify-between items-center text-slate-400 text-sm">
                                     <span>Tax (Estimated)</span>
@@ -190,18 +236,38 @@ const CartPage = () => {
                             <div className="mb-6">
                                 <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Promo Code</label>
                                 <div className="flex gap-2">
-                                    <input className="bg-[#0D071E] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary w-full placeholder-slate-600" placeholder="Enter code" type="text" />
-                                    <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                                        Apply
-                                    </button>
+                                    <input 
+                                        className="bg-[#0D071E] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary w-full placeholder-slate-600" 
+                                        placeholder="Enter code" 
+                                        type="text" 
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value)}
+                                        disabled={!!appliedCoupon}
+                                    />
+                                    {appliedCoupon ? (
+                                        <button 
+                                            onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}
+                                            className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-500 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                                        >
+                                            Remove
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={handleApplyCoupon}
+                                            disabled={isCheckingCoupon || !couponCode}
+                                            className="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                                        >
+                                            {isCheckingCoupon ? '...' : 'Apply'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent w-full mb-6"></div>
                             <div className="flex justify-between items-end mb-8">
                                 <span className="text-slate-300 font-medium">Total</span>
                                 <div className="text-right">
-                                    <span className="text-xs text-slate-500 line-through block mb-1">{formatVNPrice(cartTotal)}₫</span>
-                                    <span className="text-3xl font-black text-white">{formatVNPrice(cartTotal)}₫</span>
+                                    {appliedCoupon && <span className="text-xs text-slate-500 line-through block mb-1">{formatVNPrice(cartTotal)}₫</span>}
+                                    <span className="text-3xl font-black text-white">{appliedCoupon ? formatVNPrice(appliedCoupon.newTotal) : formatVNPrice(cartTotal)}₫</span>
                                 </div>
                             </div>
                             <button 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { getCheckoutStatus, simulatePayment } from '../services/checkoutService';
+import { getCheckoutStatus, simulatePayment, applyCoupon, getPublicCoupons } from '../services/checkoutService';
 import { PAYMENT_CONFIG } from '../config/paymentConfig';
 import Header from '../components/Header';
 import useCart from '../hooks/useCart';
@@ -14,6 +14,9 @@ const CheckoutPage = () => {
     const [checkout, setCheckout] = useState(null);
     const [loading, setLoading] = useState(true);
     const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
+    const [couponCode, setCouponCode] = useState('');
+    const [isApplying, setIsApplying] = useState(false);
+    const [availableCoupons, setAvailableCoupons] = useState([]);
 
     const processedRef = React.useRef(false);
 
@@ -31,6 +34,19 @@ const CheckoutPage = () => {
         };
         initCheckout();
     }, [checkoutId]);
+
+    // Fetch Coupons
+    useEffect(() => {
+        const fetchCoupons = async () => {
+            try {
+                const res = await getPublicCoupons();
+                setAvailableCoupons(res.data);
+            } catch (error) {
+                console.error('Failed to load coupons:', error);
+            }
+        };
+        fetchCoupons();
+    }, []);
 
     // Polling Logic (Only runs if checkout exists and is NOT completed)
     useEffect(() => {
@@ -57,7 +73,7 @@ const CheckoutPage = () => {
             const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
             return () => clearInterval(timer);
         }
-    }, [timeLeft, checkout?.status]);
+    }, [timeLeft, checkout]);
 
     const queryClient = useQueryClient();
 
@@ -92,12 +108,39 @@ const CheckoutPage = () => {
         }
     };
 
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setIsApplying(true);
+        try {
+            const res = await applyCoupon(checkoutId, couponCode);
+            toast.success('Coupon applied successfully!');
+            
+            // Update local checkout state with new total
+            setCheckout(prev => ({
+                ...prev,
+                totalAmount: res.data.totalAmount, // Update total amount
+                discountAmount: res.data.discountAmount, // Add discount amount if your backend returns it in checkout object, or just rely on new total
+                couponCode: res.data.couponCode
+            }));
+            
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setIsApplying(false);
+        }
+    };
+
     const [selectedBank, setSelectedBank] = useState(PAYMENT_CONFIG.BANKS[0]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const safeVal = (val) => {
+        const num = Number(val);
+        return Number.isFinite(num) ? num : 0;
     };
 
     if (loading) return <div className="min-h-screen bg-[#0D071E] flex items-center justify-center text-white">Loading checkout...</div>;
@@ -145,8 +188,85 @@ const CheckoutPage = () => {
                             <div className="bg-[#1A1333] p-6 rounded-2xl border border-white/10 space-y-4">
                                 <div className="flex justify-between items-center py-2 border-b border-white/5">
                                     <span className="text-slate-400">Total Amount</span>
-                                    <span className="text-2xl font-bold text-white">{parseInt(checkout.totalAmount).toLocaleString('vi-VN')}₫</span>
+                                    {checkout.discountAmount ? (
+                                        <div className="text-right">
+                                            <div className="text-sm text-slate-500 line-through">
+                                                {(safeVal(checkout.totalAmount) + safeVal(checkout.discountAmount)).toLocaleString('vi-VN')}₫
+                                            </div>
+                                            <div className="text-2xl font-bold text-white">
+                                                {safeVal(checkout.totalAmount).toLocaleString('vi-VN')}₫
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span className="text-2xl font-bold text-white">{safeVal(checkout.totalAmount).toLocaleString('vi-VN')}₫</span>
+                                    )}
                                 </div>
+                                {checkout.discountAmount && (
+                                    <div className="flex justify-between items-center py-2 border-b border-white/5 text-green-400">
+                                        <span className="flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-sm">local_offer</span>
+                                            Discount ({checkout.couponCode})
+                                        </span>
+                                        <span className="font-bold">-{safeVal(checkout.discountAmount).toLocaleString('vi-VN')}₫</span>
+                                    </div>
+                                )}
+                                
+                                {/* Coupon Input */}
+                                {!checkout.discountAmount && (
+                                    <div className="py-2 border-b border-white/5 space-y-3">
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Enter coupon code" 
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value)}
+                                                className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm w-full focus:outline-none focus:border-primary/50"
+                                            />
+                                            <button 
+                                                onClick={handleApplyCoupon}
+                                                disabled={isApplying || !couponCode?.trim()}
+                                                className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded-lg px-4 py-2 text-sm font-bold transition-all disabled:opacity-50"
+                                            >
+                                                {isApplying ? 'Applying...' : 'Apply'}
+                                            </button>
+                                        </div>
+
+                                        {/* Available Coupons List */}
+                                        {availableCoupons.length > 0 && (
+                                            <div className="space-y-2 mt-2">
+                                                <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">Available Coupons</p>
+                                                <div className="grid gap-2 max-h-40 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
+                                                    {availableCoupons.map(coupon => (
+                                                        <div key={coupon.Id} className="bg-white/5 border border-white/5 rounded-lg p-3 flex justify-between items-center group hover:border-primary/30 transition-all">
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-mono font-bold text-primary">{coupon.Code}</span>
+                                                                    <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+                                                                        {coupon.DiscountType === 'PERCENTAGE' ? `-${coupon.DiscountValue}%` : `-${coupon.DiscountValue.toLocaleString()}₫`}
+                                                                    </span>
+                                                                </div>
+                                                                {coupon.Title && <p className="text-sm font-bold text-white mt-0.5">{coupon.Title}</p>}
+                                                                {coupon.Description && <p className="text-xs text-slate-400">{coupon.Description}</p>}
+                                                                {coupon.ExpiryDate && (
+                                                                    <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                                                                        <span className="material-symbols-outlined text-[10px]">event</span>
+                                                                        Expires: {new Date(coupon.ExpiryDate).toLocaleDateString('vi-VN')}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            <button 
+                                                                onClick={() => setCouponCode(coupon.Code)}
+                                                                className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                Use
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center py-2 border-b border-white/5">
                                     <span className="text-slate-400">Order ID</span>
                                     <span className="font-mono text-sm bg-white/5 px-2 py-1 rounded text-slate-300">{checkout.id.slice(0, 8)}...</span>

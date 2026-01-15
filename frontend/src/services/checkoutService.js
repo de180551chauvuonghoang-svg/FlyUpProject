@@ -44,3 +44,40 @@ export const simulatePayment = async (checkoutId) => {
     }
     return res.json();
 };
+
+export const applyCoupon = async (checkoutId, code) => {
+    const res = await fetch(`${API_URL}/checkout/${checkoutId}/apply-coupon`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ code })
+    });
+    if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error || 'Failed to apply coupon');
+    }
+    return res.json();
+};
+
+export const getPublicCoupons = async () => {
+    const res = await fetch(`${API_URL}/checkout/coupons`, {
+        headers: getHeaders()
+    });
+    if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error || 'Failed to fetch coupons');
+    }
+    return res.json();
+};
+
+export const checkCoupon = async (code, courseIds) => {
+    const res = await fetch(`${API_URL}/checkout/check-coupon`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ code, courseIds })
+    });
+    if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error || 'Invalid coupon');
+    }
+    return res.json();
+};
