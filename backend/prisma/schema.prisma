@@ -151,6 +151,7 @@
     Description   String?        @db.VarChar(255)
     CreationTime  DateTime       @default(now()) @db.Timestamp(6)
     CreatorId     String?        @db.Uuid
+    Users         Users?         @relation(fields: [CreatorId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Coupons_Users")
     CartCheckout  CartCheckout[]
   }
 
@@ -578,6 +579,7 @@
     Comments                                      Comments[]
     ConversationMembers                           ConversationMembers[]
     Conversations                                 Conversations[]
+    Coupons                                       Coupons[]
     CourseReviews                                 CourseReviews[]
     Courses                                       Courses[]
     Enrollments                                   Enrollments[]

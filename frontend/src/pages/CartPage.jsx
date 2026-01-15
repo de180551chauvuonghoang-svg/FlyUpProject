@@ -6,7 +6,7 @@ import { fetchCourses } from '../services/courseService';
 import { getImageUrl } from '../utils/imageUtils';
 import { createCheckout, checkCoupon } from '../services/checkoutService';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const CartPage = () => {
     const { cart, removeFromCart, cartTotal, cartCount, addToCart, clearCart } = useCart();
@@ -14,6 +14,29 @@ const CartPage = () => {
     const [couponCode, setCouponCode] = useState('');
     const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
     const [appliedCoupon, setAppliedCoupon] = useState(null);
+    
+    // Clear coupon when cart changes to avoid stale validation
+    useEffect(() => {
+        if (appliedCoupon) {
+            setAppliedCoupon(null);
+            toast.custom((t) => (
+                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-[#1A1333] shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+                  <div className="flex-1 w-0 p-4">
+                    <div className="flex items-start">
+                      <div className="ml-3 flex-1">
+                        <p className="text-sm font-medium text-white">
+                          Cart Updated
+                        </p>
+                        <p className="mt-1 text-sm text-gray-400">
+                          Coupon removed. Please re-apply if valid.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ), { duration: 3000 });
+        }
+    }, [cart.length, cartTotal, appliedCoupon]); // Watch cart changes
 
     const handleCheckout = async () => {
         try {

@@ -32,7 +32,7 @@ export const getUserTransactions = async (userId) => {
       transactionId: bill.TransactionId || bill.ClientTransactionId,
       date: bill.CreationTime,
       amount: Number(bill.Amount),
-      discountAmount: Number(bill.DiscountAmount),
+      discountAmount: Number(bill.DiscountAmount ?? 0),
       couponCode: bill.CouponCode,
       status: bill.IsSuccessful ? 'Successful' : 'Failed', // Though we filter by true, good to map
       gateway: bill.Gateway,

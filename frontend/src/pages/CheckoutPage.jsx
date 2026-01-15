@@ -138,6 +138,11 @@ const CheckoutPage = () => {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const safeVal = (val) => {
+        const num = Number(val);
+        return Number.isFinite(num) ? num : 0;
+    };
+
     if (loading) return <div className="min-h-screen bg-[#0D071E] flex items-center justify-center text-white">Loading checkout...</div>;
     if (!checkout) return <div className="min-h-screen bg-[#0D071E] flex items-center justify-center text-white">Checkout not found</div>;
 
@@ -186,14 +191,14 @@ const CheckoutPage = () => {
                                     {checkout.discountAmount ? (
                                         <div className="text-right">
                                             <div className="text-sm text-slate-500 line-through">
-                                                {(parseInt(checkout.totalAmount) + parseInt(checkout.discountAmount)).toLocaleString('vi-VN')}₫
+                                                {(safeVal(checkout.totalAmount) + safeVal(checkout.discountAmount)).toLocaleString('vi-VN')}₫
                                             </div>
                                             <div className="text-2xl font-bold text-white">
-                                                {parseInt(checkout.totalAmount).toLocaleString('vi-VN')}₫
+                                                {safeVal(checkout.totalAmount).toLocaleString('vi-VN')}₫
                                             </div>
                                         </div>
                                     ) : (
-                                        <span className="text-2xl font-bold text-white">{parseInt(checkout.totalAmount).toLocaleString('vi-VN')}₫</span>
+                                        <span className="text-2xl font-bold text-white">{safeVal(checkout.totalAmount).toLocaleString('vi-VN')}₫</span>
                                     )}
                                 </div>
                                 {checkout.discountAmount && (
@@ -202,7 +207,7 @@ const CheckoutPage = () => {
                                             <span className="material-symbols-outlined text-sm">local_offer</span>
                                             Discount ({checkout.couponCode})
                                         </span>
-                                        <span className="font-bold">-{parseInt(checkout.discountAmount).toLocaleString('vi-VN')}₫</span>
+                                        <span className="font-bold">-{safeVal(checkout.discountAmount).toLocaleString('vi-VN')}₫</span>
                                     </div>
                                 )}
                                 
@@ -219,7 +224,7 @@ const CheckoutPage = () => {
                                             />
                                             <button 
                                                 onClick={handleApplyCoupon}
-                                                disabled={isApplying || !couponCode}
+                                                disabled={isApplying || !couponCode?.trim()}
                                                 className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded-lg px-4 py-2 text-sm font-bold transition-all disabled:opacity-50"
                                             >
                                                 {isApplying ? 'Applying...' : 'Apply'}

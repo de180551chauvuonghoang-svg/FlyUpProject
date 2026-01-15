@@ -60,21 +60,21 @@ export const createCheckout = async (req, res) => {
     let discountAmount = 0;
     let appliedCouponId = null;
 
-    if (couponCode) {
-        try {
-            const { coupon, discountAmount: disc } = await validateAndCalculateCoupon(couponCode, courseIds);
-            discountAmount = disc;
-            appliedCouponId = coupon.Id;
-            finalTotal = baseTotal - discountAmount;
-        } catch (e) {
-            console.warn(`Invalid coupon passed to createCheckout: ${couponCode}`, e.message);
-            // We continue without coupon if invalid, or we could error out. 
-            // Better to error out so user knows why price matches.
-            // But for smoother UX, maybe we just ignore? check requirement.
-            // Let's ignore but maybe returning a warning flag would be good.
-            // For now, let's proceed without coupon.
-        }
-    }
+         if (couponCode) {
+         try {
+             const { coupon, discountAmount: disc } = await validateAndCalculateCoupon(couponCode, courseIds);
+             discountAmount = disc;
+             appliedCouponId = coupon.Id;
+             finalTotal = baseTotal - discountAmount;
+         } catch (e) {
+             console.warn(`Invalid coupon passed to createCheckout: ${couponCode}`, e.message);
+            // Return error so user knows the coupon is invalid
+            return res.status(400).json({ 
+                success: false, 
+                error: `Invalid coupon: ${e.message}` 
+            });
+         }
+     }
 
     const checkout = await prisma.cartCheckout.create({
       data: {
@@ -108,6 +108,15 @@ export const createCheckout = async (req, res) => {
 export const checkCoupon = async (req, res) => {
     try {
         const { code, courseIds } = req.body;
+
+        if (!code || typeof code !== 'string' || !code.trim()) {
+            return res.status(400).json({ success: false, error: 'Coupon code must be a non-empty string' });
+        }
+
+        if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
+            return res.status(400).json({ success: false, error: 'Course IDs must be a non-empty array' });
+        }
+
         const { coupon, discountAmount, originalTotal } = await validateAndCalculateCoupon(code, courseIds);
         
         res.json({
@@ -226,14 +235,31 @@ export const webhookPayment = async (req, res) => {
 
         // 4. Update Coupon Usage if used
         if (checkout.CouponId) {
-            await tx.coupons.update({
-                where: { Id: checkout.CouponId },
-                data: {
-                    UsedCount: {
-                        increment: 1
+            const coupon = checkout.Coupons; // Already included in step 1
+            if (coupon && coupon.MaxUses) {
+                // Atomic check and update
+                const updateResult = await tx.coupons.updateMany({
+                    where: {
+                        Id: checkout.CouponId,
+                        UsedCount: { lt: coupon.MaxUses }
+                    },
+                    data: {
+                        UsedCount: { increment: 1 }
                     }
+                });
+
+                if (updateResult.count === 0) {
+                    throw new Error('Coupon usage limit reached during payment processing');
                 }
-            });
+            } else {
+                // No limit or no coupon object (shouldn't happen if CouponId exists but better safe), just increment
+                await tx.coupons.update({
+                    where: { Id: checkout.CouponId },
+                    data: {
+                        UsedCount: { increment: 1 }
+                    }
+                });
+            }
         }
 
         // 5. Update Checkout Status
@@ -312,53 +338,32 @@ export const applyCoupon = async (req, res) => {
         return res.status(400).json({ success: false, error: 'Cannot apply coupon to completed checkout' });
     }
 
-    // 2. Validate Coupon
-    const coupon = await prisma.coupons.findUnique({
-        where: { Code: code }
-    });
-
-    if (!coupon) {
-        return res.status(404).json({ success: false, error: 'Invalid coupon code' });
-    }
-
-    if (!coupon.IsActive) {
-        return res.status(400).json({ success: false, error: 'Coupon is inactive' });
-    }
-
-    if (coupon.ExpiryDate && new Date(coupon.ExpiryDate) < new Date()) {
-        return res.status(400).json({ success: false, error: 'Coupon has expired' });
-    }
-
-    if (coupon.MaxUses && coupon.UsedCount >= coupon.MaxUses) {
-        return res.status(400).json({ success: false, error: 'Coupon usage limit reached' });
-    }
-
-    // 3. Calculate Discount
-    const courseIds = JSON.parse(checkout.CourseIds);
-    const courses = await prisma.courses.findMany({
-        where: { Id: { in: courseIds } },
-        select: { Price: true }
-    });
-
-    const originalTotal = courses.reduce((sum, course) => sum + Number(course.Price), 0);
-    let discountAmount = 0;
-
-    if (coupon.DiscountType === 'PERCENTAGE') {
-        discountAmount = (originalTotal * coupon.DiscountValue) / 100;
-    } else {
-        discountAmount = coupon.DiscountValue;
-    }
-
-    // Ensure discount doesn't exceed total
-    if (discountAmount > originalTotal) {
-        discountAmount = originalTotal;
+    // 2. Validate Coupon & 3. Calculate Discount
+    let coupon, discountAmount, originalTotal;
+    try {
+        const courseIds = JSON.parse(checkout.CourseIds);
+         // Use the shared helper
+        const result = await validateAndCalculateCoupon(code, courseIds);
+        coupon = result.coupon;
+        discountAmount = result.discountAmount;
+        originalTotal = result.originalTotal;
+    } catch (e) {
+        if (e.message === 'Invalid coupon code') {
+            return res.status(404).json({ success: false, error: e.message });
+        }
+        return res.status(400).json({ success: false, error: e.message });
     }
 
     const newTotal = originalTotal - discountAmount;
 
     // 4. Update Checkout
-    const updatedCheckout = await prisma.cartCheckout.update({
-        where: { Id: id },
+    // 4. Update Checkout
+    // Use updateMany to ensure we update only if Id matches AND UserId matches (Authorization/Ownership check)
+    const updateResult = await prisma.cartCheckout.updateMany({
+        where: { 
+            Id: id,
+            UserId: userId 
+        },
         data: {
             CouponId: coupon.Id,
             DiscountAmount: Math.round(discountAmount),
@@ -366,12 +371,16 @@ export const applyCoupon = async (req, res) => {
         }
     });
 
+    if (updateResult.count === 0) {
+        return res.status(403).json({ success: false, error: 'Checkout session not found or unauthorized' });
+    }
+
     res.json({
         success: true,
         data: {
-            id: updatedCheckout.Id,
-            totalAmount: updatedCheckout.TotalAmount.toString(),
-            discountAmount: updatedCheckout.DiscountAmount.toString(),
+            id: id,
+            totalAmount: Math.round(newTotal).toString(),
+            discountAmount: Math.round(discountAmount).toString(),
             couponCode: coupon.Code
         }
     });
