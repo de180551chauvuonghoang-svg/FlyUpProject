@@ -29,6 +29,8 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "@mermaid-js/mermaid-cli": "^11.12.0",
+    "nodemon": "^3.0.2",
+    "prisma-erd-generator": "^2.4.2"
   }
 }

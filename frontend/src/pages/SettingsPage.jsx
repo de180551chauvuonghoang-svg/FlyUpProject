@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, User, Briefcase, Calendar, Phone, Mail, ChevronRight, Save, Shield, Settings as SettingsIcon, Bell, CreditCard } from 'lucide-react';
+import { Camera, User, Briefcase, Calendar, Phone, Mail, ChevronRight, Save, Shield, Settings as SettingsIcon, Bell, CreditCard, History } from 'lucide-react';
+import TransactionHistory from '../components/Profile/TransactionHistory';
 import { Link, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
@@ -324,6 +325,7 @@ const SettingsPage = () => {
   const tabs = [
     { id: 'profile', label: 'Information', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
+    { id: 'transactions', label: 'Transaction History', icon: History },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'billing', label: 'Billing', icon: CreditCard },
   ];
@@ -389,6 +391,12 @@ const SettingsPage = () => {
               )}
               {activeTab === 'security' && (
                 <SecurityTab changePassword={changePassword} user={user} />
+              )}
+              {activeTab === 'transactions' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h3 className="text-lg font-bold text-white mb-6">Transaction History</h3>
+                    <TransactionHistory />
+                </div>
               )}
               {(activeTab === 'notifications' || activeTab === 'billing') && (
                 <div className="flex flex-col items-center justify-center py-20 text-center animate-pulse">

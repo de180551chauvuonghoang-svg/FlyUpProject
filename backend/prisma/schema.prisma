@@ -1,589 +1,593 @@
-generator client {
-  provider = "prisma-client-js"
-}
+  generator client {
+    provider = "prisma-client-js"
+  }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+  generator erd {
+    provider = "prisma-erd-generator"
+    output   = "../ERD.svg"
+  }
 
-model Articles {
-  Id                   String      @id(map: "PK_Articles") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Content              String      @db.VarChar(3000)
-  Title                String      @db.VarChar(255)
-  Status               String      @default("Draft") @db.VarChar(45)
-  IsCommentDisabled    Boolean     @default(false)
-  CommentCount         Int         @default(0)
-  ViewCount            Int         @default(0)
-  CreationTime         DateTime    @default(now()) @db.Timestamp(6)
-  LastModificationTime DateTime    @default(now()) @db.Timestamp(6)
-  CreatorId            String      @db.Uuid
-  LastModifierId       String      @db.Uuid
-  Users                Users       @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Articles_Users")
-  Comments             Comments[]
-  Reactions            Reactions[]
-  Tag                  Tag[]
-}
+  datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+  }
 
-model AssignmentCompletions {
-  Id            BigInt      @id(map: "PK_AssignmentCompletions") @default(autoincrement())
-  UserId        String      @db.Uuid
-  AssignmentId  String      @db.Uuid
-  CompletedDate DateTime?   @db.Timestamp(6)
-  Assignments   Assignments @relation(fields: [AssignmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_AssignmentCompletions_Assignments")
-  Users         Users       @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_AssignmentCompletions_Users")
-}
+  model Articles {
+    Id                   String      @id(map: "PK_Articles") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Content              String      @db.VarChar(3000)
+    Title                String      @db.VarChar(255)
+    Status               String      @default("Draft") @db.VarChar(45)
+    IsCommentDisabled    Boolean     @default(false)
+    CommentCount         Int         @default(0)
+    ViewCount            Int         @default(0)
+    CreationTime         DateTime    @default(now()) @db.Timestamp(6)
+    LastModificationTime DateTime    @default(now()) @db.Timestamp(6)
+    CreatorId            String      @db.Uuid
+    LastModifierId       String      @db.Uuid
+    Users                Users       @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Articles_Users")
+    Comments             Comments[]
+    Reactions            Reactions[]
+    Tag                  Tag[]
+  }
 
-model Assignments {
-  Id                    String                  @id(map: "PK_Assignments") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Name                  String                  @db.VarChar(255)
-  Duration              Int                     @default(30)
-  QuestionCount         Int                     @default(0)
-  SectionId             String                  @db.Uuid
-  CreatorId             String                  @db.Uuid
-  GradeToPass           Float                   @default(8)
-  AssignmentCompletions AssignmentCompletions[]
-  Sections              Sections                @relation(fields: [SectionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Assignments_Sections")
-  Users                 Users                   @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Assignments_Users")
-  CAT_Logs              CAT_Logs[]
-  CAT_Results           CAT_Results[]
-  McqQuestions          McqQuestions[]
-  Submissions           Submissions[]
+  model AssignmentCompletions {
+    Id            BigInt      @id(map: "PK_AssignmentCompletions") @default(autoincrement())
+    UserId        String      @db.Uuid
+    AssignmentId  String      @db.Uuid
+    CompletedDate DateTime?   @db.Timestamp(6)
+    Assignments   Assignments @relation(fields: [AssignmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_AssignmentCompletions_Assignments")
+    Users         Users       @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_AssignmentCompletions_Users")
+  }
 
-  @@index([SectionId], map: "IX_Assignments_SectionId")
-}
+  model Assignments {
+    Id                    String                  @id(map: "PK_Assignments") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Name                  String                  @db.VarChar(255)
+    Duration              Int                     @default(30)
+    QuestionCount         Int                     @default(0)
+    SectionId             String                  @db.Uuid
+    CreatorId             String                  @db.Uuid
+    GradeToPass           Float                   @default(8)
+    AssignmentCompletions AssignmentCompletions[]
+    Sections              Sections                @relation(fields: [SectionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Assignments_Sections")
+    Users                 Users                   @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Assignments_Users")
+    CAT_Logs              CAT_Logs[]
+    CAT_Results           CAT_Results[]
+    McqQuestions          McqQuestions[]
+    Submissions           Submissions[]
 
-model Bills {
-  Id                  String        @id(map: "PK_Bills") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Action              String        @db.VarChar(100)
-  Note                String        @default("") @db.VarChar(255)
-  Amount              BigInt        @default(0)
-  Gateway             String        @db.VarChar(20)
-  TransactionId       String        @default("") @db.VarChar(100)
-  ClientTransactionId String        @default("") @db.VarChar(100)
-  Token               String        @default("") @db.VarChar(100)
-  IsSuccessful        Boolean       @default(false)
-  CreationTime        DateTime      @default(now()) @db.Timestamp(6)
-  CreatorId           String        @db.Uuid
-  Users               Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Bills_Users")
-  Enrollments         Enrollments[]
+    @@index([SectionId], map: "IX_Assignments_SectionId")
+  }
 
-  @@index([CreatorId], map: "IX_Bills_CreatorId")
-}
+  model Bills {
+    Id                  String        @id(map: "PK_Bills") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Action              String        @db.VarChar(100)
+    Note                String        @default("") @db.VarChar(255)
+    Amount              BigInt        @default(0)
+    Gateway             String        @db.VarChar(20)
+    TransactionId       String        @default("") @db.VarChar(100)
+    ClientTransactionId String        @default("") @db.VarChar(100)
+    Token               String        @default("") @db.VarChar(100)
+    IsSuccessful        Boolean       @default(false)
+    CreationTime        DateTime      @default(now()) @db.Timestamp(6)
+    CreatorId           String        @db.Uuid
+    Users               Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Bills_Users")
+    Enrollments         Enrollments[]
 
-model CAT_Logs {
-  Id           String        @id(map: "PK_CAT_Logs") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  UserId       String?       @db.Uuid
-  QuestionId   String?       @db.Uuid
-  Response     Boolean?
-  ThetaBefore  Float?
-  ThetaAfter   Float?
-  Timestamp    DateTime?     @db.Timestamp(6)
-  CourseId     String?       @db.Uuid
-  AssignmentId String?       @db.Uuid
-  Assignments  Assignments?  @relation(fields: [AssignmentId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Logs_Assignments")
-  Courses      Courses?      @relation(fields: [CourseId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Logs_Courses")
-  McqQuestions McqQuestions? @relation(fields: [QuestionId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Logs_McqQuestions")
-  Users        Users?        @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Logs_Users")
+    @@index([CreatorId], map: "IX_Bills_CreatorId")
+  }
 
-  @@index([CourseId], map: "IX_CAT_Logs_CourseId")
-  @@index([UserId], map: "IX_CAT_Logs_UserId")
-}
+  model CAT_Logs {
+    Id           String        @id(map: "PK_CAT_Logs") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    UserId       String?       @db.Uuid
+    QuestionId   String?       @db.Uuid
+    Response     Boolean?
+    ThetaBefore  Float?
+    ThetaAfter   Float?
+    Timestamp    DateTime?     @db.Timestamp(6)
+    CourseId     String?       @db.Uuid
+    AssignmentId String?       @db.Uuid
+    Assignments  Assignments?  @relation(fields: [AssignmentId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Logs_Assignments")
+    Courses      Courses?      @relation(fields: [CourseId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Logs_Courses")
+    McqQuestions McqQuestions? @relation(fields: [QuestionId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Logs_McqQuestions")
+    Users        Users?        @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Logs_Users")
 
-model CAT_Results {
-  Id             String       @id(map: "PK_CAT_Results") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  UserId         String       @db.Uuid
-  CourseId       String       @db.Uuid
-  AssignmentId   String?      @db.Uuid
-  FinalTheta     Float        @default(0)
-  CorrectCount   Int          @default(0)
-  TotalQuestions Int          @default(0)
-  CompletionTime DateTime?    @db.Timestamp(6)
-  ThetaBefore    Float?
-  ThetaAfter     Float?
-  Assignments    Assignments? @relation(fields: [AssignmentId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Results_Assignments")
-  Courses        Courses      @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CAT_Results_Courses")
-  Users          Users        @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CAT_Results_Users")
+    @@index([CourseId], map: "IX_CAT_Logs_CourseId")
+    @@index([UserId], map: "IX_CAT_Logs_UserId")
+  }
 
-  @@index([CourseId], map: "IX_CAT_Results_CourseId")
-  @@index([UserId], map: "IX_CAT_Results_UserId")
-}
+  model CAT_Results {
+    Id             String       @id(map: "PK_CAT_Results") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    UserId         String       @db.Uuid
+    CourseId       String       @db.Uuid
+    AssignmentId   String?      @db.Uuid
+    FinalTheta     Float        @default(0)
+    CorrectCount   Int          @default(0)
+    TotalQuestions Int          @default(0)
+    CompletionTime DateTime?    @db.Timestamp(6)
+    ThetaBefore    Float?
+    ThetaAfter     Float?
+    Assignments    Assignments? @relation(fields: [AssignmentId], references: [Id], onUpdate: NoAction, map: "FK_CAT_Results_Assignments")
+    Courses        Courses      @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CAT_Results_Courses")
+    Users          Users        @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CAT_Results_Users")
 
-model CartCheckout {
-  Id            String    @id(map: "PK_CartCheckout") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  UserId        String    @db.Uuid
-  CourseIds     String    @default("[]")
-  TotalAmount   BigInt    @default(0)
-  PaymentMethod String    @db.VarChar(20)
-  Status        String    @default("PENDING") @db.VarChar(20)
-  CreationTime  DateTime  @default(now()) @db.Timestamp(6)
-  ProcessedTime DateTime? @db.Timestamp(6)
-  Notes         String?   @db.VarChar(500)
-  SessionId     String?   @db.VarChar(100)
-  Users         Users     @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CartCheckout_Users")
+    @@index([CourseId], map: "IX_CAT_Results_CourseId")
+    @@index([UserId], map: "IX_CAT_Results_UserId")
+  }
 
-  @@index([Status], map: "IX_CartCheckout_Status")
-  @@index([UserId], map: "IX_CartCheckout_UserId")
-}
+  model CartCheckout {
+    Id            String    @id(map: "PK_CartCheckout") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    UserId        String    @db.Uuid
+    CourseIds     String    @default("[]")
+    TotalAmount   BigInt    @default(0)
+    PaymentMethod String    @db.VarChar(20)
+    Status        String    @default("PENDING") @db.VarChar(20)
+    CreationTime  DateTime  @default(now()) @db.Timestamp(6)
+    ProcessedTime DateTime? @db.Timestamp(6)
+    Notes         String?   @db.VarChar(500)
+    SessionId     String?   @db.VarChar(100)
+    Users         Users     @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CartCheckout_Users")
 
-model Categories {
-  Id          String    @id(map: "PK_Categories") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Path        String    @db.VarChar(255)
-  Title       String    @db.VarChar(100)
-  Description String    @default("") @db.VarChar(1000)
-  IsLeaf      Boolean   @default(false)
-  CourseCount Int       @default(0)
-  Courses     Courses[]
-}
+    @@index([Status], map: "IX_CartCheckout_Status")
+    @@index([UserId], map: "IX_CartCheckout_UserId")
+  }
 
-model ChatMessages {
-  Id                   String        @id(map: "PK_ChatMessages") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Content              String        @db.VarChar(255)
-  Status               String        @default("Sent")
-  ConversationId       String        @db.Uuid
-  CreationTime         DateTime      @default(now()) @db.Timestamp(6)
-  LastModificationTime DateTime      @default(now()) @db.Timestamp(6)
-  CreatorId            String        @db.Uuid
-  LastModifierId       String        @db.Uuid
-  message_type         String        @default("text") @db.VarChar(20)
-  is_edited            Boolean       @default(false)
-  Conversations        Conversations @relation(fields: [ConversationId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ChatMessages_Conversations")
-  Users                Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ChatMessages_Users")
-  Reactions            Reactions[]
+  model Categories {
+    Id          String    @id(map: "PK_Categories") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Path        String    @db.VarChar(255)
+    Title       String    @db.VarChar(100)
+    Description String    @default("") @db.VarChar(1000)
+    IsLeaf      Boolean   @default(false)
+    CourseCount Int       @default(0)
+    Courses     Courses[]
+  }
 
-  @@index([ConversationId], map: "IX_ChatMessages_ConversationId")
-}
+  model ChatMessages {
+    Id                   String        @id(map: "PK_ChatMessages") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Content              String        @db.VarChar(255)
+    Status               String        @default("Sent")
+    ConversationId       String        @db.Uuid
+    CreationTime         DateTime      @default(now()) @db.Timestamp(6)
+    LastModificationTime DateTime      @default(now()) @db.Timestamp(6)
+    CreatorId            String        @db.Uuid
+    LastModifierId       String        @db.Uuid
+    message_type         String        @default("text") @db.VarChar(20)
+    is_edited            Boolean       @default(false)
+    Conversations        Conversations @relation(fields: [ConversationId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ChatMessages_Conversations")
+    Users                Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ChatMessages_Users")
+    Reactions            Reactions[]
 
-model CommentMedia {
-  CommentId String   @db.Uuid
-  Id        Int      @default(autoincrement())
-  Type      String
-  Url       String   @db.VarChar(255)
-  Comments  Comments @relation(fields: [CommentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CommentMedia_Comments")
+    @@index([ConversationId], map: "IX_ChatMessages_ConversationId")
+  }
 
-  @@id([CommentId, Id], map: "PK_CommentMedia")
-}
+  model CommentMedia {
+    CommentId String   @db.Uuid
+    Id        Int      @default(autoincrement())
+    Type      String
+    Url       String   @db.VarChar(255)
+    Comments  Comments @relation(fields: [CommentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CommentMedia_Comments")
 
-model Comments {
-  Id                   String         @id(map: "PK_Comments") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Content              String         @db.VarChar(500)
-  Status               String         @default("Active")
-  SourceType           String
-  ParentId             String?        @db.Uuid
-  LectureId            String?        @db.Uuid
-  ArticleId            String?        @db.Uuid
-  CreationTime         DateTime       @default(now()) @db.Timestamp(6)
-  LastModificationTime DateTime       @default(now()) @db.Timestamp(6)
-  CreatorId            String         @db.Uuid
-  LastModifierId       String         @db.Uuid
-  CommentMedia         CommentMedia[]
-  Articles             Articles?      @relation(fields: [ArticleId], references: [Id], onUpdate: NoAction, map: "FK_Comments_Articles")
-  Comments             Comments?      @relation("CommentsToComments", fields: [ParentId], references: [Id], onUpdate: NoAction, map: "FK_Comments_Comments")
-  other_Comments       Comments[]     @relation("CommentsToComments")
-  Lectures             Lectures?      @relation(fields: [LectureId], references: [Id], onUpdate: NoAction, map: "FK_Comments_Lectures")
-  Users                Users          @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Comments_Users")
-  Reactions            Reactions[]
+    @@id([CommentId, Id], map: "PK_CommentMedia")
+  }
 
-  @@index([ArticleId], map: "IX_Comments_ArticleId")
-  @@index([LectureId], map: "IX_Comments_LectureId")
-  @@index([ParentId], map: "IX_Comments_ParentId")
-}
+  model Comments {
+    Id                   String         @id(map: "PK_Comments") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Content              String         @db.VarChar(500)
+    Status               String         @default("Active")
+    SourceType           String
+    ParentId             String?        @db.Uuid
+    LectureId            String?        @db.Uuid
+    ArticleId            String?        @db.Uuid
+    CreationTime         DateTime       @default(now()) @db.Timestamp(6)
+    LastModificationTime DateTime       @default(now()) @db.Timestamp(6)
+    CreatorId            String         @db.Uuid
+    LastModifierId       String         @db.Uuid
+    CommentMedia         CommentMedia[]
+    Articles             Articles?      @relation(fields: [ArticleId], references: [Id], onUpdate: NoAction, map: "FK_Comments_Articles")
+    Comments             Comments?      @relation("CommentsToComments", fields: [ParentId], references: [Id], onUpdate: NoAction, map: "FK_Comments_Comments")
+    other_Comments       Comments[]     @relation("CommentsToComments")
+    Lectures             Lectures?      @relation(fields: [LectureId], references: [Id], onUpdate: NoAction, map: "FK_Comments_Lectures")
+    Users                Users          @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Comments_Users")
+    Reactions            Reactions[]
 
-model ConversationMembers {
-  CreatorId      String        @db.Uuid
-  ConversationId String        @db.Uuid
-  IsAdmin        Boolean       @default(false)
-  LastVisit      DateTime      @default(now()) @db.Timestamp(6)
-  CreationTime   DateTime      @default(now()) @db.Timestamp(6)
-  Conversations  Conversations @relation(fields: [ConversationId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ConversationMembers_Conversations")
-  Users          Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ConversationMembers_Users")
+    @@index([ArticleId], map: "IX_Comments_ArticleId")
+    @@index([LectureId], map: "IX_Comments_LectureId")
+    @@index([ParentId], map: "IX_Comments_ParentId")
+  }
 
-  @@id([CreatorId, ConversationId], map: "PK_ConversationMembers")
-}
+  model ConversationMembers {
+    CreatorId      String        @db.Uuid
+    ConversationId String        @db.Uuid
+    IsAdmin        Boolean       @default(false)
+    LastVisit      DateTime      @default(now()) @db.Timestamp(6)
+    CreationTime   DateTime      @default(now()) @db.Timestamp(6)
+    Conversations  Conversations @relation(fields: [ConversationId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ConversationMembers_Conversations")
+    Users          Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ConversationMembers_Users")
 
-model Conversations {
-  Id                  String                @id(map: "PK_Conversations") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Title               String                @default("") @db.VarChar(45)
-  IsPrivate           Boolean               @default(false)
-  AvatarUrl           String                @default("") @db.VarChar(255)
-  CreationTime        DateTime              @default(now()) @db.Timestamp(6)
-  CreatorId           String                @db.Uuid
-  last_message_at     DateTime?             @db.Timestamp(6)
-  is_group            Boolean               @default(false)
-  ChatMessages        ChatMessages[]
-  ConversationMembers ConversationMembers[]
-  Users               Users                 @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Conversations_Users")
-}
+    @@id([CreatorId, ConversationId], map: "PK_ConversationMembers")
+  }
 
-model CourseMeta {
-  CourseId String  @db.Uuid
-  Id       Int     @default(autoincrement())
-  Type     Int     @default(0) @db.SmallInt
-  Value    String  @default("") @db.VarChar(100)
-  Courses  Courses @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseMeta_Courses")
+  model Conversations {
+    Id                  String                @id(map: "PK_Conversations") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Title               String                @default("") @db.VarChar(45)
+    IsPrivate           Boolean               @default(false)
+    AvatarUrl           String                @default("") @db.VarChar(255)
+    CreationTime        DateTime              @default(now()) @db.Timestamp(6)
+    CreatorId           String                @db.Uuid
+    last_message_at     DateTime?             @db.Timestamp(6)
+    is_group            Boolean               @default(false)
+    ChatMessages        ChatMessages[]
+    ConversationMembers ConversationMembers[]
+    Users               Users                 @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Conversations_Users")
+  }
 
-  @@id([CourseId, Id], map: "PK_CourseMeta")
-}
+  model CourseMeta {
+    CourseId String  @db.Uuid
+    Id       Int     @default(autoincrement())
+    Type     Int     @default(0) @db.SmallInt
+    Value    String  @default("") @db.VarChar(100)
+    Courses  Courses @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseMeta_Courses")
 
-model CourseNotifications {
-  Id               String      @id(map: "PK_CourseNotifications") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  CourseId         String      @db.Uuid
-  InstructorId     String      @db.Uuid
-  InstructorName   String      @db.VarChar(255)
-  CourseTitle      String      @db.VarChar(255)
-  CoursePrice      Float       @default(0)
-  NotificationType String      @db.VarChar(50)
-  Status           String      @default("Pending") @db.VarChar(50)
-  RejectionReason  String?     @db.VarChar(1000)
-  CreationTime     DateTime    @default(now()) @db.Timestamp(6)
-  ProcessedTime    DateTime?   @db.Timestamp(6)
-  ProcessedBy      String?     @db.Uuid
-  Courses          Courses     @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseNotifications_Courses")
-  Instructors      Instructors @relation(fields: [InstructorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseNotifications_Instructors")
-}
+    @@id([CourseId, Id], map: "PK_CourseMeta")
+  }
 
-model CourseReviews {
-  Id                   String   @id(map: "PK_CourseReviews") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Content              String   @default("") @db.VarChar(500)
-  Rating               Int      @default(5) @db.SmallInt
-  CourseId             String   @db.Uuid
-  CreationTime         DateTime @default(now()) @db.Timestamp(6)
-  LastModificationTime DateTime @default(now()) @db.Timestamp(6)
-  CreatorId            String   @db.Uuid
-  LastModifierId       String   @db.Uuid
-  Courses              Courses  @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseReviews_Courses")
-  Users                Users    @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseReviews_Users")
+  model CourseNotifications {
+    Id               String      @id(map: "PK_CourseNotifications") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    CourseId         String      @db.Uuid
+    InstructorId     String      @db.Uuid
+    InstructorName   String      @db.VarChar(255)
+    CourseTitle      String      @db.VarChar(255)
+    CoursePrice      Float       @default(0)
+    NotificationType String      @db.VarChar(50)
+    Status           String      @default("Pending") @db.VarChar(50)
+    RejectionReason  String?     @db.VarChar(1000)
+    CreationTime     DateTime    @default(now()) @db.Timestamp(6)
+    ProcessedTime    DateTime?   @db.Timestamp(6)
+    ProcessedBy      String?     @db.Uuid
+    Courses          Courses     @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseNotifications_Courses")
+    Instructors      Instructors @relation(fields: [InstructorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseNotifications_Instructors")
+  }
 
-  @@index([CourseId], map: "IX_CourseReviews_CourseId")
-}
+  model CourseReviews {
+    Id                   String   @id(map: "PK_CourseReviews") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Content              String   @default("") @db.VarChar(500)
+    Rating               Int      @default(5) @db.SmallInt
+    CourseId             String   @db.Uuid
+    CreationTime         DateTime @default(now()) @db.Timestamp(6)
+    LastModificationTime DateTime @default(now()) @db.Timestamp(6)
+    CreatorId            String   @db.Uuid
+    LastModifierId       String   @db.Uuid
+    Courses              Courses  @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseReviews_Courses")
+    Users                Users    @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_CourseReviews_Users")
 
-model Courses {
-  Id                   String                @id(map: "PK_Courses") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Title                String                @db.VarChar(255)
-  MetaTitle            String                @db.VarChar(255)
-  ThumbUrl             String                @default("") @db.VarChar(255)
-  Intro                String                @default("") @db.VarChar(500)
-  Description          String                @default("") @db.VarChar(1000)
-  Status               String                @default("Draft")
-  Price                Float                 @default(0)
-  Discount             Float                 @default(0)
-  DiscountExpiry       DateTime              @default(now()) @db.Timestamp(6)
-  Level                String                @default("Beginner")
-  Outcomes             String                @default("") @db.VarChar(500)
-  Requirements         String                @default("") @db.VarChar(500)
-  LectureCount         Int                   @default(0) @db.SmallInt
-  LearnerCount         Int                   @default(0)
-  RatingCount          Int                   @default(0)
-  TotalRating          BigInt                @default(0)
-  LeafCategoryId       String                @db.Uuid
-  InstructorId         String                @db.Uuid
-  CreationTime         DateTime              @default(now()) @db.Timestamp(6)
-  LastModificationTime DateTime              @default(now()) @db.Timestamp(6)
-  CreatorId            String                @db.Uuid
-  LastModifierId       String                @db.Uuid
-  DismissReason        String?               @db.VarChar(1000)
-  RejectionReason      String?               @db.VarChar(1000)
-  ApprovalStatus       String                @default("Pending") @db.VarChar(50)
-  CAT_Logs             CAT_Logs[]
-  CAT_Results          CAT_Results[]
-  Wishlist             Wishlist[]
-  CourseMeta           CourseMeta[]
-  CourseNotifications  CourseNotifications[]
-  CourseReviews        CourseReviews[]
-  Categories           Categories            @relation(fields: [LeafCategoryId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Categories")
-  Instructors          Instructors           @relation(fields: [InstructorId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Instructors")
-  Users                Users                 @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Users_Creator")
-  Enrollments          Enrollments[]
-  Sections             Sections[]
-  UserAbilities        UserAbilities[]
+    @@index([CourseId], map: "IX_CourseReviews_CourseId")
+  }
 
-  @@index([InstructorId], map: "IX_Courses_InstructorId")
-  @@index([LeafCategoryId], map: "IX_Courses_LeafCategoryId")
-  @@index([Status], map: "IX_Courses_Status")
-  @@index([ApprovalStatus, Status], map: "IX_Courses_ApprovalStatus_Status")
-  @@index([CreationTime], map: "IX_Courses_CreationTime")
-  @@index([Price], map: "IX_Courses_Price")
-  @@index([Level], map: "IX_Courses_Level")
-}
+  model Courses {
+    Id                   String                @id(map: "PK_Courses") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Title                String                @db.VarChar(255)
+    MetaTitle            String                @db.VarChar(255)
+    ThumbUrl             String                @default("") @db.VarChar(255)
+    Intro                String                @default("") @db.VarChar(500)
+    Description          String                @default("") @db.VarChar(1000)
+    Status               String                @default("Draft")
+    Price                Float                 @default(0)
+    Discount             Float                 @default(0)
+    DiscountExpiry       DateTime              @default(now()) @db.Timestamp(6)
+    Level                String                @default("Beginner")
+    Outcomes             String                @default("") @db.VarChar(500)
+    Requirements         String                @default("") @db.VarChar(500)
+    LectureCount         Int                   @default(0) @db.SmallInt
+    LearnerCount         Int                   @default(0)
+    RatingCount          Int                   @default(0)
+    TotalRating          BigInt                @default(0)
+    LeafCategoryId       String                @db.Uuid
+    InstructorId         String                @db.Uuid
+    CreationTime         DateTime              @default(now()) @db.Timestamp(6)
+    LastModificationTime DateTime              @default(now()) @db.Timestamp(6)
+    CreatorId            String                @db.Uuid
+    LastModifierId       String                @db.Uuid
+    DismissReason        String?               @db.VarChar(1000)
+    RejectionReason      String?               @db.VarChar(1000)
+    ApprovalStatus       String                @default("Pending") @db.VarChar(50)
+    CAT_Logs             CAT_Logs[]
+    CAT_Results          CAT_Results[]
+    Wishlist             Wishlist[]
+    CourseMeta           CourseMeta[]
+    CourseNotifications  CourseNotifications[]
+    CourseReviews        CourseReviews[]
+    Categories           Categories            @relation(fields: [LeafCategoryId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Categories")
+    Instructors          Instructors           @relation(fields: [InstructorId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Instructors")
+    Users                Users                 @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Users_Creator")
+    Enrollments          Enrollments[]
+    Sections             Sections[]
+    UserAbilities        UserAbilities[]
 
-model Enrollments {
-  CreatorId            String    @db.Uuid
-  CourseId             String    @db.Uuid
-  Status               String    @default("Active")
-  BillId               String?   @db.Uuid
-  CreationTime         DateTime  @default(now()) @db.Timestamp(6)
-  AssignmentMilestones String    @default("[]")
-  LectureMilestones    String    @default("[]")
-  SectionMilestones    String    @default("[]")
-  LastViewedLectureId  String?   @db.Uuid
-  Bills                Bills?    @relation(fields: [BillId], references: [Id], onUpdate: NoAction, map: "FK_Enrollments_Bills")
-  Courses              Courses   @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Enrollments_Courses")
-  Lectures             Lectures? @relation(fields: [LastViewedLectureId], references: [Id], onUpdate: NoAction, map: "FK_Enrollments_Lectures")
-  Users                Users     @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Enrollments_Users")
+    @@index([InstructorId], map: "IX_Courses_InstructorId")
+    @@index([LeafCategoryId], map: "IX_Courses_LeafCategoryId")
+    @@index([Status], map: "IX_Courses_Status")
+    @@index([ApprovalStatus, Status], map: "IX_Courses_ApprovalStatus_Status")
+    @@index([CreationTime], map: "IX_Courses_CreationTime")
+    @@index([Price], map: "IX_Courses_Price")
+    @@index([Level], map: "IX_Courses_Level")
+  }
 
-  @@id([CreatorId, CourseId], map: "PK_Enrollments")
-  @@index([CourseId], map: "IX_Enrollments_CourseId")
-  @@index([CreatorId], map: "IX_Enrollments_CreatorId")
-}
+  model Enrollments {
+    CreatorId            String    @db.Uuid
+    CourseId             String    @db.Uuid
+    Status               String    @default("Active")
+    BillId               String?   @db.Uuid
+    CreationTime         DateTime  @default(now()) @db.Timestamp(6)
+    AssignmentMilestones String    @default("[]")
+    LectureMilestones    String    @default("[]")
+    SectionMilestones    String    @default("[]")
+    LastViewedLectureId  String?   @db.Uuid
+    Bills                Bills?    @relation(fields: [BillId], references: [Id], onUpdate: NoAction, map: "FK_Enrollments_Bills")
+    Courses              Courses   @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Enrollments_Courses")
+    Lectures             Lectures? @relation(fields: [LastViewedLectureId], references: [Id], onUpdate: NoAction, map: "FK_Enrollments_Lectures")
+    Users                Users     @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Enrollments_Users")
 
-model Instructors {
-  Id                                    String                @id(map: "PK_Instructors") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Intro                                 String                @default("") @db.VarChar(500)
-  Experience                            String                @default("") @db.VarChar(1000)
-  CreatorId                             String                @db.Uuid
-  CreationTime                          DateTime              @default(now()) @db.Timestamp(6)
-  LastModificationTime                  DateTime              @default(now()) @db.Timestamp(6)
-  Balance                               BigInt                @default(0)
-  CourseCount                           Int                   @default(0) @db.SmallInt
-  CourseNotifications                   CourseNotifications[]
-  Courses                               Courses[]
-  Users_Instructors_CreatorIdToUsers    Users                 @relation("Instructors_CreatorIdToUsers", fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Instructors_Users")
-  Users_Users_InstructorIdToInstructors Users[]               @relation("Users_InstructorIdToInstructors")
-}
+    @@id([CreatorId, CourseId], map: "PK_Enrollments")
+    @@index([CourseId], map: "IX_Enrollments_CourseId")
+    @@index([CreatorId], map: "IX_Enrollments_CreatorId")
+  }
 
-model LectureCompletions {
-  Id            String   @id(map: "PK_LectureCompletions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  UserId        String   @db.Uuid
-  LectureId     String   @db.Uuid
-  CompletedDate DateTime @default(now()) @db.Timestamp(6)
-  Lectures      Lectures @relation(fields: [LectureId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_LectureCompletions_Lectures")
-  Users         Users    @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_LectureCompletions_Users")
-}
+  model Instructors {
+    Id                                    String                @id(map: "PK_Instructors") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Intro                                 String                @default("") @db.VarChar(500)
+    Experience                            String                @default("") @db.VarChar(1000)
+    CreatorId                             String                @db.Uuid
+    CreationTime                          DateTime              @default(now()) @db.Timestamp(6)
+    LastModificationTime                  DateTime              @default(now()) @db.Timestamp(6)
+    Balance                               BigInt                @default(0)
+    CourseCount                           Int                   @default(0) @db.SmallInt
+    CourseNotifications                   CourseNotifications[]
+    Courses                               Courses[]
+    Users_Instructors_CreatorIdToUsers    Users                 @relation("Instructors_CreatorIdToUsers", fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Instructors_Users")
+    Users_Users_InstructorIdToInstructors Users[]               @relation("Users_InstructorIdToInstructors")
+  }
 
-model LectureMaterial {
-  LectureId String   @db.Uuid
-  Id        Int      @default(autoincrement())
-  Type      String
-  Url       String   @db.VarChar(255)
-  Lectures  Lectures @relation(fields: [LectureId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_LectureMaterial_Lectures")
+  model LectureCompletions {
+    Id            String   @id(map: "PK_LectureCompletions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    UserId        String   @db.Uuid
+    LectureId     String   @db.Uuid
+    CompletedDate DateTime @default(now()) @db.Timestamp(6)
+    Lectures      Lectures @relation(fields: [LectureId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_LectureCompletions_Lectures")
+    Users         Users    @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_LectureCompletions_Users")
+  }
 
-  @@id([LectureId, Id], map: "PK_LectureMaterial")
-}
+  model LectureMaterial {
+    LectureId String   @db.Uuid
+    Id        Int      @default(autoincrement())
+    Type      String
+    Url       String   @db.VarChar(255)
+    Lectures  Lectures @relation(fields: [LectureId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_LectureMaterial_Lectures")
 
-model Lectures {
-  Id                   String               @id(map: "PK_Lectures") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Title                String               @db.VarChar(255)
-  Content              String               @default("") @db.VarChar(3000)
-  SectionId            String               @db.Uuid
-  CreationTime         DateTime             @default(now()) @db.Timestamp(6)
-  LastModificationTime DateTime             @default(now()) @db.Timestamp(6)
-  IsPreviewable        Boolean              @default(false)
-  Comments             Comments[]
-  Enrollments          Enrollments[]
-  LectureCompletions   LectureCompletions[]
-  LectureMaterial      LectureMaterial[]
-  Sections             Sections             @relation(fields: [SectionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Lectures_Sections")
+    @@id([LectureId, Id], map: "PK_LectureMaterial")
+  }
 
-  @@index([SectionId], map: "IX_Lectures_SectionId")
-}
+  model Lectures {
+    Id                   String               @id(map: "PK_Lectures") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Title                String               @db.VarChar(255)
+    Content              String               @default("") @db.VarChar(3000)
+    SectionId            String               @db.Uuid
+    CreationTime         DateTime             @default(now()) @db.Timestamp(6)
+    LastModificationTime DateTime             @default(now()) @db.Timestamp(6)
+    IsPreviewable        Boolean              @default(false)
+    Comments             Comments[]
+    Enrollments          Enrollments[]
+    LectureCompletions   LectureCompletions[]
+    LectureMaterial      LectureMaterial[]
+    Sections             Sections             @relation(fields: [SectionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Lectures_Sections")
 
-model McqChoices {
-  Id            String          @id(map: "PK_McqChoices") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Content       String?
-  IsCorrect     Boolean         @default(false)
-  McqQuestionId String?         @db.Uuid
-  McqQuestions  McqQuestions?   @relation(fields: [McqQuestionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqChoices_McqQuestions")
-  McqUserAnswer McqUserAnswer[]
+    @@index([SectionId], map: "IX_Lectures_SectionId")
+  }
 
-  @@index([McqQuestionId], map: "IX_McqChoices_McqQuestionId")
-}
+  model McqChoices {
+    Id            String          @id(map: "PK_McqChoices") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Content       String?
+    IsCorrect     Boolean         @default(false)
+    McqQuestionId String?         @db.Uuid
+    McqQuestions  McqQuestions?   @relation(fields: [McqQuestionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqChoices_McqQuestions")
+    McqUserAnswer McqUserAnswer[]
 
-model McqQuestions {
-  Id           String       @id(map: "PK_McqQuestions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Content      String       @db.VarChar(500)
-  AssignmentId String       @db.Uuid
-  ParamA       Float?
-  ParamB       Float?
-  ParamC       Float?
-  Difficulty   String?      @db.VarChar(50)
-  CAT_Logs     CAT_Logs[]
-  McqChoices   McqChoices[]
-  Assignments  Assignments  @relation(fields: [AssignmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqQuestions_Assignments")
+    @@index([McqQuestionId], map: "IX_McqChoices_McqQuestionId")
+  }
 
-  @@index([AssignmentId], map: "IX_McqQuestions_AssignmentId")
-}
+  model McqQuestions {
+    Id           String       @id(map: "PK_McqQuestions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Content      String       @db.VarChar(500)
+    AssignmentId String       @db.Uuid
+    ParamA       Float?
+    ParamB       Float?
+    ParamC       Float?
+    Difficulty   String?      @db.VarChar(50)
+    CAT_Logs     CAT_Logs[]
+    McqChoices   McqChoices[]
+    Assignments  Assignments  @relation(fields: [AssignmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqQuestions_Assignments")
 
-model McqUserAnswer {
-  SubmissionId String      @db.Uuid
-  MCQChoiceId  String      @db.Uuid
-  McqChoices   McqChoices  @relation(fields: [MCQChoiceId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqUserAnswer_McqChoices")
-  Submissions  Submissions @relation(fields: [SubmissionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqUserAnswer_Submissions")
+    @@index([AssignmentId], map: "IX_McqQuestions_AssignmentId")
+  }
 
-  @@id([SubmissionId, MCQChoiceId], map: "PK_McqUserAnswer")
-}
+  model McqUserAnswer {
+    SubmissionId String      @db.Uuid
+    MCQChoiceId  String      @db.Uuid
+    McqChoices   McqChoices  @relation(fields: [MCQChoiceId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqUserAnswer_McqChoices")
+    Submissions  Submissions @relation(fields: [SubmissionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqUserAnswer_Submissions")
 
-model Notifications {
-  Id                                    String   @id(map: "PK_Notifications") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Message                               String   @db.VarChar(255)
-  Type                                  String
-  Status                                String   @default("Unread")
-  ReceiverId                            String?  @db.Uuid
-  CreationTime                          DateTime @default(now()) @db.Timestamp(6)
-  CreatorId                             String   @db.Uuid
-  Users_Notifications_CreatorIdToUsers  Users    @relation("Notifications_CreatorIdToUsers", fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Notifications_Users_Creator")
-  Users_Notifications_ReceiverIdToUsers Users?   @relation("Notifications_ReceiverIdToUsers", fields: [ReceiverId], references: [Id], onUpdate: NoAction, map: "FK_Notifications_Users_Receiver")
+    @@id([SubmissionId, MCQChoiceId], map: "PK_McqUserAnswer")
+  }
 
-  @@index([ReceiverId], map: "IX_Notifications_ReceiverId")
-}
+  model Notifications {
+    Id                                    String   @id(map: "PK_Notifications") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Message                               String   @db.VarChar(255)
+    Type                                  String
+    Status                                String   @default("Unread")
+    ReceiverId                            String?  @db.Uuid
+    CreationTime                          DateTime @default(now()) @db.Timestamp(6)
+    CreatorId                             String   @db.Uuid
+    Users_Notifications_CreatorIdToUsers  Users    @relation("Notifications_CreatorIdToUsers", fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Notifications_Users_Creator")
+    Users_Notifications_ReceiverIdToUsers Users?   @relation("Notifications_ReceiverIdToUsers", fields: [ReceiverId], references: [Id], onUpdate: NoAction, map: "FK_Notifications_Users_Receiver")
 
-model PrivateConversations {
-  conversation_id   Int               @id(map: "PK_PrivateConversations") @default(autoincrement())
-  user1_id          String            @db.VarChar(50)
-  user2_id          String            @db.VarChar(50)
-  created_at        DateTime          @default(now()) @db.Timestamp(6)
-  last_message_at   DateTime?         @db.Timestamp(6)
-  last_message_text String?
-  PrivateMessages   PrivateMessages[]
-}
+    @@index([ReceiverId], map: "IX_Notifications_ReceiverId")
+  }
 
-model PrivateMessages {
-  message_id           Int                  @id(map: "PK_PrivateMessages") @default(autoincrement())
-  conversation_id      Int
-  sender_id            String               @db.VarChar(50)
-  message_text         String
-  sent_at              DateTime             @default(now()) @db.Timestamp(6)
-  is_read              Boolean              @default(false)
-  PrivateConversations PrivateConversations @relation(fields: [conversation_id], references: [conversation_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_PrivateMessages_PrivateConversations")
-}
+  model PrivateConversations {
+    conversation_id   Int               @id(map: "PK_PrivateConversations") @default(autoincrement())
+    user1_id          String            @db.VarChar(50)
+    user2_id          String            @db.VarChar(50)
+    created_at        DateTime          @default(now()) @db.Timestamp(6)
+    last_message_at   DateTime?         @db.Timestamp(6)
+    last_message_text String?
+    PrivateMessages   PrivateMessages[]
+  }
 
-model Reactions {
-  CreatorId      String        @db.Uuid
-  SourceEntityId String        @db.Uuid
-  Content        String        @db.VarChar(10)
-  SourceType     String
-  ArticleId      String?       @db.Uuid
-  ChatMessageId  String?       @db.Uuid
-  CommentId      String?       @db.Uuid
-  CreationTime   DateTime      @default(now()) @db.Timestamp(6)
-  Articles       Articles?     @relation(fields: [ArticleId], references: [Id], onUpdate: NoAction, map: "FK_Reactions_Articles")
-  ChatMessages   ChatMessages? @relation(fields: [ChatMessageId], references: [Id], onUpdate: NoAction, map: "FK_Reactions_ChatMessages")
-  Comments       Comments?     @relation(fields: [CommentId], references: [Id], onUpdate: NoAction, map: "FK_Reactions_Comments")
-  Users          Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Reactions_Users")
+  model PrivateMessages {
+    message_id           Int                  @id(map: "PK_PrivateMessages") @default(autoincrement())
+    conversation_id      Int
+    sender_id            String               @db.VarChar(50)
+    message_text         String
+    sent_at              DateTime             @default(now()) @db.Timestamp(6)
+    is_read              Boolean              @default(false)
+    PrivateConversations PrivateConversations @relation(fields: [conversation_id], references: [conversation_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_PrivateMessages_PrivateConversations")
+  }
 
-  @@id([CreatorId, SourceEntityId], map: "PK_Reactions")
-}
+  model Reactions {
+    CreatorId      String        @db.Uuid
+    SourceEntityId String        @db.Uuid
+    Content        String        @db.VarChar(10)
+    SourceType     String
+    ArticleId      String?       @db.Uuid
+    ChatMessageId  String?       @db.Uuid
+    CommentId      String?       @db.Uuid
+    CreationTime   DateTime      @default(now()) @db.Timestamp(6)
+    Articles       Articles?     @relation(fields: [ArticleId], references: [Id], onUpdate: NoAction, map: "FK_Reactions_Articles")
+    ChatMessages   ChatMessages? @relation(fields: [ChatMessageId], references: [Id], onUpdate: NoAction, map: "FK_Reactions_ChatMessages")
+    Comments       Comments?     @relation(fields: [CommentId], references: [Id], onUpdate: NoAction, map: "FK_Reactions_Comments")
+    Users          Users         @relation(fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Reactions_Users")
 
-model Sections {
-  Id                   String        @id(map: "PK_Sections") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Index                Int           @default(0) @db.SmallInt
-  Title                String        @db.VarChar(255)
-  LectureCount         Int           @default(0) @db.SmallInt
-  CourseId             String        @db.Uuid
-  CreationTime         DateTime      @default(now()) @db.Timestamp(6)
-  LastModificationTime DateTime      @default(now()) @db.Timestamp(6)
-  Assignments          Assignments[]
-  Lectures             Lectures[]
-  Courses              Courses       @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Sections_Courses")
+    @@id([CreatorId, SourceEntityId], map: "PK_Reactions")
+  }
 
-  @@index([CourseId], map: "IX_Sections_CourseId")
-}
+  model Sections {
+    Id                   String        @id(map: "PK_Sections") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Index                Int           @default(0) @db.SmallInt
+    Title                String        @db.VarChar(255)
+    LectureCount         Int           @default(0) @db.SmallInt
+    CourseId             String        @db.Uuid
+    CreationTime         DateTime      @default(now()) @db.Timestamp(6)
+    LastModificationTime DateTime      @default(now()) @db.Timestamp(6)
+    Assignments          Assignments[]
+    Lectures             Lectures[]
+    Courses              Courses       @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Sections_Courses")
 
-model Submissions {
-  Id                   String          @id(map: "PK_Submissions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Mark                 Float           @default(0)
-  TimeSpentInSec       Int             @default(0)
-  AssignmentId         String          @db.Uuid
-  CreationTime         DateTime        @default(now()) @db.Timestamp(6)
-  LastModificationTime DateTime        @default(now()) @db.Timestamp(6)
-  CreatorId            String          @db.Uuid
-  LastModifierId       String          @db.Uuid
-  McqUserAnswer        McqUserAnswer[]
-  Assignments          Assignments     @relation(fields: [AssignmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Submissions_Assignments")
-  Users                Users           @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Submissions_Users")
-}
+    @@index([CourseId], map: "IX_Sections_CourseId")
+  }
 
-model Tag {
-  ArticleId String   @db.Uuid
-  Id        Int      @default(autoincrement())
-  Title     String   @db.VarChar(45)
-  Articles  Articles @relation(fields: [ArticleId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Tag_Articles")
+  model Submissions {
+    Id                   String          @id(map: "PK_Submissions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Mark                 Float           @default(0)
+    TimeSpentInSec       Int             @default(0)
+    AssignmentId         String          @db.Uuid
+    CreationTime         DateTime        @default(now()) @db.Timestamp(6)
+    LastModificationTime DateTime        @default(now()) @db.Timestamp(6)
+    CreatorId            String          @db.Uuid
+    LastModifierId       String          @db.Uuid
+    McqUserAnswer        McqUserAnswer[]
+    Assignments          Assignments     @relation(fields: [AssignmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Submissions_Assignments")
+    Users                Users           @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Submissions_Users")
+  }
 
-  @@id([ArticleId, Id], map: "PK_Tag")
-}
+  model Tag {
+    ArticleId String   @db.Uuid
+    Id        Int      @default(autoincrement())
+    Title     String   @db.VarChar(45)
+    Articles  Articles @relation(fields: [ArticleId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Tag_Articles")
 
-model UserAbilities {
-  Id         String    @id(map: "PK_UserAbilities") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  UserId     String    @db.Uuid
-  CourseId   String    @db.Uuid
-  Theta      Float?
-  LastUpdate DateTime? @db.Timestamp(6)
-  Courses    Courses   @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Courses")
-  Users      Users     @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Users")
+    @@id([ArticleId, Id], map: "PK_Tag")
+  }
 
-  @@index([CourseId], map: "IX_UserAbilities_CourseId")
-  @@index([UserId], map: "IX_UserAbilities_UserId")
-}
+  model UserAbilities {
+    Id         String    @id(map: "PK_UserAbilities") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    UserId     String    @db.Uuid
+    CourseId   String    @db.Uuid
+    Theta      Float?
+    LastUpdate DateTime? @db.Timestamp(6)
+    Courses    Courses   @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Courses")
+    Users      Users     @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Users")
 
-model Users {
-  Id                                            String                  @id(map: "PK_Users") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  UserName                                      String                  @db.VarChar(45)
-  Password                                      String                  @db.VarChar(100)
-  Email                                         String                  @db.VarChar(45)
-  FullName                                      String                  @db.VarChar(45)
-  MetaFullName                                  String                  @db.VarChar(45)
-  AvatarUrl                                     String                  @db.VarChar(100)
-  Role                                          String
-  Token                                         String                  @db.VarChar(100)
-  RefreshToken                                  String                  @db.VarChar(100)
-  IsVerified                                    Boolean                 @default(false)
-  IsApproved                                    Boolean                 @default(false)
-  AccessFailedCount                             Int                     @default(0) @db.SmallInt
-  LoginProvider                                 String?                 @db.VarChar(100)
-  ProviderKey                                   String?                 @db.VarChar(100)
-  Bio                                           String                  @default("") @db.VarChar(1000)
-  DateOfBirth                                   DateTime?               @db.Timestamp(6)
-  Phone                                         String?                 @db.VarChar(45)
-  EnrollmentCount                               Int                     @default(0)
-  InstructorId                                  String?                 @db.Uuid
-  CreationTime                                  DateTime                @default(now()) @db.Timestamp(6)
-  LastModificationTime                          DateTime                @default(now()) @db.Timestamp(6)
-  SystemBalance                                 BigInt                  @default(0)
-  avatar_url                                    String?                 @db.VarChar(255)
-  last_seen                                     DateTime?               @db.Timestamp(6)
-  Articles                                      Articles[]
-  AssignmentCompletions                         AssignmentCompletions[]
-  Assignments                                   Assignments[]
-  Bills                                         Bills[]
-  CAT_Logs                                      CAT_Logs[]
-  CAT_Results                                   CAT_Results[]
-  CartCheckout                                  CartCheckout[]
-  ChatMessages                                  ChatMessages[]
-  Comments                                      Comments[]
-  ConversationMembers                           ConversationMembers[]
-  Conversations                                 Conversations[]
-  CourseReviews                                 CourseReviews[]
-  Courses                                       Courses[]
-  Enrollments                                   Enrollments[]
-  Instructors_Instructors_CreatorIdToUsers      Instructors[]           @relation("Instructors_CreatorIdToUsers")
-  LectureCompletions                            LectureCompletions[]
-  Notifications_Notifications_CreatorIdToUsers  Notifications[]         @relation("Notifications_CreatorIdToUsers")
-  Notifications_Notifications_ReceiverIdToUsers Notifications[]         @relation("Notifications_ReceiverIdToUsers")
-  Reactions                                     Reactions[]
-  Submissions                                   Submissions[]
-  UserAbilities                                 UserAbilities[]
-  Wishlist                                      Wishlist[]
-  Instructors_Users_InstructorIdToInstructors   Instructors?            @relation("Users_InstructorIdToInstructors", fields: [InstructorId], references: [Id], onUpdate: NoAction, map: "FK_Users_Instructors")
+    @@index([CourseId], map: "IX_UserAbilities_CourseId")
+    @@index([UserId], map: "IX_UserAbilities_UserId")
+  }
 
-  @@index([Email], map: "IX_Users_Email")
-  @@index([InstructorId], map: "IX_Users_InstructorId")
-  @@index([UserName], map: "IX_Users_UserName")
-}
+  model Users {
+    Id                                            String                  @id(map: "PK_Users") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    UserName                                      String                  @db.VarChar(45)
+    Password                                      String                  @db.VarChar(100)
+    Email                                         String                  @db.VarChar(45)
+    FullName                                      String                  @db.VarChar(45)
+    MetaFullName                                  String                  @db.VarChar(45)
+    AvatarUrl                                     String                  @db.VarChar(255)
+    Role                                          String
+    Token                                         String                  @db.VarChar(100)
+    RefreshToken                                  String                  @db.VarChar(100)
+    IsVerified                                    Boolean                 @default(false)
+    IsApproved                                    Boolean                 @default(false)
+    AccessFailedCount                             Int                     @default(0) @db.SmallInt
+    LoginProvider                                 String?                 @db.VarChar(100)
+    ProviderKey                                   String?                 @db.VarChar(100)
+    Bio                                           String                  @default("") @db.VarChar(1000)
+    DateOfBirth                                   DateTime?               @db.Timestamp(6)
+    Phone                                         String?                 @db.VarChar(45)
+    EnrollmentCount                               Int                     @default(0)
+    InstructorId                                  String?                 @db.Uuid
+    CreationTime                                  DateTime                @default(now()) @db.Timestamp(6)
+    LastModificationTime                          DateTime                @default(now()) @db.Timestamp(6)
+    SystemBalance                                 BigInt                  @default(0)
+    last_seen                                     DateTime?               @db.Timestamp(6)
+    Articles                                      Articles[]
+    AssignmentCompletions                         AssignmentCompletions[]
+    Assignments                                   Assignments[]
+    Bills                                         Bills[]
+    CAT_Logs                                      CAT_Logs[]
+    CAT_Results                                   CAT_Results[]
+    CartCheckout                                  CartCheckout[]
+    ChatMessages                                  ChatMessages[]
+    Comments                                      Comments[]
+    ConversationMembers                           ConversationMembers[]
+    Conversations                                 Conversations[]
+    CourseReviews                                 CourseReviews[]
+    Courses                                       Courses[]
+    Enrollments                                   Enrollments[]
+    Instructors_Instructors_CreatorIdToUsers      Instructors[]           @relation("Instructors_CreatorIdToUsers")
+    LectureCompletions                            LectureCompletions[]
+    Notifications_Notifications_CreatorIdToUsers  Notifications[]         @relation("Notifications_CreatorIdToUsers")
+    Notifications_Notifications_ReceiverIdToUsers Notifications[]         @relation("Notifications_ReceiverIdToUsers")
+    Reactions                                     Reactions[]
+    Submissions                                   Submissions[]
+    UserAbilities                                 UserAbilities[]
+    Wishlist                                      Wishlist[]
+    Instructors_Users_InstructorIdToInstructors   Instructors?            @relation("Users_InstructorIdToInstructors", fields: [InstructorId], references: [Id], onUpdate: NoAction, map: "FK_Users_Instructors")
 
-model EFMigrationsHistory {
-  MigrationId    String @id(map: "PK___EFMigrationsHistory") @db.VarChar(150)
-  ProductVersion String @db.VarChar(32)
+    @@index([Email], map: "IX_Users_Email")
+    @@index([InstructorId], map: "IX_Users_InstructorId")
+    @@index([UserName], map: "IX_Users_UserName")
+  }
 
-  @@map("__EFMigrationsHistory")
-}
+  model EFMigrationsHistory {
+    MigrationId    String @id(map: "PK___EFMigrationsHistory") @db.VarChar(150)
+    ProductVersion String @db.VarChar(32)
 
-model Wishlist {
-  UserId       String   @db.Uuid
-  CourseId     String   @db.Uuid
-  CreationTime DateTime @default(now()) @db.Timestamp(6)
-  Users        Users    @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Wishlist_Users")
-  Courses      Courses  @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Wishlist_Courses")
+    @@map("__EFMigrationsHistory")
+  }
 
-  @@id([UserId, CourseId], map: "PK_Wishlist")
-  @@index([CourseId], map: "IX_Wishlist_CourseId")
-  @@index([UserId], map: "IX_Wishlist_UserId")
-}
+  model Wishlist {
+    UserId       String   @db.Uuid
+    CourseId     String   @db.Uuid
+    CreationTime DateTime @default(now()) @db.Timestamp(6)
+    Users        Users    @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Wishlist_Users")
+    Courses      Courses  @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Wishlist_Courses")
+
+    @@id([UserId, CourseId], map: "PK_Wishlist")
+    @@index([CourseId], map: "IX_Wishlist_CourseId")
+    @@index([UserId], map: "IX_Wishlist_UserId")
+  }

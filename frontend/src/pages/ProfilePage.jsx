@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Camera, User, Briefcase, Calendar, Phone, Mail, ChevronRight, Save } from 'lucide-react';
+import TransactionHistory from '../components/Profile/TransactionHistory';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
@@ -32,6 +34,8 @@ const InputField = ({ label, icon, value, onChange, type = "text", placeholder, 
 
 const ProfilePage = () => {
   const { user, refreshUser } = useAuth(); // signIn here acts as a way to refresh user context if needed, or we rely on re-fetch
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'info');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -142,12 +146,40 @@ const ProfilePage = () => {
         </div>
 
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Information Settings</h1>
-          <p className="text-slate-400 max-w-2xl">Manage your personal details and public profile information visible to other students and mentors.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Account Settings</h1>
+          <p className="text-slate-400 max-w-2xl">Manage your personal details and view your transaction history.</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8 border-b border-white/10">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={`pb-4 px-2 text-sm font-medium transition-colors relative ${
+              activeTab === 'info' ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Personal Info
+            {activeTab === 'info' && (
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-500 rounded-t-full" />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('transactions')}
+            className={`pb-4 px-2 text-sm font-medium transition-colors relative ${
+              activeTab === 'transactions' ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Transaction History
+            {activeTab === 'transactions' && (
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-violet-500 rounded-t-full" />
+            )}
+          </button>
         </div>
 
         <div className="bg-[#1A1333] border border-white/5 rounded-2xl p-6 md:p-10 shadow-xl">
-          {/* Avatar Section */}
+          {activeTab === 'info' ? (
+            <>
+              {/* Avatar Section */}
           <div className="flex flex-col sm:flex-row items-center gap-8 mb-10 pb-10 border-b border-white/5">
             <div className="relative group">
               <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-violet-600 to-fuchsia-600">
@@ -277,6 +309,10 @@ const ProfilePage = () => {
               )}
             </button>
           </div>
+            </>
+          ) : (
+            <TransactionHistory />
+          )}
         </div>
       </main>
 
