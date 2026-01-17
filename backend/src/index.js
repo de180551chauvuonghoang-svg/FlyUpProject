@@ -12,6 +12,7 @@ import coursesRouter from './routers/courses.js';
 import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
+import adminRouter from './routers/admin.js';
 import { getCourses, getCategories } from './services/courseService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,9 +29,26 @@ if (result.error) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:5173',  // Frontend
+  'http://localhost:5174',  // Admin
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL
+].filter(Boolean);
+
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -49,12 +67,13 @@ app.use('/api/checkout', checkoutRouter);
 app.use('/api/comments', commentRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
+app.use('/api/admin', adminRouter);
 
 // Error handling middleware
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  
+
   // Handle JSON parse errors
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({
@@ -63,7 +82,7 @@ app.use((err, req, res, next) => {
     });
   }
 
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Something went wrong!',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
@@ -73,7 +92,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
-  
+
   // Warm up cache
   (async () => {
     try {
