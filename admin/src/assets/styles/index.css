@@ -1344,3 +1344,198 @@ body::before {
     text-align: center;
   }
 }
+
+/* ========================================
+   Courses Page
+   ======================================== */
+.courses-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.courses-table-section {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.courses-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+.courses-table th,
+.courses-table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.courses-table th {
+  background: var(--color-bg-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+}
+
+.courses-table tbody tr {
+  transition: background var(--transition-fast);
+}
+
+.courses-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.courses-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Course Cell */
+.course-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 350px;
+}
+
+.course-thumbnail-small {
+  width: 80px;
+  height: 45px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.course-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.course-title-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.course-category {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* Instructor Cell */
+.instructor-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.instructor-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.instructor-cell span {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Course Stats Cell */
+.course-stats-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.course-stats-cell .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.course-stats-cell .stat-item svg {
+  color: var(--color-accent-primary);
+}
+
+/* Course Metrics */
+.course-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.metric-item svg {
+  color: var(--color-accent-primary);
+}
+
+/* Status Badges - Additional statuses for courses */
+.status-badge.pending {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.status-badge.approved {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-accent-green);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-badge.rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-accent-red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-badge.archived {
+  background: rgba(100, 116, 139, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Dropdown item variants */
+.dropdown-item.warning {
+  color: #eab308;
+}
+
+.dropdown-item.warning:hover {
+  background: rgba(234, 179, 8, 0.1);
+}
+
+/* Courses Page Responsive */
+@media (max-width: 1200px) {
+  .course-cell {
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 992px) {
+  .courses-table {
+    min-width: 800px;
+  }
+  
+  .course-thumbnail-small {
+    width: 60px;
+    height: 34px;
+  }
+}
