@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Dashboard from '../pages/Dashboard';
 import Users from '../pages/Users';
+import Courses from '../pages/Courses';
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'courses',
-        element: <div className="coming-soon">Courses - Coming Soon</div>,
+        element: <Courses />,
       },
       {
         path: 'courses/:id',
