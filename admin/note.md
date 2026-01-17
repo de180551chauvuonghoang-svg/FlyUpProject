@@ -9,4 +9,12 @@
 - Utils: các hàm tiện ích dùng chung cho toàn hệ thống
 - Routes: định tuyến mỗi link ứng với một trang cụ thể nào đó
 - Contexts: quản lý states tạm thời cho toàn hệ thống
-4. 
+4. Admin
+- MVC => Model, View, Controller, DAO (Server-side)
+- Backend 
+
+=> Router => Controller => Service => Model
+=> /api/v1/users => controller => service => model
+=> /api/v1/courses
+=> /api/v1/orders
+...
