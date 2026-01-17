@@ -3,8 +3,7 @@ import {
   LayoutDashboard,
   BookOpen,
   Users,
-  BarChart3,
-  DollarSign,
+  ShoppingCart,
   LogOut,
   Rocket
 } from 'lucide-react';
@@ -15,28 +14,23 @@ import {
 const menuItems = [
   {
     path: '/dashboard',
-    label: 'Command Deck',
+    label: 'Dashboard',
     icon: LayoutDashboard,
   },
   {
-    path: '/courses',
-    label: 'Course Grid',
-    icon: BookOpen,
-  },
-  {
-    path: '/cadets',
-    label: 'Cadets',
+    path: '/users',
+    label: 'Users',
     icon: Users,
   },
   {
-    path: '/analytics',
-    label: 'Astrometrics',
-    icon: BarChart3,
+    path: '/courses',
+    label: 'Courses',
+    icon: BookOpen,
   },
   {
-    path: '/revenue',
-    label: 'Revenue',
-    icon: DollarSign,
+    path: '/orders',
+    label: 'Orders',
+    icon: ShoppingCart,
   },
 ];
 
