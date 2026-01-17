@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   BookOpen,
@@ -7,6 +7,7 @@ import {
   LogOut,
   Rocket
 } from 'lucide-react';
+import useAuth from '../../hooks/useAuth';
 
 /**
  * Menu items configuration
@@ -40,11 +41,12 @@ const menuItems = [
  */
 function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
-  const handleLogout = () => {
-    // Clear auth token and redirect
-    localStorage.removeItem('adminToken');
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
   };
 
   return (
@@ -86,12 +88,12 @@ function Sidebar() {
       <div className="sidebar-user">
         <div className="user-avatar">
           <img
-            src="https://ui-avatars.com/api/?name=Admin&background=a855f7&color=0a0a1a&bold=true"
-            alt="Admin"
+            src={user?.avatar || "https://ui-avatars.com/api/?name=Admin&background=a855f7&color=0a0a1a&bold=true"}
+            alt={user?.fullName || "Admin"}
           />
         </div>
         <div className="user-info">
-          <span className="user-name">Admin</span>
+          <span className="user-name">{user?.fullName || "Admin"}</span>
         </div>
       </div>
 
@@ -105,3 +107,4 @@ function Sidebar() {
 }
 
 export default Sidebar;
+
