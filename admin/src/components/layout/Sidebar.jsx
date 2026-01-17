@@ -91,7 +91,7 @@ function Sidebar() {
           />
         </div>
         <div className="user-info">
-          <span className="user-name">Dr. Admin</span>
+          <span className="user-name">Admin</span>
         </div>
       </div>
 
