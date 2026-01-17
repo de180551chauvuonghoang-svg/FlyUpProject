@@ -11,6 +11,7 @@ import checkoutRouter from './routers/checkout.js';
 import coursesRouter from './routers/courses.js';
 import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
+import adminRouter from './routers/admin.js';
 import { getCourses, getCategories } from './services/courseService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,12 +48,13 @@ app.use('/api/courses', coursesRouter);
 app.use('/api/checkout', checkoutRouter);
 app.use('/api/comments', commentRouter);
 app.use('/api/wishlist', wishlistRouter);
+app.use('/api/admin', adminRouter);
 
 // Error handling middleware
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  
+
   // Handle JSON parse errors
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({
@@ -61,7 +63,7 @@ app.use((err, req, res, next) => {
     });
   }
 
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Something went wrong!',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
@@ -71,7 +73,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
-  
+
   // Warm up cache
   (async () => {
     try {
