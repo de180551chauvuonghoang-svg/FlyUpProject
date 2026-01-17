@@ -22,6 +22,7 @@ import coursesRouter from './routers/courses.js';
 import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
+import adminRouter from './routers/admin.js';
 import chatbotRouter from './routers/chatbot.js';
 import quizRouter from './routers/quiz.js';
 import { getCourses, getCategories } from './services/courseService.js';
@@ -74,6 +75,7 @@ app.use('/api/checkout', checkoutRouter);
 app.use('/api/comments', commentRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/chatbot', chatbotRouter);
 app.use('/api/quiz', quizRouter);
 
@@ -85,7 +87,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  
+
   // Handle JSON parse errors
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({
@@ -94,7 +96,7 @@ app.use((err, req, res, next) => {
     });
   }
 
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Something went wrong!',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
@@ -103,9 +105,8 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
-  console.log(`� Swagger Docs available at http://localhost:${PORT}/api-docs`);
-  console.log(`�📦 Environment: ${process.env.NODE_ENV || 'development'}`);
-  
+  console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
+
   // Warm up cache
   (async () => {
     try {
