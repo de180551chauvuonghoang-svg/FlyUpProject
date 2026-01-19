@@ -1,28 +1,49 @@
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { Copy, X, Check, Share2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 export default function ShareModal({ isOpen, onClose }) {
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef(null);
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(currentUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
   };
 
-  if (!isOpen) return null;
-
   return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {isOpen && (
+        <Motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        >
         {/* Backdrop */}
         <Motion.div
           initial={{ opacity: 0 }}
@@ -100,7 +121,8 @@ export default function ShareModal({ isOpen, onClose }) {
             </div>
           </div>
         </Motion.div>
-      </div>
+        </Motion.div>
+      )}
     </AnimatePresence>,
     document.body
   );
