@@ -1,58 +1,144 @@
-# Share Website Feature Documentation
+# Tài liệu Tính năng Chia sẻ Website (Share Feature)
 
-## Overview
+Tài liệu này giải thích chi tiết về mặt kỹ thuật và logic hoạt động của tính năng chia sẻ website, bao gồm cả code đã được tối ưu hóa.
 
-The **Share Website Feature** allows users to easily share the current page URL with others. It provides two main methods for sharing:
-1. **QR Code**: Generates a scannable QR code that links directly to the current page.
-2. **Copy Link**: A convenient button to copy the current URL to the clipboard.
+## 1. Cấu Trúc Tổng Quan
 
-## How It Works
+Tính năng được xây dựng dựa trên 2 thành phần chính:
+1.  **`Header.jsx`**: Nơi người dùng bắt đầu tương tác (nút "Share").
+2.  **`ShareModal.jsx`**: Component hiển thị Popup chứa mã QR và nút sao chép link.
 
-### 1. User Interaction
+---
 
-- Users click the **Share** button (icon: `Share2`) located in the website's header.
-- This action opens a modal overlay (`ShareModal`).
+## 2. Chi Tiết Thực Hiện & Giải Thích Code
 
-### 2. Share Modal
+### A. Tích hợp vào Header (`Header.jsx`)
+Tại đây, chúng ta thêm một nút bấm vào thanh điều hướng. Khi bấm vào, một state sẽ được bật lên để mở Modal.
 
-The modal displays:
-- **QR Code**: A dynamic QR code generated using the current page's URL (`window.location.href`).
-- **URL Display**: The text of the current URL.
-- **Copy Button**: A button that, when clicked, copies the URL to the user's clipboard and provides visual feedback ("Copied").
+**Logic chính:**
+1.  Khai báo state `isShareModalOpen`.
+2.  Thêm nút bấm có icon `Share2`.
+3.  Nhúng component `<ShareModal />` vào cuối file (để nó tách biệt khỏi logic layout chính).
 
-### 3. Closing the Modal
+**Code Snippet:**
+```javascript
+import { Share2 } from 'lucide-react';
+import ShareModal from '../ShareModal';
 
-- Users can close the modal by clicking the **X** button, clicking on the backdrop, or pressing the `Esc` key (handled by standard modal behavior if configured, currently click interactions).
+const Header = () => {
+  // 1. State quản lý đóng/mở Modal
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-## Code Structure & Explanation
+  return (
+    <header>
+      {/* ... code cũ ... */}
+      
+      {/* 2. Nút kích hoạt Share Modal */}
+      <button
+        onClick={() => setIsShareModalOpen(true)}
+        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e]..."
+        title="Share this page"
+      >
+        <Share2 className="w-5 h-5" />
+      </button>
 
-### `ShareModal.jsx`
+      {/* 3. Component Modal nhận vào state và hàm đóng */}
+      <ShareModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+      />
+    </header>
+  );
+};
+```
 
-This is the core component that handles the UI and logic for sharing.
+---
 
-- **Dependencies**:
-  - `qrcode.react`: Library used to generate the SVG QR code.
-  - `framer-motion`: Handles the fade-in and scale-in animations for a smooth user experience.
-  - `lucide-react`: Provides the icons (`Copy`, `Check`, `X`, `Share2`).
+### B. Logic Modal Chia Sẻ (`ShareModal.jsx`)
+Đây là phần quan trọng nhất, xử lý hiển thị QR Code và Copy Link.
 
-- **Logic**:
-  - **State**:
-    - `copied`: Boolean state to toggle the button text between "Copy" and "Copied" for 2 seconds after clicking.
-  - **`currentUrl`**: Derived directly from `window.location.href` to ensure it captures the client-side URL correctly.
-  - **`handleCopy`**: An async function that uses `navigator.clipboard.writeText(currentUrl)` to copy the link. It handles errors gracefully.
-  - **Portals**: The modal is rendered using `ReactDOM.createPortal` attached to `document.body` to ensure it overlays all other content correctly, unaffected by the parent component's z-index or overflow settings.
+#### 1. QR Code
+Sử dụng thư viện `qrcode.react` để tự động tạo mã từ URL hiện tại.
+```javascript
+const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
-### `Header.jsx`
+// Render QR Code
+<QRCodeSVG
+  value={currentUrl} // Giá trị link cần mã hóa
+  size={200}
+  level="H"          // Mức độ sửa lỗi cao nhất (High)
+/>
+```
 
-The header component was updated to include the entry point for the share feature.
+#### 2. Xử lý Copy Link (Best Practice)
+Đoạn code copy này đã được tối ưu để tránh lỗi memory leak khi người dùng đóng modal quá nhanh hoặc bấm nhiều lần.
 
-- **Integration**:
-  - Imported `ShareModal` and `Share2` icon.
-  - Added state `isShareModalOpen` to control the visibility of the modal.
-  - Added a button with the `Share2` icon in the navigation bar. clicking it sets `isShareModalOpen(true)`.
-  - Rendered `<ShareModal />` at the end of the component, passing the `isOpen` state and an `onClose` handler to close it.
+*   **`useRef`**: Dùng để lưu trữ ID của `setTimeout`. Khác với biến thường, giá trị trong `useRef` giữ nguyên qua các lần render nhưng thay đổi nó không gây re-render.
+*   **`useEffect`**: Dùng để dọn dẹp (cleanup) khi component bị hủy (unmount).
 
-## Technical Details
+```javascript
+/* === Logic Xử Lý Copy An Toàn === */
+export default function ShareModal({ isOpen, onClose }) {
+  const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef(null); // Lưu tham chiếu timer
 
-- **Styling**: Built with Tailwind CSS, utilizing `backdrop-blur` and semi-transparent backgrounds to match the site's "glassmorphism" aesthetic.
-- **Dark Mode**: The design primarily supports dark mode, consistent with the rest of the application.
+  // Cleanup: Xóa timer nếu người dùng đóng modal trước khi hết 2 giây
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopy = async () => {
+    try {
+      // 1. Copy vào Clipboard
+      await navigator.clipboard.writeText(currentUrl);
+      setCopied(true);
+      
+      // 2. Xóa timer cũ (nếu có) để tránh xung đột
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      
+      // 3. Tạo timer mới để reset nút về trạng thái ban đầu sau 2s
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
+```
+
+#### 3. Animation Out (Hiệu ứng khi đóng)
+Để modal có hiệu ứng mờ dần khi tắt (Exit Animation), chúng ta phải giữ `AnimatePresence` luôn render, và chỉ ẩn hiện nội dung bên trong nó.
+
+```javascript
+/* === Logic Animation === */
+return createPortal(
+  <AnimatePresence>
+    {/* Kiểm tra isOpen BÊN TRONG AnimatePresence */}
+    {isOpen && (
+      <Motion.div
+        initial={{ opacity: 0 }}    // Bắt đầu: Trong suốt
+        animate={{ opacity: 1 }}    // Hiện: Rõ nét
+        exit={{ opacity: 0 }}       // Tắt: Mờ dần đi (Quan trọng)
+        className="fixed inset-0..."
+      >
+        {/* Nội dung Modal */}
+      </Motion.div>
+    )}
+  </AnimatePresence>,
+  document.body
+);
+```
+
+## 3. Tổng Kết Các Kỹ Thuật Sử Dụng
+
+1.  **React Portal**: Giúp Modal hiển thị đè lên trên tất cả giao diện (`z-index` không bị ảnh hưởng bởi component cha).
+2.  **Framer Motion**: Tạo trải nghiệm người dùng mượt mà với hiệu ứng xuất hiện và biến mất.
+3.  **Clean Code / Memory Leak Prevention**: Sử dụng `useRef` và cleanup function trong `useEffect` để đảm bảo không gọi `setState` trên component đã bị hủy.
+4.  **Client-Side URL**: Sử dụng `window.location.href` để tự động lấy link chính xác ở mọi môi trường (Dev, Vercel, Production).

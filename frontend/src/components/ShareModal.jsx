@@ -1,6 +1,6 @@
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { Copy, X, Check, Share2 } from 'lucide-react';
+import { Copy, X, Check } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -70,8 +70,8 @@ export default function ShareModal({ isOpen, onClose }) {
 
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="mx-auto w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mb-4 text-blue-400 border border-blue-500/20">
-              <Share2 className="w-6 h-6" />
+            <div className="flex justify-center mb-4">
+              <img src="/FlyUpLogin.png" alt="FlyUp Logo" className="h-16 object-contain" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Share this page</h3>
             <p className="text-gray-400 text-sm">
@@ -87,6 +87,14 @@ export default function ShareModal({ isOpen, onClose }) {
               level="H"
               includeMargin={false}
               className="w-full h-full"
+              imageSettings={{
+                src: "/FluyUpLogo.png",
+                x: undefined,
+                y: undefined,
+                height: 40,
+                width: 40,
+                excavate: true,
+              }}
             />
           </div>
 
