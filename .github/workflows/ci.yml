@@ -56,6 +56,11 @@ jobs:
           cache: "npm"
           cache-dependency-path: "./backend/package-lock.json"
 
+      - name: Disable component ERD Generator (CI Optimization)
+        # Xóa generator erd khỏi schema.prisma để tránh lỗi Puppeteer trong môi trường CI
+        run: |
+          sed -i '/generator erd/,/}/d' prisma/schema.prisma
+
       - name: Install Backend Dependencies
         run: npm ci
 
