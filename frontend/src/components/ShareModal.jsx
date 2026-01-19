@@ -88,7 +88,7 @@ export default function ShareModal({ isOpen, onClose }) {
               includeMargin={false}
               className="w-full h-full"
               imageSettings={{
-                src: "/FluyUpLogo.png",
+                src: "/FlyUpTeam.png",
                 x: undefined,
                 y: undefined,
                 height: 40,
