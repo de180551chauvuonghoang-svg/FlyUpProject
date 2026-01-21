@@ -30,8 +30,8 @@ const authService = {
       throw new Error(data.message || data.error || 'Login failed');
     }
 
-    // Check if user is admin
-    if (data.user.role !== 'Admin') {
+    // Check if user is admin (case-insensitive)
+    if (data.user.role?.toLowerCase() !== 'admin') {
       throw new Error('Access denied. Admin privileges required.');
     }
 
@@ -68,8 +68,8 @@ const authService = {
       throw new Error(data.details || data.error || 'Google login failed');
     }
 
-    // Check if user is admin
-    if (data.user.role !== 'Admin') {
+    // Check if user is admin (case-insensitive)
+    if (data.user.role?.toLowerCase() !== 'admin') {
       throw new Error('Access denied. Admin privileges required.');
     }
 

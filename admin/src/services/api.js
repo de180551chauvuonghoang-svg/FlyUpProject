@@ -18,7 +18,7 @@ const defaultHeaders = {
  * @returns {string|null}
  */
 const getAuthToken = () => {
-    return localStorage.getItem('adminToken');
+    return localStorage.getItem('adminAccessToken');
 };
 
 /**

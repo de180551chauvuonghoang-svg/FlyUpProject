@@ -11,7 +11,7 @@ export const authenticateJWT = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Authentication required',
         message: 'No authorization header provided'
       });
@@ -19,7 +19,7 @@ export const authenticateJWT = async (req, res, next) => {
 
     // Check if header starts with 'Bearer '
     if (!authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Invalid authorization format',
         message: 'Authorization header must be in format: Bearer <token>'
       });
@@ -29,7 +29,7 @@ export const authenticateJWT = async (req, res, next) => {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
     if (!token) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Authentication required',
         message: 'No token provided'
       });
@@ -50,20 +50,20 @@ export const authenticateJWT = async (req, res, next) => {
   } catch (error) {
     // Handle different error types
     if (error.message === 'Access token has expired') {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Token expired',
         message: 'Your session has expired. Please refresh your token or login again.',
         code: 'TOKEN_EXPIRED'
       });
     } else if (error.message === 'Invalid access token' || error.message === 'Invalid token type') {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Invalid token',
         message: 'The provided token is invalid',
         code: 'TOKEN_INVALID'
       });
     } else {
       console.error('JWT Authentication Error:', error);
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Authentication failed',
         message: 'Could not authenticate request'
       });
@@ -118,14 +118,18 @@ export const optionalAuthenticateJWT = async (req, res, next) => {
 export const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Authentication required',
         message: 'You must be logged in to access this resource'
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ 
+    // Case-insensitive role check
+    const userRole = req.user.role?.toLowerCase();
+    const allowed = allowedRoles.map(r => r.toLowerCase());
+
+    if (!allowed.includes(userRole)) {
+      return res.status(403).json({
         error: 'Forbidden',
         message: `Access denied. Required role: ${allowedRoles.join(' or ')}`
       });
