@@ -13,6 +13,7 @@ import coursesRouter from './routers/courses.js';
 import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
+import chatbotRouter from './routers/chatbot.js';
 import { getCourses, getCategories } from './services/courseService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,6 +52,7 @@ app.use('/api/checkout', checkoutRouter);
 app.use('/api/comments', commentRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
+app.use('/api/chatbot', chatbotRouter);
 
 // Error handling middleware
 

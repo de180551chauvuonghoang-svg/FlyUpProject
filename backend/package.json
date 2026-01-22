@@ -11,6 +11,7 @@
     "check-course-status": "node scripts/checkCourseStatus.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.7.0",
     "@supabase/supabase-js": "^2.39.0",
     "bcryptjs": "^3.0.3",

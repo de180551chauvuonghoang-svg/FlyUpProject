@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import StatsSection from '../components/StatsSection';
 import LearningPathsSection from '../components/LearningPathsSection';
 import CourseBenefitsSection from '../components/CourseBenefitsSection';
+import HeroSection from '../components/HeroSection';
 
 // ... (remaining imports)
 // I will just replace the top imports and the CourseCard/FeaturedCoursesSection
@@ -76,69 +77,7 @@ const TESTIMONIALS = [
   },
 ];
 
-// Hero Section Component
-const HeroSection = () => (
-  <section className="px-4 md:px-10 py-12 lg:py-20">
-    <div className="@container">
-      <div className="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-20">
-        <div className="flex flex-col gap-6 lg:w-1/2 items-start text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            New Courses Added Weekly
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight">
-            Unlock Your Potential with <span className="text-primary">Expert-Led</span> Courses
-          </h1>
-          <p className="text-lg text-gray-400 max-w-xl leading-relaxed">
-            Master new skills in design, coding, business, and more. Learn from industry leaders and start building your future today with our comprehensive curriculum.
-          </p>
-          <div className="flex flex-wrap gap-4 pt-2">
-            <button className="h-12 px-8 rounded-full bg-primary text-white font-bold text-base hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center gap-2 transform hover:-translate-y-1">
-              Start Learning
-              <span className="material-symbols-outlined text-xl">arrow_forward</span>
-            </button>
-            <button className="h-12 px-8 rounded-full bg-[#16161e] border border-[#2a2a3a] text-white font-bold text-base hover:bg-[#1e1e28] transition-all flex items-center gap-2">
-              <span className="material-symbols-outlined text-xl">grid_view</span>
-              Browse Courses
-            </button>
-          </div>
-          <div className="flex items-center gap-4 mt-6 text-sm text-gray-400">
-            <div className="flex -space-x-3">
-              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-[#0a0a14]" src={IMAGES.student1}/>
-              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-[#0a0a14]" src={IMAGES.student2}/>
-              <img alt="Student portrait" className="w-10 h-10 rounded-full border-2 border-[#0a0a14]" src={IMAGES.student3}/>
-              <div className="w-10 h-10 rounded-full border-2 border-[#0a0a14] bg-[#16161e] flex items-center justify-center text-xs font-bold text-white">
-                +2k
-              </div>
-            </div>
-            <p>Join over 2,000+ happy students</p>
-          </div>
-        </div>
-        <div className="lg:w-1/2 w-full relative">
-          <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full opacity-50"></div>
-          <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-[#16161e]">
-            <div className="w-full h-full bg-cover bg-center" style={{backgroundImage: `url("${IMAGES.hero}")`}}></div>
-            <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center gap-4 text-white">
-              <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white">
-                <span className="material-symbols-outlined text-2xl">play_circle</span>
-              </div>
-              <div className="flex-1">
-                <div className="text-sm opacity-80">Continue Watching</div>
-                <div className="font-bold">Advanced Web Development</div>
-                <div className="w-full bg-white/20 h-1.5 rounded-full mt-2 overflow-hidden">
-                  <div className="bg-primary h-full w-2/3 rounded-full"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-);
+
 
 // Categories Section Component
 const CategoriesSection = () => (

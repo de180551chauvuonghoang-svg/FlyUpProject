@@ -561,5 +561,77 @@ export const changePassword = async (userId, newPassword) => {
     data: { Password: hashedPassword }
   });
 
+
+  return true;
+};
+
+export const createEmailOtp = async (email) => {
+  // 1. Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // 2. Hash OTP
+  const saltRounds = 10;
+  const otpHash = await bcrypt.hash(otp, saltRounds);
+  
+  // 3. Set expiry (3 minutes)
+  const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
+  
+  // 4. Save to DB (Upsert: Create or Update)
+  await prisma.emailVerifications.upsert({
+    where: { Email: email },
+    update: {
+      OtpHash: otpHash,
+      ExpiresAt: expiresAt,
+      CreatedAt: new Date(),
+      AttemptCount: 0 // Reset attempts on new OTP
+    },
+    create: {
+      Email: email,
+      OtpHash: otpHash,
+      ExpiresAt: expiresAt,
+      AttemptCount: 0
+    }
+  });
+
+  // Return plain OTP to send via email (do NOT return hash)
+  return otp;
+};
+
+export const verifyEmailOtp = async (email, otp) => {
+  const verification = await prisma.emailVerifications.findUnique({
+    where: { Email: email }
+  });
+
+  if (!verification) {
+    throw new Error('OTP not found or expired'); // Generic error
+  }
+
+  // Check expiry
+  if (new Date() > verification.ExpiresAt) {
+    throw new Error('OTP has expired');
+  }
+
+  // Check attempts
+  if (verification.AttemptCount >= 5) {
+    throw new Error('Too many failed attempts. Please request a new OTP.');
+  }
+
+  // Compare OTP
+  const isValid = await bcrypt.compare(otp, verification.OtpHash);
+
+  if (!isValid) {
+    // Increment attempt count
+    await prisma.emailVerifications.update({
+      where: { Email: email },
+      data: { AttemptCount: { increment: 1 } }
+    });
+    throw new Error('Invalid OTP');
+  }
+
+  // OTP is valid. 
+  // We do NOT delete it here if we want to support "Verify then Register" as separate steps,
+  // BUT the plan says we verify inside register. 
+  // So this function is a helper. 
+  // If we return true here, the caller (register) should delete it.
   return true;
 };

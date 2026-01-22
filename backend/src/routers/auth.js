@@ -5,6 +5,9 @@ import { authenticateJWT } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// Send OTP
+router.post('/send-otp', authController.sendOtp);
+
 // Register new user with Prisma
 router.post('/register', validateSignup, authController.register);
 

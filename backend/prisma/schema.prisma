@@ -605,6 +605,7 @@
     @@map("__EFMigrationsHistory")
   }
 
+
   model Wishlist {
     UserId       String   @db.Uuid
     CourseId     String   @db.Uuid
@@ -615,4 +616,15 @@
     @@id([UserId, CourseId], map: "PK_Wishlist")
     @@index([CourseId], map: "IX_Wishlist_CourseId")
     @@index([UserId], map: "IX_Wishlist_UserId")
+  }
+
+  model EmailVerifications {
+    Id           String    @id(map: "PK_EmailVerifications") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+    Email        String    @unique @db.VarChar(100)
+    OtpHash      String    @db.VarChar(255)
+    ExpiresAt    DateTime  @db.Timestamp(6)
+    CreatedAt    DateTime  @default(now()) @db.Timestamp(6)
+    AttemptCount Int       @default(0)
+
+    @@index([Email], map: "IX_EmailVerifications_Email")
   }

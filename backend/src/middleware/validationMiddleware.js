@@ -26,6 +26,12 @@ export const validateSignup = [
     .isIn(['learner', 'instructor'])
     .withMessage('Role must be either learner or instructor'),
 
+  body('otp')
+    .notEmpty()
+    .withMessage('OTP is required')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('OTP must be 6 digits'),
+
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

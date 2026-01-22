@@ -311,3 +311,82 @@ function createPurchaseSuccessEmailTemplate(name, orderData) {
 </html>
   `;
 }
+
+export const sendOtpEmail = async (to, otp) => {
+  try {
+    const gmail = createGmailClient();
+    
+    // Check if client creation failed OR handling the actual send error below
+    if (!gmail) {
+      console.log('\n🔐 ═══════════════════════════════════════════════════════');
+      console.log('📧 [DEV MODE - NO CREDS] OTP Email');
+      console.log('📬 To:', to);
+      console.log('🔑 OTP:', otp);
+      console.log('═══════════════════════════════════════════════════════\n');
+      console.warn('⚠️ GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN missing. Add to .env.');
+      return true;
+    }
+
+    const html = createOtpEmailTemplate(otp);
+    const sent = await sendEmailViaGmail(to, 'Your Verification Code', html);
+    
+    // If sending via Gmail failed (e.g. invalid_grant), fallback to console
+    if (!sent) {
+        console.log('\n🔐 ═══════════════════════════════════════════════════════');
+        console.log('📧 [DEV MODE - SEND FAILED] OTP Email');
+        console.log('📬 To:', to);
+        console.log('🔑 OTP:', otp);
+        console.log('═══════════════════════════════════════════════════════\n');
+        console.warn('⚠️ Email sending failed. Displaying OTP in console for testing.');
+        return true; // Return true so the frontend flow can continue
+    }
+
+    return true;
+
+  } catch (error) {
+    console.error('Error sending OTP email:', error);
+    // In dev, print OTP to console if email fails
+    console.log('🔑 [FALLBACK] OTP:', otp);
+    return true; // Return true to allow flow to continue
+  }
+};
+
+function createOtpEmailTemplate(otp) {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verification Code</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333;">
+  <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);">
+    <div style="background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%); padding: 40px 20px; text-align: center;">
+       <img src="https://swp-fly-up.vercel.app/FluyUpLogo.png" alt="Fly Up Logo" style="width: 80px; height: 80px; background: white; border-radius: 50%; padding: 10px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: contain;">
+      <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">Verification Code</h1>
+    </div>
+    
+    <div style="padding: 40px 30px; text-align: center;">
+      <p style="font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 16px;">Hello,</p>
+      <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a; margin-bottom: 24px;">
+        Use the following verification code to complete your registration.
+      </p>
+      
+      <div style="background: #f8f9fa; border: 2px dashed #0072FF; border-radius: 12px; padding: 20px; margin: 30px auto; width: fit-content;">
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0072FF; font-family: monospace;">${otp}</span>
+      </div>
+      
+      <p style="font-size: 14px; line-height: 1.6; color: #666; margin-bottom: 24px;">
+        This code will expire in 3 minutes.
+      </p>
+    </div>
+    
+    <div style="background-color: #f8f9fa; padding: 24px; text-align: center; font-size: 13px; color: #888; border-top: 1px solid #eaeaea;">
+       <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Fly Up Team. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}

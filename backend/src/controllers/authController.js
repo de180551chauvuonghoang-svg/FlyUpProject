@@ -1,18 +1,80 @@
 import * as authService from '../services/authService.js';
 import * as emailService from '../services/emailService.js';
+import prisma from '../lib/prisma.js'; // Needed for direct DB checks if not in service
+
+export const sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Check if user already exists
+    // We check directly against the DB to avoid creating a user accidently
+    const userExists = await prisma.users.findFirst({
+        where: { Email: { equals: email.toLowerCase(), mode: 'insensitive' } }
+    });
+
+    if (userExists) {
+      return res.status(409).json({ error: 'Email already exists' });
+    }
+
+    // Rate Limit Check
+    const lastVerification = await prisma.emailVerifications.findUnique({
+      where: { Email: email }
+    });
+
+    if (lastVerification) {
+        const now = new Date();
+        const created = new Date(lastVerification.CreatedAt);
+        const diffSeconds = (now - created) / 1000;
+        
+        // If created < 60 seconds ago, block
+        if (diffSeconds < 60) {
+             return res.status(429).json({ error: 'Please wait 1 minute before requesting a new OTP' });
+        }
+    }
+
+    // Generate and Send OTP
+    const otp = await authService.createEmailOtp(email);
+    
+    // Send email
+    const emailSent = await emailService.sendOtpEmail(email, otp);
+    
+    if (!emailSent) {
+        return res.status(500).json({ error: 'Failed to send OTP email' });
+    }
+
+    res.json({ message: 'OTP sent successfully' });
+
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 export const register = async (req, res) => {
   try {
-    const { email, password, fullName, role } = req.body;
+    const { email, password, fullName, role, otp } = req.body;
 
-    if (!email || !password || !fullName) {
+    if (!email || !password || !fullName || !otp) {
       return res.status(400).json({
         error: 'Missing required fields',
-        message: 'Email, password and full name are required'
+        message: 'Email, password, full name, and OTP are required'
       });
     }
 
+    // Verify OTP first
+    await authService.verifyEmailOtp(email, otp);
+
+    // If verify succeeds, create user
     const newUser = await authService.registerUser({ email, password, fullName, role });
+
+    // Delete used OTP
+    await prisma.emailVerifications.delete({
+        where: { Email: email }
+    });
 
     // Send welcome email asynchronously (don't block response)
     emailService.sendWelcomeEmail(email, fullName, process.env.FRONTEND_URL || 'http://localhost:5173')
@@ -44,6 +106,12 @@ export const register = async (req, res) => {
         error: 'Email already exists',
         message: 'An account with this email already exists'
       });
+    }
+    if (error.message.includes('OTP')) {
+        return res.status(400).json({
+            error: error.message,
+            message: error.message
+        });
     }
     console.error('REGISTRATION ERROR:', error);
     res.status(500).json({ error: 'Registration failed', details: error.message });
