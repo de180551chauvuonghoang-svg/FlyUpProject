@@ -1,9 +1,16 @@
 import * as authService from '../services/authService.js';
 import * as emailService from '../services/emailService.js';
-import prisma from '../lib/prisma.js'; // Needed for direct DB checks if not in service
+import prisma from '../lib/prisma.js'; 
+import { validationResult } from 'express-validator';
 
 export const sendOtp = async (req, res) => {
   try {
+    // Input validation check
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg });
+    }
+
     const { email } = req.body;
 
     if (!email) {
@@ -20,24 +27,17 @@ export const sendOtp = async (req, res) => {
       return res.status(409).json({ error: 'Email already exists' });
     }
 
-    // Rate Limit Check
-    const lastVerification = await prisma.emailVerifications.findUnique({
-      where: { Email: email }
-    });
-
-    if (lastVerification) {
-        const now = new Date();
-        const created = new Date(lastVerification.CreatedAt);
-        const diffSeconds = (now - created) / 1000;
-        
-        // If created < 60 seconds ago, block
-        if (diffSeconds < 60) {
+    // Generate and Send OTP
+    // Validates rate limit internally
+    let otp;
+    try {
+        otp = await authService.createEmailOtp(email);
+    } catch (err) {
+        if (err.message === 'RATE_LIMIT') {
              return res.status(429).json({ error: 'Please wait 1 minute before requesting a new OTP' });
         }
+        throw err;
     }
-
-    // Generate and Send OTP
-    const otp = await authService.createEmailOtp(email);
     
     // Send email
     const emailSent = await emailService.sendOtpEmail(email, otp);
@@ -72,7 +72,7 @@ export const register = async (req, res) => {
     const newUser = await authService.registerUser({ email, password, fullName, role });
 
     // Delete used OTP
-    await prisma.emailVerifications.delete({
+    await prisma.emailVerifications.deleteMany({
         where: { Email: email }
     });
 

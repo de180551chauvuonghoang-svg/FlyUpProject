@@ -104,7 +104,7 @@ const ChatbotWidget = () => {
                                                 : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow-sm border border-gray-100 dark:border-gray-700 rounded-bl-none'
                                         }`}
                                     >
-                                        <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br />') }} />
+                                        <div className="whitespace-pre-wrap">{msg.text}</div>
                                     </div>
                                 </div>
                             ))}

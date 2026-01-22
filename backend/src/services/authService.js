@@ -576,25 +576,45 @@ export const createEmailOtp = async (email) => {
   // 3. Set expiry (3 minutes)
   const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
   
-  // 4. Save to DB (Upsert: Create or Update)
-  await prisma.emailVerifications.upsert({
-    where: { Email: email },
-    update: {
-      OtpHash: otpHash,
-      ExpiresAt: expiresAt,
-      CreatedAt: new Date(),
-      AttemptCount: 0 // Reset attempts on new OTP
-    },
-    create: {
-      Email: email,
-      OtpHash: otpHash,
-      ExpiresAt: expiresAt,
-      AttemptCount: 0
-    }
-  });
+  // 4. Transactional Check & Upsert
+  return await prisma.$transaction(async (tx) => {
+      const existing = await tx.emailVerifications.findUnique({ 
+          where: { Email: email } 
+      });
 
-  // Return plain OTP to send via email (do NOT return hash)
-  return otp;
+      if (existing) {
+          const now = new Date();
+          const created = new Date(existing.CreatedAt);
+          const diffSeconds = (now - created) / 1000;
+          
+          if (diffSeconds < 60) {
+              throw new Error('RATE_LIMIT');
+          }
+
+          await tx.emailVerifications.update({
+            where: { Email: email },
+            data: {
+                OtpHash: otpHash,
+                ExpiresAt: expiresAt,
+                CreatedAt: new Date(),
+                AttemptCount: 0 // Reset attempts
+            }
+          });
+      } else {
+          // If concurrent create happens here, it will fail with P2002, which is fine (caller handles or retries)
+          await tx.emailVerifications.create({
+              data: {
+                  Email: email,
+                  OtpHash: otpHash,
+                  ExpiresAt: expiresAt,
+                  CreatedAt: new Date(),
+                  AttemptCount: 0
+              }
+          });
+      }
+      
+      return otp;
+  });
 };
 
 export const verifyEmailOtp = async (email, otp) => {

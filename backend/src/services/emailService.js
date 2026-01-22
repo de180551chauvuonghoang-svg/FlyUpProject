@@ -315,39 +315,52 @@ function createPurchaseSuccessEmailTemplate(name, orderData) {
 export const sendOtpEmail = async (to, otp) => {
   try {
     const gmail = createGmailClient();
+    const isDev = process.env.NODE_ENV === 'development';
     
-    // Check if client creation failed OR handling the actual send error below
+    // Check if client creation failed
     if (!gmail) {
-      console.log('\n🔐 ═══════════════════════════════════════════════════════');
-      console.log('📧 [DEV MODE - NO CREDS] OTP Email');
-      console.log('📬 To:', to);
-      console.log('🔑 OTP:', otp);
-      console.log('═══════════════════════════════════════════════════════\n');
-      console.warn('⚠️ GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN missing. Add to .env.');
-      return true;
+      if (isDev) {
+        console.log('\n🔐 ═══════════════════════════════════════════════════════');
+        console.log('📧 [DEV MODE - NO CREDS] OTP Email');
+        console.log('📬 To:', to);
+        console.log('🔑 OTP:', otp);
+        console.log('═══════════════════════════════════════════════════════\n');
+        console.warn('⚠️ GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN missing. Add to .env.');
+        return true;
+      }
+      throw new Error('Gmail client configuration missing in production');
     }
 
     const html = createOtpEmailTemplate(otp);
     const sent = await sendEmailViaGmail(to, 'Your Verification Code', html);
     
-    // If sending via Gmail failed (e.g. invalid_grant), fallback to console
+    // If sending via Gmail failed (e.g. invalid_grant)
     if (!sent) {
-        console.log('\n🔐 ═══════════════════════════════════════════════════════');
-        console.log('📧 [DEV MODE - SEND FAILED] OTP Email');
-        console.log('📬 To:', to);
-        console.log('🔑 OTP:', otp);
-        console.log('═══════════════════════════════════════════════════════\n');
-        console.warn('⚠️ Email sending failed. Displaying OTP in console for testing.');
-        return true; // Return true so the frontend flow can continue
+        if (isDev) {
+            console.log('\n🔐 ═══════════════════════════════════════════════════════');
+            console.log('📧 [DEV MODE - SEND FAILED] OTP Email');
+            console.log('📬 To:', to);
+            console.log('🔑 OTP:', otp);
+            console.log('═══════════════════════════════════════════════════════\n');
+            console.warn('⚠️ Email sending failed. Displaying OTP in console for testing.');
+            return true; // Return true so the frontend flow can continue in dev
+        }
+        throw new Error('Failed to send OTP email via Gmail');
     }
 
     return true;
 
   } catch (error) {
     console.error('Error sending OTP email:', error);
-    // In dev, print OTP to console if email fails
-    console.log('🔑 [FALLBACK] OTP:', otp);
-    return true; // Return true to allow flow to continue
+    
+    if (process.env.NODE_ENV === 'development') {
+        // In dev, print OTP to console if email fails
+        console.log('🔑 [FALLBACK] OTP:', otp);
+        return true; // Return true to allow flow to continue
+    }
+    
+    // In production, bubble up the error
+    throw error; 
   }
 };
 

@@ -17,7 +17,7 @@ export const chat = async (req, res) => {
 
     if (!process.env.GEMINI_API_KEY) {
         console.error("GEMINI_API_KEY is missing. Make sure it is set in .env");
-        return res.status(500).json({ error: "Server configuration error: CMS API Key missing" });
+        return res.status(500).json({ error: "Server configuration error: GEMINI_API_KEY missing" });
     }
 
 
