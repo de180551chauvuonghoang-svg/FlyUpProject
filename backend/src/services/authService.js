@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
@@ -195,16 +196,6 @@ export const requestPasswordReset = async (email) => {
 
   const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
   
-  // Import emailService dynamically or use the imported one (check top of file)
-  // I need to make sure emailService is imported.
-  // It is NOT imported in the original file view I saw. I need to add import.
-  
-  // Since I can't easily add import at top with this chunk, I will assume it's there or I will add it using a separate chunk.
-  // Wait, I checked authService.js view, it imports 'emailService' ? NO.
-  // authController imported emailService. authService did NOT.
-  // So I must add import.
-  
-  // Implementation continues below...
   await import('../services/emailService.js').then(service => {
       service.sendPasswordResetEmail(email, resetLink);
   });
@@ -539,6 +530,7 @@ export const loginWithGithub = async (code) => {
 
   return user;
 };
+
 export const changePassword = async (userId, newPassword) => {
   const user = await prisma.users.findUnique({
     where: { Id: userId }
@@ -565,9 +557,12 @@ export const changePassword = async (userId, newPassword) => {
   return true;
 };
 
-export const createEmailOtp = async (email) => {
-  // 1. Generate 6-digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+export const createEmailOtp = async (emailInput) => {
+  // Normalize email
+  const email = emailInput.trim().toLowerCase();
+
+  // 1. Generate 6-digit OTP using CSPRNG
+  const otp = crypto.randomInt(100000, 1000000).toString();
   
   // 2. Hash OTP
   const saltRounds = 10;
@@ -617,7 +612,10 @@ export const createEmailOtp = async (email) => {
   });
 };
 
-export const verifyEmailOtp = async (email, otp) => {
+export const verifyEmailOtp = async (emailInput, otp) => {
+  // Normalize email
+  const email = emailInput.trim().toLowerCase();
+
   const verification = await prisma.emailVerifications.findUnique({
     where: { Email: email }
   });
@@ -649,9 +647,5 @@ export const verifyEmailOtp = async (email, otp) => {
   }
 
   // OTP is valid. 
-  // We do NOT delete it here if we want to support "Verify then Register" as separate steps,
-  // BUT the plan says we verify inside register. 
-  // So this function is a helper. 
-  // If we return true here, the caller (register) should delete it.
   return true;
 };

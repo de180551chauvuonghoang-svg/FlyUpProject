@@ -18,8 +18,8 @@ export const validateSignup = [
   body('password')
     .notEmpty()
     .withMessage('Password is required')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    .withMessage('Password must be at least 8 characters, include uppercase, lowercase, number, and special symbol'),
     
   body('role')
     .optional()
