@@ -15,6 +15,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import MyLearningPage from './pages/MyLearningPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import ChatbotWidget from './components/Chatbot/ChatbotWidget';
 
 
 
@@ -39,6 +40,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
 
         </Routes>
+        <ChatbotWidget />
         </Router>
       </CartProvider>
     </AuthProvider>

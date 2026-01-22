@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
@@ -195,16 +196,6 @@ export const requestPasswordReset = async (email) => {
 
   const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
   
-  // Import emailService dynamically or use the imported one (check top of file)
-  // I need to make sure emailService is imported.
-  // It is NOT imported in the original file view I saw. I need to add import.
-  
-  // Since I can't easily add import at top with this chunk, I will assume it's there or I will add it using a separate chunk.
-  // Wait, I checked authService.js view, it imports 'emailService' ? NO.
-  // authController imported emailService. authService did NOT.
-  // So I must add import.
-  
-  // Implementation continues below...
   await import('../services/emailService.js').then(service => {
       service.sendPasswordResetEmail(email, resetLink);
   });
@@ -539,6 +530,7 @@ export const loginWithGithub = async (code) => {
 
   return user;
 };
+
 export const changePassword = async (userId, newPassword) => {
   const user = await prisma.users.findUnique({
     where: { Id: userId }
@@ -560,6 +552,110 @@ export const changePassword = async (userId, newPassword) => {
     where: { Id: userId },
     data: { Password: hashedPassword }
   });
+
+
+  return true;
+};
+
+export const createEmailOtp = async (emailInput) => {
+  // Normalize email
+  const email = emailInput.trim().toLowerCase();
+
+  // 1. Generate 6-digit OTP using CSPRNG
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  
+  // 2. Hash OTP
+  const saltRounds = 10;
+  const otpHash = await bcrypt.hash(otp, saltRounds);
+  
+  // 3. Set expiry (3 minutes)
+  const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
+  
+  // 4. Transactional Check & Upsert
+  return await prisma.$transaction(async (tx) => {
+      const existing = await tx.emailVerifications.findUnique({ 
+          where: { Email: email } 
+      });
+
+      if (existing) {
+          const now = new Date();
+          const created = new Date(existing.CreatedAt);
+          const diffSeconds = (now - created) / 1000;
+          
+          if (diffSeconds < 60) {
+              throw new Error('RATE_LIMIT');
+          }
+
+          await tx.emailVerifications.update({
+            where: { Email: email },
+            data: {
+                OtpHash: otpHash,
+                ExpiresAt: expiresAt,
+                CreatedAt: new Date(),
+                AttemptCount: 0 // Reset attempts
+            }
+          });
+      } else {
+          // If concurrent create happens here, it will fail with P2002, which is fine (caller handles or retries)
+          await tx.emailVerifications.create({
+              data: {
+                  Email: email,
+                  OtpHash: otpHash,
+                  ExpiresAt: expiresAt,
+                  CreatedAt: new Date(),
+                  AttemptCount: 0
+              }
+          });
+      }
+      
+      return otp;
+  });
+};
+
+export const verifyEmailOtp = async (emailInput, otp) => {
+  // Normalize email
+  const email = emailInput.trim().toLowerCase();
+
+  const verification = await prisma.emailVerifications.findUnique({
+    where: { Email: email }
+  });
+
+  if (!verification) {
+    throw new Error('OTP not found or expired'); // Generic error
+  }
+
+  // Check expiry
+  if (new Date() > verification.ExpiresAt) {
+    throw new Error('OTP has expired');
+  }
+
+  // Check attempts
+  if (verification.AttemptCount >= 5) {
+    throw new Error('Too many failed attempts. Please request a new OTP.');
+  }
+
+  // Compare OTP
+  const isValid = await bcrypt.compare(otp, verification.OtpHash);
+
+  if (!isValid) {
+    // Increment attempt count
+    await prisma.emailVerifications.update({
+      where: { Email: email },
+      data: { AttemptCount: { increment: 1 } }
+    });
+    throw new Error('Invalid OTP');
+  }
+
+  // OTP is valid. Invalidate immediately.
+  try {
+      await prisma.emailVerifications.delete({
+          where: { Email: email }
+      });
+  } catch (error) {
+      console.error('Failed to invalidate OTP:', error);
+      // Invalidation failed, so we must fail the verification to prevent reuse
+      throw new Error('Verification failed. Please try again.');
+  }
 
   return true;
 };
