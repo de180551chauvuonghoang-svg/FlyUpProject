@@ -646,6 +646,16 @@ export const verifyEmailOtp = async (emailInput, otp) => {
     throw new Error('Invalid OTP');
   }
 
-  // OTP is valid. 
+  // OTP is valid. Invalidate immediately.
+  try {
+      await prisma.emailVerifications.delete({
+          where: { Email: email }
+      });
+  } catch (error) {
+      console.error('Failed to invalidate OTP:', error);
+      // Invalidation failed, so we must fail the verification to prevent reuse
+      throw new Error('Verification failed. Please try again.');
+  }
+
   return true;
 };
