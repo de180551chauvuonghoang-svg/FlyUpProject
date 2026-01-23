@@ -130,7 +130,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const changePassword = async (newPassword) => {
+  const changePassword = async (currentPassword, newPassword) => {
     try {
       const response = await fetch(`${API_URL}/auth/change-password`, {
         method: 'POST',
@@ -138,13 +138,31 @@ const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify({ newPassword })
+        body: JSON.stringify({ currentPassword, newPassword })
       });
       const data = await response.json();
       if (!response.ok) return { data: null, error: { message: data.error || data.message } };
       return { data, error: null };
     } catch (error) {
       return { data: null, error: { message: error.message } };
+    }
+  };
+
+  const verifyPassword = async (password) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/verify-password`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ password })
+      });
+      const data = await response.json();
+      if (!response.ok) return { isValid: false, error: data.error };
+      return { isValid: data.isValid };
+    } catch (error) {
+      return { isValid: false, error: error.message };
     }
   };
 
@@ -159,6 +177,7 @@ const AuthProvider = ({ children }) => {
     signOut,
     resetPassword,
     changePassword,
+    verifyPassword,
     refreshUser
   };
 

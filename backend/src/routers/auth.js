@@ -55,4 +55,7 @@ router.post('/github', authController.githubLogin);
 // Change password
 router.post('/change-password', authenticateJWT, authController.changePassword);
 
+// Verify password
+router.post('/verify-password', authenticateJWT, authController.verifyPassword);
+
 export default router;
