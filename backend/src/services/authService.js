@@ -531,7 +531,7 @@ export const loginWithGithub = async (code) => {
   return user;
 };
 
-export const changePassword = async (userId, newPassword) => {
+export const changePassword = async (userId, currentPassword, newPassword) => {
   const user = await prisma.users.findUnique({
     where: { Id: userId }
   });
@@ -540,9 +540,21 @@ export const changePassword = async (userId, newPassword) => {
     throw new Error('User not found');
   }
 
-  // Google/Github users might not have a password
+  // Google/Github users might not have a password, but if they set one they can change it
   if (!user.Password && user.LoginProvider) {
     throw new Error(`Accounts logged in via ${user.LoginProvider} cannot change password here.`);
+  }
+
+  // Verify current password
+  const isMatch = await bcrypt.compare(currentPassword, user.Password);
+  if (!isMatch) {
+    throw new Error('Current password is incorrect');
+  }
+
+  // Check if new password is same as old
+  const isSame = await bcrypt.compare(newPassword, user.Password);
+  if (isSame) {
+    throw new Error('New password cannot be the same as current password');
   }
 
   const saltRounds = 10;
@@ -658,4 +670,16 @@ export const verifyEmailOtp = async (emailInput, otp) => {
   }
 
   return true;
+};
+
+export const verifyCurrentPassword = async (userId, password) => {
+  const user = await prisma.users.findUnique({
+    where: { Id: userId }
+  });
+
+  if (!user || !user.Password) {
+    return false;
+  }
+
+  return await bcrypt.compare(password, user.Password);
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, User, Briefcase, Calendar, Phone, Mail, ChevronRight, Save, Shield, Settings as SettingsIcon, Bell, CreditCard, History } from 'lucide-react';
+import { Camera, User, Briefcase, Calendar, Phone, Mail, ChevronRight, Save, Shield, Settings as SettingsIcon, Bell, CreditCard, History, Eye, EyeOff } from 'lucide-react';
 import TransactionHistory from '../components/Profile/TransactionHistory';
 import { Link, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header/Header';
@@ -9,8 +9,11 @@ import { updateUserProfile } from '../services/userService';
 import toast from 'react-hot-toast';
 import defaultAvatar from '../assets/default-avatar.png';
 
-const InputField = ({ label, icon, value, onChange, type = "text", placeholder, readOnly = false, required = false }) => {
+const InputField = ({ label, icon, value, onChange, onBlur, type = "text", placeholder, readOnly = false, required = false }) => {
   const Icon = icon;
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium text-slate-300">
@@ -21,14 +24,24 @@ const InputField = ({ label, icon, value, onChange, type = "text", placeholder, 
           <Icon className="w-5 h-5" />
         </div>
         <input
-          type={type}
+          type={isPassword ? (showPassword ? 'text' : 'password') : type}
           value={value}
           onChange={onChange}
+          onBlur={onBlur}
           readOnly={readOnly}
           required={required}
           placeholder={placeholder}
-          className={`w-full bg-[#16161e] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all ${readOnly ? 'opacity-60 cursor-not-allowed' : ''}`}
+          className={`w-full bg-[#16161e] border border-white/10 rounded-xl py-3 pl-12 pr-${isPassword ? '12' : '4'} text-white placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all ${readOnly ? 'opacity-60 cursor-not-allowed' : ''}`}
         />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors focus:outline-none"
+          >
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -223,29 +236,50 @@ const ProfileTab = ({ user, refreshUser }) => {
   );
 };
 
-const SecurityTab = ({ changePassword, user }) => {
+const SecurityTab = ({ changePassword, verifyPassword, user }) => {
   const [loading, setLoading] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState('idle'); // 'idle', 'verifying', 'valid', 'invalid'
   const [formData, setFormData] = useState({
+    currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+
+  const handleCurrentPasswordBlur = async () => {
+    if (!formData.currentPassword) {
+      setVerificationStatus('idle');
+      return;
+    }
+
+    setVerificationStatus('verifying');
+    const { isValid } = await verifyPassword(formData.currentPassword);
+    setVerificationStatus(isValid ? 'valid' : 'invalid');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.newPassword !== formData.confirmPassword) {
       return toast.error('Passwords do not match');
     }
-    if (formData.newPassword.length < 6) {
-      return toast.error('Password must be at least 6 characters');
+    
+    // Check if new password is same as old
+    if (formData.newPassword === formData.currentPassword) {
+      return toast.error('New password cannot be the same as current password');
+    }
+
+    // Password strength validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(formData.newPassword)) {
+        return toast.error('Password must be at least 8 characters, include uppercase, lowercase, number, and special symbol.');
     }
 
     try {
       setLoading(true);
-      const { error } = await changePassword(formData.newPassword);
+      const { error } = await changePassword(formData.currentPassword, formData.newPassword);
       if (error) throw new Error(error.message);
       
       toast.success('Password updated successfully!');
-      setFormData({ newPassword: '', confirmPassword: '' });
+      setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
       toast.error(error.message || 'Failed to update password');
     } finally {
@@ -265,6 +299,40 @@ const SecurityTab = ({ changePassword, user }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="relative">
+          <InputField 
+            label="Current Password" 
+            icon={Shield} 
+            type="password"
+            value={formData.currentPassword}
+            onChange={(e) => {
+                setFormData(prev => ({ ...prev, currentPassword: e.target.value }));
+                if (verificationStatus !== 'idle') setVerificationStatus('idle');
+            }}
+            onBlur={handleCurrentPasswordBlur}
+            required
+          />
+          {/* Verification Status Indicator */}
+          {formData.currentPassword && (
+             <div className="absolute left-full top-[38px] ml-3 flex items-center whitespace-nowrap">
+                {verificationStatus === 'verifying' && (
+                  <div className="w-5 h-5 border-2 border-slate-500 border-t-white rounded-full animate-spin"></div>
+                )}
+                {verificationStatus === 'valid' && (
+                  <span className="text-green-500 flex items-center gap-1 text-xs font-bold animate-in fade-in zoom-in">
+                      <span className="material-symbols-outlined text-lg">check_circle</span>
+                      Correct
+                  </span>
+                )}
+                {verificationStatus === 'invalid' && (
+                   <span className="text-red-500 flex items-center gap-1 text-xs font-bold animate-in fade-in zoom-in">
+                      <span className="material-symbols-outlined text-lg">error</span>
+                      Incorrect
+                   </span>
+                )}
+             </div>
+          )}
+        </div>
         <InputField 
           label="New Password" 
           icon={Shield} 
@@ -297,19 +365,73 @@ const SecurityTab = ({ changePassword, user }) => {
         </div>
       </form>
 
-      <div className="mt-12 p-6 rounded-2xl bg-violet-500/5 border border-violet-500/10">
+      <div className="mt-8 p-6 rounded-2xl bg-violet-500/5 border border-violet-500/10">
         <div className="flex items-start gap-4">
           <div className="p-2 rounded-lg bg-violet-500/20 text-violet-400">
             <Shield className="w-5 h-5" />
           </div>
-          <div>
-            <h4 className="text-white font-bold mb-1">Security Recommendations</h4>
-            <ul className="text-sm text-slate-400 space-y-2 list-disc list-inside">
-              <li>Use at least 8 characters</li>
-              <li>Include uppercase and lowercase letters</li>
-              <li>Add numbers and special symbols</li>
-              <li>Avoid using personal information</li>
-            </ul>
+          <div className="w-full">
+            <h4 className="text-white font-bold mb-3">Password Strength</h4>
+            
+            {/* Strength Bar */}
+            <div className="w-full bg-[#1e1e28] rounded-full h-1.5 overflow-hidden mb-4">
+                <div 
+                    className={`h-full transition-all duration-300 ${
+                        (() => {
+                            const p = formData.newPassword || '';
+                            let score = 0;
+                            if (p.length >= 8) score++;
+                            if (/[A-Z]/.test(p)) score++;
+                            if (/[a-z]/.test(p)) score++;
+                            if (/[0-9]/.test(p)) score++;
+                            if (/[@$!%*?&]/.test(p)) score++;
+                            
+                            switch(score) {
+                                case 1: return 'bg-red-500 w-1/5';
+                                case 2: return 'bg-orange-500 w-2/5';
+                                case 3: return 'bg-yellow-500 w-3/5';
+                                case 4: return 'bg-blue-400 w-4/5';
+                                case 5: return 'bg-green-500 w-full';
+                                default: return 'bg-transparent w-0';
+                            }
+                        })()
+                    }`}
+                ></div>
+            </div>
+
+            {/* Validation Checklist */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-400">
+                <div className={`flex items-center gap-2 transition-colors ${formData.newPassword?.length >= 8 ? 'text-green-400' : ''}`}>
+                    <span className="material-symbols-outlined text-[16px]">
+                        {formData.newPassword?.length >= 8 ? 'check_circle' : 'circle'}
+                    </span>
+                    <span>At least 8 characters</span>
+                </div>
+                <div className={`flex items-center gap-2 transition-colors ${/[A-Z]/.test(formData.newPassword || '') ? 'text-green-400' : ''}`}>
+                        <span className="material-symbols-outlined text-[16px]">
+                        {/[A-Z]/.test(formData.newPassword || '') ? 'check_circle' : 'circle'}
+                    </span>
+                    <span>Uppercase letter (A-Z)</span>
+                </div>
+                <div className={`flex items-center gap-2 transition-colors ${/[a-z]/.test(formData.newPassword || '') ? 'text-green-400' : ''}`}>
+                        <span className="material-symbols-outlined text-[16px]">
+                        {/[a-z]/.test(formData.newPassword || '') ? 'check_circle' : 'circle'}
+                    </span>
+                    <span>Lowercase letter (a-z)</span>
+                </div>
+                <div className={`flex items-center gap-2 transition-colors ${/[0-9]/.test(formData.newPassword || '') ? 'text-green-400' : ''}`}>
+                        <span className="material-symbols-outlined text-[16px]">
+                        {/[0-9]/.test(formData.newPassword || '') ? 'check_circle' : 'circle'}
+                    </span>
+                    <span>Number (0-9)</span>
+                </div>
+                <div className={`flex items-center gap-2 transition-colors ${/[@$!%*?&]/.test(formData.newPassword || '') ? 'text-green-400' : ''}`}>
+                        <span className="material-symbols-outlined text-[16px]">
+                        {/[@$!%*?&]/.test(formData.newPassword || '') ? 'check_circle' : 'circle'}
+                    </span>
+                    <span>Special char (@$!%*?&)</span>
+                </div>
+            </div>
           </div>
         </div>
       </div>
@@ -318,7 +440,7 @@ const SecurityTab = ({ changePassword, user }) => {
 };
 
 const SettingsPage = () => {
-  const { user, refreshUser, changePassword } = useAuth();
+  const { user, refreshUser, changePassword, verifyPassword } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'profile';
 
@@ -390,7 +512,7 @@ const SettingsPage = () => {
                 <ProfileTab user={user} refreshUser={refreshUser} />
               )}
               {activeTab === 'security' && (
-                <SecurityTab changePassword={changePassword} user={user} />
+                <SecurityTab changePassword={changePassword} verifyPassword={verifyPassword} user={user} />
               )}
               {activeTab === 'transactions' && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
