@@ -50,7 +50,7 @@ export const sendOtp = async (req, res) => {
 
   } catch (error) {
     console.error('Send OTP error:', error);
-    if (error.message.includes('email') || error.message.includes('Gmail')) {
+    if (error.code === 'EMAIL_SEND_FAILED') {
         return res.status(400).json({ error: 'Unable to send verification email. Please check your email address.' });
     }
     res.status(500).json({ error: 'Internal server error' });

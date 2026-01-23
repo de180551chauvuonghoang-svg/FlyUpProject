@@ -60,7 +60,11 @@ const sendEmailViaGmail = async (to, subject, htmlBody) => {
         if (error.response) {
             console.error('API Error Details:', error.response.data);
         }
-        return false;
+        
+        const customError = new Error('Failed to send email via Gmail API: ' + error.message);
+        customError.code = 'EMAIL_SEND_FAILED';
+        customError.details = error.response ? error.response.data : null;
+        throw customError;
     }
 }
 

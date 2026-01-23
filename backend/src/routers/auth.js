@@ -53,9 +53,9 @@ router.post('/google', authController.googleLogin);
 router.post('/github', authController.githubLogin);
 
 // Change password
-router.post('/change-password', authenticateJWT, authController.changePassword);
+router.post('/change-password', authenticateJWT, otpLimiter, authController.changePassword);
 
 // Verify password
-router.post('/verify-password', authenticateJWT, authController.verifyPassword);
+router.post('/verify-password', authenticateJWT, otpLimiter, authController.verifyPassword);
 
 export default router;
