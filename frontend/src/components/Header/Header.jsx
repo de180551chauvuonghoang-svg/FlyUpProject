@@ -76,14 +76,14 @@ const Header = () => {
                 </p>
               </div>
             </Link>
-            <label className="hidden md:flex flex-col min-w-40 h-10 w-64 lg:w-80">
+            {/* <label className="hidden md:flex flex-col min-w-40 h-10 w-64 lg:w-80">
               <div className="flex w-full flex-1 items-stretch rounded-full h-full bg-[#16161e] border border-[#2a2a3a] overflow-hidden focus-within:ring-2 ring-primary/50 transition-all">
                 <div className="text-gray-500 flex items-center justify-center pl-4 pr-2">
                   <span className="material-symbols-outlined text-[20px]">search</span>
                 </div>
                 <input className="flex w-full bg-transparent border-none text-sm font-medium text-white focus:outline-0 focus:ring-0 placeholder:text-gray-500 h-full" placeholder="Search for courses..."/>
               </div>
-            </label>
+            </label> */}
           </div>
           <div className="flex items-center gap-4 lg:gap-8">
             <nav className="hidden lg:flex items-center gap-6">

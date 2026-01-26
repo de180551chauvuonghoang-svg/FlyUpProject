@@ -16,7 +16,37 @@ const otpLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-// Send OTP
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentication API
+ */
+
+/**
+ * @swagger
+ * /auth/send-otp:
+ *   post:
+ *     summary: Send OTP to email
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       400:
+ *         description: Invalid email or OTP limit reached
+ */
 router.post('/send-otp', 
     otpLimiter,
     [
@@ -25,37 +55,261 @@ router.post('/send-otp',
     authController.sendOtp
 );
 
-// Register new user with Prisma
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - fullName
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               fullName:
+ *                 type: string
+ *               otp:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Validation error or invalid OTP
+ */
 router.post('/register', validateSignup, authController.register);
 
-// Login user
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post('/login', validateLogin, authController.login);
 
-// Logout user
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Auth]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ */
 router.post('/logout', authController.logout);
 
-// Get current user (requires JWT authentication)
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current authenticated user
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Current user data
+ *       401:
+ *         description: Unauthorized
+ */
 router.get('/me', authenticateJWT, authController.getMe);
 
-// Request password reset
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request password reset
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Reset email sent
+ *       404:
+ *         description: User not found
+ */
 router.post('/forgot-password', authController.forgotPassword);
 
-// Confirm password reset
+/**
+ * @swagger
+ * /auth/reset-password-confirm:
+ *   post:
+ *     summary: Confirm password reset
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               token:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *       400:
+ *         description: Invalid or expired token
+ */
 router.post('/reset-password-confirm', authController.resetPasswordConfirm);
 
-// Refresh token
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: New access token
+ *       401:
+ *         description: Invalid refresh token
+ */
 router.post('/refresh', authController.refreshToken);
 
-// Google Login
+/**
+ * @swagger
+ * /auth/google:
+ *   post:
+ *     summary: Google Login
+ *     tags: [Auth]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Google login successful
+ */
 router.post('/google', authController.googleLogin);
 
-// GitHub Login
+/**
+ * @swagger
+ * /auth/github:
+ *   post:
+ *     summary: GitHub Login
+ *     tags: [Auth]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: GitHub login successful
+ */
 router.post('/github', authController.githubLogin);
 
-// Change password
+/**
+ * @swagger
+ * /auth/change-password:
+ *   post:
+ *     summary: Change password
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Invalid current password or same password
+ */
 router.post('/change-password', authenticateJWT, otpLimiter, authController.changePassword);
 
-// Verify password
+/**
+ * @swagger
+ * /auth/verify-password:
+ *   post:
+ *     summary: Verify current password
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password is valid
+ *       400:
+ *         description: Invalid password
+ */
 router.post('/verify-password', authenticateJWT, otpLimiter, authController.verifyPassword);
 
 export default router;
