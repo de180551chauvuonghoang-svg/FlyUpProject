@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { getCheckoutStatus, simulatePayment, applyCoupon, getPublicCoupons } from '../services/checkoutService';
+import { getCheckoutStatus, /*simulatePayment,*/ applyCoupon, getPublicCoupons } from '../services/checkoutService';
 import { PAYMENT_CONFIG } from '../config/paymentConfig';
 import Header from '../components/Header';
 import useCart from '../hooks/useCart';
@@ -96,17 +96,17 @@ const CheckoutPage = () => {
         }
     }, [checkout?.status, navigate, clearCart, queryClient]);
 
-    const handleSimulateSuccess = async () => {
-        try {
-            toast.loading('Simulating payment...');
-            await simulatePayment(checkoutId);
-            toast.dismiss();
-            toast.success('Simulation sent! Wait for poll...');
-        } catch (error) {
-            console.error('Simulation failed:', error);
-            toast.error('Simulation failed');
-        }
-    };
+    // const handleSimulateSuccess = async () => {
+    //     try {
+    //         toast.loading('Simulating payment...');
+    //         await simulatePayment(checkoutId);
+    //         toast.dismiss();
+    //         toast.success('Simulation sent! Wait for poll...');
+    //     } catch (error) {
+    //         console.error('Simulation failed:', error);
+    //         toast.error('Simulation failed');
+    //     }
+    // };
 
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return;
@@ -310,12 +310,12 @@ const CheckoutPage = () => {
                                     Developer Mode
                                 </div>
                                 <p className="text-xs text-slate-400 mb-3 block">Since we are in development mode without a real bank webhook, use this button to simulate a successful payment callback.</p>
-                                <button 
+                                {/* <button 
                                     onClick={handleSimulateSuccess}
                                     className="w-full bg-amber-600/20 hover:bg-amber-600/30 text-amber-500 border border-amber-600/50 font-bold py-2 rounded-lg transition-colors text-sm"
                                 >
                                     Simulate Payment Success
-                                </button>
+                                </button> */}
                             </div>
                         </div>
 
