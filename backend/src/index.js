@@ -15,6 +15,9 @@ import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
 import chatbotRouter from './routers/chatbot.js';
 import { getCourses, getCategories } from './services/courseService.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -54,6 +57,10 @@ app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
 app.use('/api/chatbot', chatbotRouter);
 
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+
 // Error handling middleware
 
 app.use((err, req, res, next) => {
@@ -76,7 +83,8 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
-  console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`� Swagger Docs available at http://localhost:${PORT}/api-docs`);
+  console.log(`�📦 Environment: ${process.env.NODE_ENV || 'development'}`);
   
   // Warm up cache
   (async () => {

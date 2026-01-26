@@ -3,7 +3,32 @@ import prisma from '../lib/prisma.js';
 
 const router = express.Router();
 
-// Get user profile by ID
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management API
+ */
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get user profile by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User profile data
+ *       404:
+ *         description: User not found
+ */
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -37,7 +62,42 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update user profile
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               FullName:
+ *                 type: string
+ *               Bio:
+ *                 type: string
+ *               Phone:
+ *                 type: string
+ *               DateOfBirth:
+ *                 type: string
+ *                 format: date-time
+ *               AvatarUrl:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       404:
+ *         description: User not found
+ */
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -76,7 +136,30 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Get user's enrolled courses
+/**
+ * @swagger
+ * /users/{id}/enrollments:
+ *   get:
+ *     summary: Get user's enrolled courses
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of enrollments
+ */
 router.get('/:id/enrollments', async (req, res) => {
   try {
     const { id } = req.params;
@@ -147,7 +230,29 @@ router.get('/:id/enrollments', async (req, res) => {
   }
 });
 
-// Get all users (admin only)
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users (admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of users
+ */
 router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
