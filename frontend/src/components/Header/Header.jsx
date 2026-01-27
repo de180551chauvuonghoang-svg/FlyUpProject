@@ -67,13 +67,12 @@ const Header = () => {
                   className="h-full w-auto object-contain transition-transform group-hover:scale-110"
                 />
               </div>
-              <div className="flex flex-col">
-                <h2 className="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent leading-tight">
-                  FlyUp
-                </h2>
-                <p className="text-xs font-semibold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent leading-tight tracking-wide">
-                  Edu & Tech
-                </p>
+              <div className="h-12 w-auto flex items-center">
+                <img 
+                  src="/FLYUPTECHANDEDU.png" 
+                  alt="FlyUp Edu & Tech" 
+                  className="h-full w-auto object-contain"
+                />
               </div>
             </Link>
             {/* <label className="hidden md:flex flex-col min-w-40 h-10 w-64 lg:w-80">

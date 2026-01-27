@@ -3,8 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { sendMessage } from '../../services/chatbotService';
 import { toast } from 'react-hot-toast';
-
 import { useLocation } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 
 const ChatbotWidget = () => {
     const { pathname } = useLocation();
@@ -67,53 +67,72 @@ const ChatbotWidget = () => {
                         initial={{ opacity: 0, scale: 0.8, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                        className="mb-4 w-80 md:w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
+                        className="mb-4 w-80 md:w-96 bg-[#16161e] rounded-2xl shadow-xl border border-[#2a2a3a] overflow-hidden flex flex-col"
                         style={{ height: '500px', maxHeight: '80vh' }}
                     >
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex justify-between items-center text-white">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-white/20 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" />
-                                    </svg>
+                        <div className="bg-[#16161e] p-4 flex justify-between items-center border-b border-[#2a2a3a]">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden border border-primary/20">
+                                    <img 
+                                        src="/FLYUPLOGO2.png" 
+                                        alt="FlyUp Logo" 
+                                        className="w-full h-full object-cover p-1"
+                                    />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-sm">FlyUp Counselor</h3>
-                                    <p className="text-xs text-blue-100">AI-Powered Helper</p>
+                                    <h3 className="font-bold text-sm text-white">FLY UP AI Counselor</h3>
+                                    <p className="text-xs text-gray-400">AI-Powered Helper</p>
                                 </div>
                             </div>
-                            <button onClick={toggleChat} className="text-white/80 hover:text-white transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                            <button onClick={toggleChat} className="text-gray-400 hover:text-white transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 space-y-4">
+                        <div className="flex-1 overflow-y-auto p-4 bg-[#0a0a14] space-y-4">
                             {messages.map((msg, idx) => (
                                 <div
                                     key={idx}
                                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div
-                                        className={`max-w-[80%] rounded-2xl p-3 text-sm leading-relaxed ${
+                                        className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed ${
                                             msg.sender === 'user'
-                                                ? 'bg-blue-600 text-white rounded-br-none'
-                                                : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow-sm border border-gray-100 dark:border-gray-700 rounded-bl-none'
+                                                ? 'bg-primary text-white rounded-br-none'
+                                                : 'bg-[#16161e] text-gray-200 border border-[#2a2a3a] rounded-bl-none'
                                         }`}
                                     >
-                                        <div className="whitespace-pre-wrap">{msg.text}</div>
+                                        <div>
+                                            {msg.sender === 'user' ? (
+                                                <span className="whitespace-pre-wrap">{msg.text}</span>
+                                            ) : (
+                                                <ReactMarkdown 
+                                                    components={{
+                                                        p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />, // eslint-disable-line no-unused-vars
+                                                        ul: ({node, ...props}) => <ul className="list-disc ml-4 mb-1 last:mb-0" {...props} />, // eslint-disable-line no-unused-vars
+                                                        ol: ({node, ...props}) => <ol className="list-decimal ml-4 mb-1 last:mb-0" {...props} />, // eslint-disable-line no-unused-vars
+                                                        li: ({node, ...props}) => <li className="mb-0.5 last:mb-0 [&>p]:mb-0" {...props} />, // eslint-disable-line no-unused-vars
+                                                        a: ({node, ...props}) => <a className="text-primary underline hover:text-primary/80" target="_blank" rel="noopener noreferrer" {...props} />, // eslint-disable-line no-unused-vars
+                                                        strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />, // eslint-disable-line no-unused-vars
+                                                    }}
+                                                >
+                                                    {msg.text}
+                                                </ReactMarkdown>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                             {isLoading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-bl-none shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-1">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                                    <div className="bg-[#16161e] p-3 rounded-2xl rounded-bl-none border border-[#2a2a3a] flex items-center gap-1">
+                                        <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                                        <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                        <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                                     </div>
                                 </div>
                             )}
@@ -121,7 +140,7 @@ const ChatbotWidget = () => {
                         </div>
 
                         {/* Input Area */}
-                        <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+                        <div className="p-3 bg-[#16161e] border-t border-[#2a2a3a]">
                             <div className="flex items-center gap-2">
                                 <input
                                     type="text"
@@ -129,13 +148,13 @@ const ChatbotWidget = () => {
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyPress={handleKeyPress}
                                     placeholder="Ask about courses..."
-                                    className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                    className="flex-1 bg-[#0a0a14] text-white text-sm rounded-full px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-500 border border-[#2a2a3a]"
                                     disabled={isLoading}
                                 />
                                 <button
                                     onClick={handleSend}
                                     disabled={isLoading || !inputValue.trim()}
-                                    className="p-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors shadow-md"
+                                    className="p-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
@@ -152,7 +171,7 @@ const ChatbotWidget = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleChat}
-                className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-xl flex items-center justify-center transition-all group"
+                className="bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center justify-center transition-all group border border-white/10"
             >
                 {isOpen ? (
                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">

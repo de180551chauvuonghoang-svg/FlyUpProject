@@ -282,21 +282,25 @@ const TestimonialsSection = () => (
 );
 
 // CTA Section Component
-const CTASection = () => (
-  <section className="px-4 md:px-10 py-12">
-    <div className="relative rounded-3xl overflow-hidden bg-primary px-6 py-16 md:px-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
-      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
-      <div className="relative z-10 max-w-xl">
-        <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Ready to start your learning journey?</h2>
-        <p className="text-white/90 text-lg font-medium">Join thousands of students and start mastering new skills today. No credit card required for free courses.</p>
+const CTASection = () => {
+  const navigate = useNavigate();
+
+  return (
+    <section className="px-4 md:px-10 py-12">
+      <div className="relative rounded-3xl overflow-hidden bg-primary px-6 py-16 md:px-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
+        <div className="relative z-10 max-w-xl">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Ready to start your learning journey?</h2>
+          <p className="text-white/90 text-lg font-medium">Join thousands of students and start mastering new skills today. No credit card required for free courses.</p>
+        </div>
+        <div className="relative z-10 flex flex-col sm:flex-row gap-4">
+          <button onClick={() => navigate('/register')} className="h-14 px-8 rounded-full bg-white text-primary font-bold text-lg hover:shadow-xl hover:scale-105 transition-all">Sign Up for Free</button>
+        </div>
       </div>
-      <div className="relative z-10 flex flex-col sm:flex-row gap-4">
-        <button className="h-14 px-8 rounded-full bg-white text-primary font-bold text-lg hover:shadow-xl hover:scale-105 transition-all">Sign Up for Free</button>
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 // Main HomePage Component
 const HomePage = () => {
