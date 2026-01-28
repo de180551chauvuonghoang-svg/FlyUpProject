@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PrismaClient } from "@prisma/client";
-import redis from '../lib/redis.js';
+import { safeGet, safeSet } from '../lib/redis.js';
 
 const prisma = new PrismaClient();
 
@@ -25,7 +25,7 @@ export const chat = async (req, res) => {
     // CACHING STRATEGY: Chatbot context is heavy but doesn't change often.
     // Cache for 1 hour (3600 seconds).
     const cacheKey = 'chatbot:course_context';
-    let courseContext = await redis.get(cacheKey);
+    let courseContext = await safeGet(cacheKey);
 
     if (!courseContext) {
         console.log('Cache Miss: Building Chatbot Context from DB...');
@@ -81,7 +81,7 @@ export const chat = async (req, res) => {
             ----------------------------------`;
         }).join("\n");
 
-        await redis.set(cacheKey, courseContext, 'EX', 3600); // 1 Hour
+        await safeSet(cacheKey, courseContext, 'EX', 3600); // 1 Hour
     } else {
         console.log('Cache Hit: Serving Chatbot Context from Redis');
     }

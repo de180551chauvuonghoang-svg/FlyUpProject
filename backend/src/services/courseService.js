@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js';
-import redis from '../lib/redis.js';
+import redis, { safeGet, safeSet } from '../lib/redis.js';
 
 // Helper to handle BigInt serialization
 const jsonReplacer = (key, value) => {
@@ -12,7 +12,7 @@ const jsonReplacer = (key, value) => {
 export const getCategories = async () => {
   try {
     const cacheKey = 'categories_all';
-    const cachedResult = await redis.get(cacheKey);
+    const cachedResult = await safeGet(cacheKey);
     if (cachedResult) return JSON.parse(cachedResult);
 
     const categories = await prisma.categories.findMany({
@@ -31,7 +31,7 @@ export const getCategories = async () => {
       }
     });
 
-    await redis.set(cacheKey, JSON.stringify(categories, jsonReplacer), 'EX', 300); // 5 Minutes
+    await safeSet(cacheKey, JSON.stringify(categories, jsonReplacer), 'EX', 300); // 5 Minutes
     return categories;
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -61,7 +61,7 @@ export const getCourses = async (filters = {}) => {
     const cacheKey = `courses:default:page:${page}:limit:${limit}`;
     
     if (shouldCache) {
-        const cachedResult = await redis.get(cacheKey);
+        const cachedResult = await safeGet(cacheKey);
         if (cachedResult) {
             console.log('Serving courses from Redis cache');
             return JSON.parse(cachedResult);
@@ -195,7 +195,7 @@ export const getCourses = async (filters = {}) => {
     };
 
     if (shouldCache) {
-        await redis.set(cacheKey, JSON.stringify(result, jsonReplacer), 'EX', 300); // 5 Minutes
+        await safeSet(cacheKey, JSON.stringify(result, jsonReplacer), 'EX', 300); // 5 Minutes
     }
     return result;
   } catch (error) {
@@ -210,7 +210,7 @@ export const getCourseById = async (courseId) => {
     console.log('[courseService] Fetching course:', courseId);
     
     const cacheKey = `course:${courseId}`;
-    const cachedResult = await redis.get(cacheKey);
+    const cachedResult = await safeGet(cacheKey);
 
     if (cachedResult) {
        console.log('[courseService] Serving course from Redis cache:', courseId);
@@ -292,7 +292,7 @@ export const getCourseById = async (courseId) => {
     }
 
     // Cache for 1 hour as course details don't change every minute
-    await redis.set(cacheKey, JSON.stringify(course, jsonReplacer), 'EX', 3600);
+    await safeSet(cacheKey, JSON.stringify(course, jsonReplacer), 'EX', 3600);
     return course;
   } catch (error) {
     console.error('[courseService] Error fetching course:', error);

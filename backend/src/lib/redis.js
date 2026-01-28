@@ -33,4 +33,35 @@ redis.on('error', (err) => {
   // Optional: Don't crash the app if Redis is down, just log
 });
 
+// Helper to prevent app from hanging if Redis is down/slow
+export const safeGet = async (key) => {
+  try {
+    // Timeout after 500ms
+    const timeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Redis timeout')), 500)
+    );
+    
+    // Race Redis against timeout
+    const result = await Promise.race([redis.get(key), timeout]);
+    return result;
+  } catch (error) {
+    // Silently fail and return null so app uses DB
+    return null;
+  }
+};
+
+export const safeSet = async (key, value, mode, duration) => {
+  try {
+    // Fire and forget - don't await, or just catch error
+    // We await with timeout to ensure we don't block response too long
+    const timeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Redis timeout')), 500)
+    );
+    
+    await Promise.race([redis.set(key, value, mode, duration), timeout]);
+  } catch (error) {
+    // Ignore cache set failures
+  }
+};
+
 export default redis;
