@@ -7,7 +7,10 @@ const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379'
 });
 
 const emailWorker = new Worker('email-queue', async (job) => {
-  console.log(`Processing Email Job ${job.id} for user ${job.data.email}`);
+  // Simple masking: j***@gmail.com
+  const email = job.data.email || '';
+  const maskedEmail = email.replace(/(^.).+(@.+)/, '$1***$2');
+  console.log(`Processing Email Job ${job.id} for user ${maskedEmail}`);
   
   if (job.name === 'sendPurchaseSuccess') {
     const { email, fullName, orderData } = job.data;

@@ -1,5 +1,4 @@
 import prisma from '../lib/prisma.js';
-import { sendPurchaseSuccessEmail } from '../services/emailService.js';
 import { emailQueue } from '../lib/queue.js';
 
 // Helper for coupon validation

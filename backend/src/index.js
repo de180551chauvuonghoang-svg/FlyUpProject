@@ -2,7 +2,6 @@ import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import './workers/emailWorker.js'; // Start Queue Worker
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -29,6 +28,9 @@ if (result.error) {
   console.error('DOTENV LOAD ERROR:', result.error);
 } else {
   console.log('DOTENV LOADED VARS:', Object.keys(result.parsed));
+  
+  // Dynamic import worker after env vars are loaded to ensure Redis connection works
+  import('./workers/emailWorker.js').catch(err => console.error('Failed to start email worker:', err));
 }
 
 const app = express();

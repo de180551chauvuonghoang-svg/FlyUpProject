@@ -10,7 +10,8 @@ export const rateLimit = (prefix, limit, windowSeconds) => {
   return async (req, res, next) => {
     try {
       // Get IP: Handle proxy (X-Forwarded-For) or direct connection
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      const forwarded = req.headers['x-forwarded-for'];
+      const ip = forwarded ? forwarded.split(',')[0].trim() : req.socket.remoteAddress;
       const key = `${prefix}:${ip}`;
 
       // Increment counter

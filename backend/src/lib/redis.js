@@ -13,7 +13,15 @@ const redis = new Redis(redisUrl, {
 });
 
 redis.on('connect', () => {
-  console.log('✅ Redis connected successfully at', redisUrl);
+  try {
+    const url = new URL(redisUrl);
+    if (url.password) url.password = '****';
+    if (url.username) url.username = '****'; // Redact username if present
+    console.log('✅ Redis connected successfully at', url.toString());
+  } catch (error) {
+    // Fallback if URL parsing fails (e.g. malformed URL)
+    console.log('✅ Redis connected successfully at (redacted)');
+  }
 });
 
 redis.on('error', (err) => {
