@@ -88,8 +88,8 @@ export const chat = async (req, res) => {
 
     // 2. Construct the prompt
     // Use gemini-1.5-flash for best balance of speed and intelligence
-    // Use gemini-1.5-flash for better stability and to avoid "model overloaded" (503) errors
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Use gemini-pro for maximum compatibility and stability
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
     const prompt = `
     You are "FlyUp", a professional and concise Academic Counselor.
