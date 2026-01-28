@@ -25,6 +25,10 @@ redis.on('connect', () => {
 });
 
 redis.on('error', (err) => {
+  if (err.code === 'ECONNRESET') {
+    // Ignore connection resets, as ioredis handles reconnection automatically
+    return;
+  }
   console.error('❌ Redis connection error:', err.message);
   // Optional: Don't crash the app if Redis is down, just log
 });

@@ -25,7 +25,9 @@ const __dirname = dirname(__filename);
 const result = dotenv.config({ path: join(__dirname, '../.env') });
 
 if (result.error) {
-  console.error('DOTENV LOAD ERROR:', result.error);
+  if (result.error.code !== 'ENOENT') {
+    console.error('DOTENV LOAD ERROR:', result.error);
+  }
 } else {
   console.log('DOTENV LOADED VARS:', Object.keys(result.parsed));
   
