@@ -9,7 +9,7 @@ const redis = new Redis(redisUrl, {
     const delay = Math.min(times * 50, 2000);
     return delay;
   },
-  maxRetriesPerRequest: 3 // Fail fast if Redis is down
+  maxRetriesPerRequest: null // Request will stay in the queue until Redis is ready
 });
 
 redis.on('connect', () => {
