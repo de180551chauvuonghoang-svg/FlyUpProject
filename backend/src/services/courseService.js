@@ -1,14 +1,19 @@
 import prisma from '../lib/prisma.js';
-import NodeCache from 'node-cache';
+import redis from '../lib/redis.js';
 
-const cache = new NodeCache({ stdTTL: 300 }); // Cache for 5 minutes
+// Helper to handle BigInt serialization
+const jsonReplacer = (key, value) => {
+  return typeof value === 'bigint' ? value.toString() : value;
+};
+
+// const cache = new NodeCache({ stdTTL: 300 }); // Removed NodeCache
 
 // Get all categories with course counts
 export const getCategories = async () => {
   try {
     const cacheKey = 'categories_all';
-    const cachedResult = cache.get(cacheKey);
-    if (cachedResult) return cachedResult;
+    const cachedResult = await redis.get(cacheKey);
+    if (cachedResult) return JSON.parse(cachedResult);
 
     const categories = await prisma.categories.findMany({
       where: {
@@ -26,7 +31,7 @@ export const getCategories = async () => {
       }
     });
 
-    cache.set(cacheKey, categories);
+    await redis.set(cacheKey, JSON.stringify(categories, jsonReplacer), 'EX', 300); // 5 Minutes
     return categories;
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -48,13 +53,19 @@ export const getCourses = async (filters = {}) => {
       sortBy = 'newest'
     } = filters;
 
-    // Create a unique cache key based on filters
-    const cacheKey = `courses_${JSON.stringify(filters)}`;
-    const cachedResult = cache.get(cacheKey);
+    // Check if filters are default (only page might differ) to decide whether to cache
+    // We only cache the first few pages of the default view to save Redis memory from random search queries
+    const isDefaultView = !categoryId && !level && !minPrice && !maxPrice && !search && (!sortBy || sortBy === 'newest');
+    const shouldCache = isDefaultView && page <= 5; // Cache only first 5 pages of default list
 
-    if (cachedResult) {
-      console.log('Serving courses from cache');
-      return cachedResult;
+    const cacheKey = `courses:default:page:${page}:limit:${limit}`;
+    
+    if (shouldCache) {
+        const cachedResult = await redis.get(cacheKey);
+        if (cachedResult) {
+            console.log('Serving courses from Redis cache');
+            return JSON.parse(cachedResult);
+        }
     }
 
     // Build where clause - Match actual database values
@@ -183,7 +194,9 @@ export const getCourses = async (filters = {}) => {
       }
     };
 
-    cache.set(cacheKey, result);
+    if (shouldCache) {
+        await redis.set(cacheKey, JSON.stringify(result, jsonReplacer), 'EX', 300); // 5 Minutes
+    }
     return result;
   } catch (error) {
     console.error('Error fetching courses:', error);
@@ -196,12 +209,12 @@ export const getCourseById = async (courseId) => {
   try {
     console.log('[courseService] Fetching course:', courseId);
     
-    const cacheKey = `course_${courseId}`;
-    const cachedResult = cache.get(cacheKey);
+    const cacheKey = `course:${courseId}`;
+    const cachedResult = await redis.get(cacheKey);
 
     if (cachedResult) {
-       console.log('[courseService] Serving course from cache:', courseId);
-       return cachedResult;
+       console.log('[courseService] Serving course from Redis cache:', courseId);
+       return JSON.parse(cachedResult);
     }
     
     const course = await prisma.courses.findFirst({
@@ -278,7 +291,8 @@ export const getCourseById = async (courseId) => {
       throw new Error('Course not found');
     }
 
-    cache.set(cacheKey, course);
+    // Cache for 1 hour as course details don't change every minute
+    await redis.set(cacheKey, JSON.stringify(course, jsonReplacer), 'EX', 3600);
     return course;
   } catch (error) {
     console.error('[courseService] Error fetching course:', error);
