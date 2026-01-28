@@ -16,4 +16,11 @@ connection.on('error', (err) => {
 
 export const emailQueue = new Queue('email-queue', { connection });
 
+emailQueue.on('error', (err) => {
+  if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
+    return;
+  }
+  console.error('❌ Email Queue Error:', err.message);
+});
+
 console.log('✅ Email Queue initialized');

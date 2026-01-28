@@ -37,4 +37,11 @@ emailWorker.on('failed', (job, err) => {
   console.error(`❌ Email job ${job.id} failed: ${err.message}`);
 });
 
+emailWorker.on('error', (err) => {
+  if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
+    return;
+  }
+  console.error('❌ Email Worker Error:', err.message);
+});
+
 export default emailWorker;
