@@ -25,8 +25,8 @@ redis.on('connect', () => {
 });
 
 redis.on('error', (err) => {
-  if (err.code === 'ECONNRESET') {
-    // Ignore connection resets, as ioredis handles reconnection automatically
+  if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
+    // Ignore connection resets and broken pipes, as ioredis handles reconnection automatically
     return;
   }
   console.error('❌ Redis connection error:', err.message);

@@ -6,6 +6,14 @@ const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379'
   maxRetriesPerRequest: null
 });
 
+connection.on('error', (err) => {
+  if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
+     // Ignore connection resets and broken pipes
+    return;
+  }
+  console.error('❌ Redis Worker Connection Error:', err.message);
+});
+
 const emailWorker = new Worker('email-queue', async (job) => {
   // Simple masking: j***@gmail.com
   const email = job.data.email || '';
