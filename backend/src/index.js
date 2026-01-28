@@ -2,6 +2,7 @@ import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import './workers/emailWorker.js'; // Start Queue Worker
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 

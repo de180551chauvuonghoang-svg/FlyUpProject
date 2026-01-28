@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { sendPurchaseSuccessEmail } from '../services/emailService.js';
+import { emailQueue } from '../lib/queue.js';
 
 // Helper for coupon validation
 const validateAndCalculateCoupon = async (code, courseIds) => {
@@ -172,7 +173,6 @@ export const getCheckoutStatus = async (req, res) => {
 };
 
 // Simulate payment success (Webhook mock)
-// In production, this would be a secure endpoint receiving Bank Webhook
 export const webhookPayment = async (req, res) => {
   try {
     const { checkoutId } = req.body;
@@ -283,7 +283,7 @@ export const webhookPayment = async (req, res) => {
       timeout: 20000 // Transaction timeout 20s
     });
 
-  // 5. Send Email Notification (Simulated)
+  // 5. Send Email Notification (Queue)
       try {
         if (!result.alreadyCompleted && result.userId) {
           const user = await prisma.users.findUnique({
@@ -297,17 +297,26 @@ export const webhookPayment = async (req, res) => {
           });
 
           if (user) {
-            await sendPurchaseSuccessEmail(user.Email, user.FullName, {
-              orderId: checkoutId,
-              totalAmount: Number(result.totalAmount),
-              courses: courses.map(c => ({ title: c.Title, price: Number(c.Price) }))
-            });
+             // Add job to queue instead of sending directly
+             await emailQueue.add('sendPurchaseSuccess', {
+                email: user.Email,
+                fullName: user.FullName,
+                orderData: {
+                    orderId: checkoutId,
+                    totalAmount: Number(result.totalAmount),
+                    courses: courses.map(c => ({ title: c.Title, price: Number(c.Price) }))
+                }
+             }, {
+                attempts: 3, // Retry 3 times on failure
+                backoff: { type: 'exponential', delay: 1000 }
+             });
+             console.log('📧 Email job added to queue');
           }
         } else if (result.alreadyCompleted) {
            console.log('ℹ️ Payment already completed, skipping email.');
         }
       } catch (emailErr) {
-        console.error('⚠️ Failed to send simulation success email:', emailErr.message);
+        console.error('⚠️ Failed to add email job to queue:', emailErr.message);
       }
 
     res.json({ success: true, data: result });
@@ -394,17 +403,32 @@ export const applyCoupon = async (req, res) => {
 // Get all available public coupons
 export const getAvailableCoupons = async (req, res) => {
     try {
+        const currentDate = new Date(); // Use local time or UTC as configured in Prisma
+        
+        // 1. Get IDs of valid coupons efficiently using Raw Query
+        // This allows us to compare "UsedCount" < "MaxUses" checking at DB level
+        // We handle "MaxUses IS NULL" (unlimited) OR "UsedCount < MaxUses"
+        // Also ensure IsActive, IsPublic, and ExpiryDate valid
+        const validCouponIdsRaw = await prisma.$queryRaw`
+            SELECT "Id" 
+            FROM "Coupons" 
+            WHERE "IsActive" = true 
+              AND "IsPublic" = true
+              AND ("ExpiryDate" IS NULL OR "ExpiryDate" > ${currentDate})
+              AND ("MaxUses" IS NULL OR "UsedCount" < "MaxUses")
+        `;
+
+        // validCouponIdsRaw is array of objects: [{ Id: '...' }, { Id: '...' }]
+        const validIds = validCouponIdsRaw.map(c => c.Id);
+
+        if (validIds.length === 0) {
+            return res.json({ success: true, data: [] });
+        }
+
+        // 2. Fetch full details using Prisma proper for Type safety and relation mapping
         const coupons = await prisma.coupons.findMany({
             where: {
-                IsActive: true,
-                IsPublic: true,
-                OR: [
-                    { ExpiryDate: null },
-                    { ExpiryDate: { gt: new Date() } }
-                ]
-                // We can't filter UsedCount < MaxUses efficiently in where clause if MaxUses is nullable or field comparison
-                // So we'll fetch and filter in JS or use raw query if performance checking needed.
-                // For now, simple fetch.
+                Id: { in: validIds }
             },
             select: {
                 Id: true,
@@ -422,12 +446,9 @@ export const getAvailableCoupons = async (req, res) => {
             }
         });
 
-        // Client-side filtering for complex logic if needed, or simple return
-        const validCoupons = coupons.filter(c => !c.MaxUses || c.UsedCount < c.MaxUses);
-
         res.json({
             success: true,
-            data: validCoupons
+            data: coupons
         });
 
     } catch (error) {
