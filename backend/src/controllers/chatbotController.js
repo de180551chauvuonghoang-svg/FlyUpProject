@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
@@ -10,12 +10,14 @@ export const chat = async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    // Initialize Gemini here to ensure env vars are loaded
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    // Initialize Groq SDK
+    const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY
+    });
 
-    if (!process.env.GEMINI_API_KEY) {
-        console.error("GEMINI_API_KEY is missing. Make sure it is set in .env");
-        return res.status(500).json({ error: "Server configuration error: GEMINI_API_KEY missing" });
+    if (!process.env.GROQ_API_KEY) {
+        console.error("GROQ_API_KEY is missing. Make sure it is set in .env");
+        return res.status(500).json({ error: "Server configuration error: GROQ_API_KEY missing" });
     }
 
 
@@ -74,9 +76,8 @@ export const chat = async (req, res) => {
     }).join("\n");
 
     // 2. Construct the prompt
-    // Use gemini-1.5-flash for best balance of speed and intelligence
-    // Use gemini-pro for maximum compatibility and stability
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    // Use openai/gpt-oss-20b on Groq (Latest supported model)
+    const model = "openai/gpt-oss-20b";
 
     const prompt = `
     You are "FlyUp", a professional and concise Academic Counselor.
@@ -100,10 +101,20 @@ export const chat = async (req, res) => {
     Your Response:
     `;
 
-    // 3. Generate response
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // 3. Generate response using Groq
+    const completion = await groq.chat.completions.create({
+        messages: [
+            {
+                role: "user",
+                content: prompt,
+            },
+        ],
+        model: model,
+        temperature: 0.5,
+        max_tokens: 1024,
+    });
+
+    const text = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
     return res.status(200).json({ response: text });
 
