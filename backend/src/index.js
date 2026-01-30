@@ -1,9 +1,18 @@
+import dns from 'node:dns';
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+
+// Force IPv4 for DNS resolution to avoid ENOTFOUND with Gmail API on some networks
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch (error) {
+  // Ignore if not supported (older node versions)
+  console.log('Note: dns.setDefaultResultOrder not supported or failed');
+}
 
 // Import routers
 import authRouter from './routers/auth.js';
