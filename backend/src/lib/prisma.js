@@ -4,6 +4,11 @@ import pg from 'pg';
 
 const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL;
+  if (!connectionString || typeof connectionString !== 'string' || connectionString.trim() === '') {
+    console.error('❌ Error: DATABASE_URL is missing or invalid in environment variables.');
+    process.exit(1);
+  }
+
   const pool = new pg.Pool({ 
     connectionString, 
     max: 10 // Transaction Mode supports more connections
