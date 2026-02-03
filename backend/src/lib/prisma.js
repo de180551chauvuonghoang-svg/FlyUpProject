@@ -1,19 +1,23 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
 const prismaClientSingleton = () => {
   const connectionString = process.env.DATABASE_URL;
-  // Giảm connection_limit xuống 3 để tránh lỗi quá tải Pool (Supabase Session Mode limit)
-  const url = connectionString.includes('?') 
-    ? `${connectionString}&connection_limit=3&pool_timeout=20` 
-    : `${connectionString}?connection_limit=3&pool_timeout=20`;
+  if (!connectionString || typeof connectionString !== 'string' || connectionString.trim() === '') {
+    console.error('❌ Error: DATABASE_URL is missing or invalid in environment variables.');
+    process.exit(1);
+  }
+
+  const pool = new pg.Pool({ 
+    connectionString, 
+    max: 10 // Transaction Mode supports more connections
+  });
+  const adapter = new PrismaPg(pool);
 
   return new PrismaClient({
+    adapter,
     log: ['query', 'info', 'warn', 'error'],
-    datasources: {
-      db: {
-        url,
-      },
-    },
   });
 };
 

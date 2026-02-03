@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@prisma/client": "^5.7.0",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
     "@supabase/supabase-js": "^2.39.0",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.67.2",
@@ -30,7 +31,8 @@
     "node-cache": "^5.1.2",
     "nodemailer": "^7.0.11",
     "open": "^11.0.0",
-    "prisma": "^5.7.0",
+    "pg": "^8.17.2",
+    "prisma": "^7.3.0",
     "resend": "^6.7.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
@@ -38,7 +40,10 @@
   },
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",
+    "@types/node": "^25.1.0",
     "nodemon": "^3.0.2",
-    "prisma-erd-generator": "^2.4.2"
+    "prisma-erd-generator": "^2.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

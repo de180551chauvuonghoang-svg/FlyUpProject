@@ -25,7 +25,7 @@ import transactionRouter from './routers/transactions.js';
 import chatbotRouter from './routers/chatbot.js';
 import { getCourses, getCategories } from './services/courseService.js';
 import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from './config/swagger.js';
+import swaggerSpec from './configs/swagger.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -112,8 +112,24 @@ app.listen(PORT, () => {
     } catch (error) {
       console.warn('⚠️ Cache warmup partial failure (non-critical):', error.message);
     }
+
   })();
 });
+
+const gracefulShutdown = async () => {
+  console.log('🛑 Received kill signal, shutting down gracefully');
+  try {
+    await import('./lib/prisma.js').then(m => m.default.$disconnect());
+    console.log('✅ Prisma disconnected');
+    process.exit(0);
+  } catch (err) {
+    console.error('❌ Error during shutdown:', err);
+    process.exit(1);
+  }
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 
 export default app;
 
