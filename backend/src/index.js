@@ -23,7 +23,9 @@ import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
 import chatbotRouter from './routers/chatbot.js';
+import recommendationsRouter from './routers/ai-course-recommendations-router.js';
 import { getCourses, getCategories } from './services/courseService.js';
+import * as courseCache from './services/course-cache-service.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './configs/swagger.js';
 
@@ -70,6 +72,7 @@ app.use('/api/comments', commentRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
 app.use('/api/chatbot', chatbotRouter);
+app.use('/api/recommendations', recommendationsRouter);
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -104,10 +107,13 @@ app.listen(PORT, () => {
   (async () => {
     try {
       console.log('🔥 Warming up cache...');
-      console.log('🔥 Warming up cache...');
       // Run sequentially to avoid DB connection timeout
       await getCategories();
       await getCourses({ page: 1, limit: 12 });
+
+      // Warm up chatbot course cache
+      await courseCache.refreshCache();
+
       console.log('✅ Cache warmed up successfully!');
     } catch (error) {
       console.warn('⚠️ Cache warmup partial failure (non-critical):', error.message);

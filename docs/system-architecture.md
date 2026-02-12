@@ -46,8 +46,32 @@ The frontend is a Single Page Application (SPA) built with React 19 and Vite.
 
 ## AI Integration Architecture
 - **Models:** Utilizes `llama-3.3-70b-versatile` via Groq SDK and Google Generative AI.
-- **Functionality:** Chatbot widget provides real-time course assistance and general platform info.
-- **Processing:** Requests are handled via `chatbotController` which communicates with AI providers.
+- **Functionality:**
+  - Chatbot widget provides real-time course assistance and general platform info.
+  - AI-powered course recommendations provide personalized learning paths.
+- **Processing:** Requests are handled via `chatbotController` and `ai-course-recommendation-controller` which communicate with AI providers.
+
+### AI Recommendation Service
+- **Architecture:** AI-powered course recommendations via Groq LLM
+- **Caching:** Redis with 1-hour TTL, hash-based cache keys
+- **Fallback:** Rule-based recommendations if AI unavailable
+- **Rate Limit:** 10 requests/minute per IP
+- **Performance:** <500ms (cached), <3s (uncached)
+
+**Flow:**
+1. User requests recommendations
+2. Check Redis cache (key: `recommendations:userId:enrollmentHash`)
+3. If miss: fetch user profile, build AI context, call Groq API
+4. Parse AI response, enrich with course data
+5. Cache result for 1 hour
+6. Return to user
+
+**Files:**
+- Service: `backend/src/services/ai/personalized-course-recommendation-service.js`
+- Controller: `backend/src/controllers/ai-course-recommendation-controller.js`
+- Router: `backend/src/routers/ai-course-recommendations-router.js`
+- AI Client: `backend/src/utils/ai-providers/groq-client.js`
+- Utilities: `backend/src/services/ai/ai-prompt-builder-utilities.js`
 
 ## Caching Strategy
 - **Layer:** Redis acts as a high-performance cache.
