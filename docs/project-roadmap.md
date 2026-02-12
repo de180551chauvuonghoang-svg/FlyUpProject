@@ -21,9 +21,10 @@ FlyUp EduTech has a functional core encompassing user authentication, course man
 ### Phase 3: Optimization & Refinement (In Progress)
 - [x] Redis caching implementation.
 - [x] BullMQ for background email processing.
+- [x] AI Service Critical Fixes (Memory Leaks & Rate Limiting).
 - [ ] Improved search and filtering for courses.
 - [ ] Enhanced instructor dashboard.
-- [ ] Documentation overhaul (Current Task).
+- [x] Documentation overhaul (Updated).
 
 ### Phase 4: Expansion (Planned)
 - [ ] Mobile application (React Native).

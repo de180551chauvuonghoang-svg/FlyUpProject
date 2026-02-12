@@ -41,12 +41,14 @@ export async function generateCompletion({
   max_tokens = 1024,
   timeout = 8000
 }) {
+  let timeoutId; // Track timeout ID for cleanup
+
   try {
     const client = getGroqClient();
 
-    // Create timeout promise
+    // Create timeout promise with tracked ID
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Groq request timeout')), timeout);
+      timeoutId = setTimeout(() => reject(new Error('Groq request timeout')), timeout);
     });
 
     // Race between API call and timeout
@@ -79,6 +81,11 @@ export async function generateCompletion({
       throw new Error('AI_SERVICE_ERROR');
     } else {
       throw new Error(`AI_ERROR: ${error.message}`);
+    }
+  } finally {
+    // Always clear timeout to prevent memory leak
+    if (timeoutId) {
+      clearTimeout(timeoutId);
     }
   }
 }

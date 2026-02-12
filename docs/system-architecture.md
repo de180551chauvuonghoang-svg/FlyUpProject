@@ -29,8 +29,8 @@ The frontend is a Single Page Application (SPA) built with React 19 and Vite.
 - **Animations:** Framer Motion for interactive transitions.
 
 ## Database Design
-- **Core Entities:** `User`, `Course`, `Instructor`, `Enrollment`, `Transaction`.
-- **Content Entities:** `Section`, `Lecture`, `Comment`, `Review`.
+- **Core Entities:** `Users`, `Courses`, `Instructors`, `Enrollments`, `Bills` (Transactions).
+- **Content Entities:** `Sections`, `Lectures`, `Comments`, `CourseReviews`.
 - **Relationship:** Managed via Prisma relationships (1:N, N:M).
 - *Refer to `DATABASE_README.md` for the detailed schema and Vietnamese documentation.*
 
@@ -82,8 +82,12 @@ The frontend is a Single Page Application (SPA) built with React 19 and Vite.
 - **Workers:** Dedicated worker processes (`src/workers/`) handle email dispatch and course status monitoring independently from the main request loop.
 
 ## Security Architecture
-- **Rate Limiting:** Implemented on sensitive endpoints (Login, Chatbot).
+- **Rate Limiting:** Implemented on sensitive endpoints:
+  - Login: Standard auth rate limits.
+  - Chatbot: 10 req/min for standard, 5 req/min for streaming.
+  - AI Recommendations: 10 req/min.
 - **Validation:** Data sanitization and validation using `express-validator`.
+- **Memory Safety:** Strict timeout management and timer cleanup in AI and Cache clients to prevent leaks.
 - **Environment:** Secret management via `.env` files.
 - **CORS:** Controlled access to the backend API.
 

@@ -2,6 +2,7 @@
 import express from 'express';
 import { chat } from '../controllers/chatbotController.js';
 import { chatStream } from '../controllers/chatbot-streaming-controller.js';
+import { rateLimit } from '../middleware/rateLimitMiddleware.js';
 
 const router = express.Router();
 
@@ -49,10 +50,12 @@ const router = express.Router();
  *                 data: {"type":"complete","fullText":"Hello world"}
  *       400:
  *         description: Invalid request
+ *       429:
+ *         description: Too many requests - rate limit exceeded (5 requests per minute)
  *       500:
  *         description: Server error
  */
-router.post('/stream', chatStream);
+router.post('/stream', rateLimit('chatbot:stream', 5, 60), chatStream);
 
 /**
  * @swagger
@@ -95,9 +98,11 @@ router.post('/stream', chatStream);
  *                   type: string
  *       400:
  *         description: Invalid request (missing message or invalid sessionId)
+ *       429:
+ *         description: Too many requests - rate limit exceeded (10 requests per minute)
  *       500:
  *         description: Server error
  */
-router.post('/', chat);
+router.post('/', rateLimit('chatbot', 10, 60), chat);
 
 export default router;
