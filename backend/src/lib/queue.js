@@ -1,26 +1,50 @@
-import { Queue } from 'bullmq';
-import IORedis from 'ioredis';
-
-// Reuse connection config, but BullMQ needs separate connection instances
-const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
-  maxRetriesPerRequest: null // Required by BullMQ
-});
-
-connection.on('error', (err) => {
-  if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
-     // Ignore connection resets and broken pipes
-    return;
+/**
+ * Simple In-Memory Queue to replace BullMQ/Redis
+ */
+class MemoryQueue {
+  constructor(name) {
+    this.name = name;
+    this.handlers = [];
+    this.errorHandlers = [];
+    console.log(`✅ In-memory Queue [${name}] initialized`);
   }
-  console.error('❌ Redis Queue Connection Error:', err.message);
-});
 
-export const emailQueue = new Queue('email-queue', { connection });
+  async add(jobName, data) {
+    const job = {
+      id: Math.random().toString(36).substring(7),
+      name: jobName,
+      data,
+      timestamp: Date.now()
+    };
 
-emailQueue.on('error', (err) => {
-  if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
-    return;
+    // Simulate async processing
+    setImmediate(async () => {
+      for (const handler of this.handlers) {
+        try {
+          await handler(job);
+        } catch (err) {
+          this.errorHandlers.forEach(h => h(job, err));
+        }
+      }
+    });
+
+    return job;
   }
-  console.error('❌ Email Queue Error:', err.message);
-});
 
-console.log('✅ Email Queue initialized');
+  // BullMQ compatibility method
+  on(event, handler) {
+    if (event === 'error') {
+      this.errorHandlers.push(handler);
+    }
+    return this;
+  }
+
+  // Internal method for workers to register
+  _registerWorker(handler) {
+    this.handlers.push(handler);
+  }
+}
+
+export const emailQueue = new MemoryQueue('email-queue');
+
+export default emailQueue;

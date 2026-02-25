@@ -1,21 +1,10 @@
-import { Worker } from 'bullmq';
-import IORedis from 'ioredis';
+import { emailQueue } from '../lib/queue.js';
 import * as emailService from '../services/emailService.js';
 
-const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
-  maxRetriesPerRequest: null
-});
+console.log('✅ Email Worker initialized (In-memory)');
 
-connection.on('error', (err) => {
-  if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
-     // Ignore connection resets and broken pipes
-    return;
-  }
-  console.error('❌ Redis Worker Connection Error:', err.message);
-});
-
-const emailWorker = new Worker('email-queue', async (job) => {
-  // Simple masking: j***@gmail.com
+// Simple helper to mimic BullMQ worker behavior
+const processJob = async (job) => {
   const email = job.data.email || '';
   const maskedEmail = email.replace(/(^.).+(@.+)/, '$1***$2');
   console.log(`Processing Email Job ${job.id} for user ${maskedEmail}`);
@@ -24,24 +13,22 @@ const emailWorker = new Worker('email-queue', async (job) => {
     const { email, fullName, orderData } = job.data;
     await emailService.sendPurchaseSuccessEmail(email, fullName, orderData);
   } else {
+    // In our manual trigger, we might pass jobName as the first arg to queue.add
     console.warn(`Unknown job type: ${job.name}`);
   }
+};
 
-}, { connection });
+// Register the handler with our memory queue
+emailQueue._registerWorker(processJob);
 
-emailWorker.on('completed', (job) => {
-  console.log(`✅ Email job ${job.id} completed!`);
-});
-
-emailWorker.on('failed', (job, err) => {
-  console.error(`❌ Email job ${job.id} failed: ${err.message}`);
-});
-
-emailWorker.on('error', (err) => {
-  if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
-    return;
+// Mock worker object for compatibility if imported elsewhere
+const emailWorker = {
+  on: (event, callback) => {
+    // Basic event mapping if needed
+    if (event === 'completed' || event === 'failed' || event === 'error') {
+       // We'll log these inside our MemoryQueue or processJob if needed
+    }
   }
-  console.error('❌ Email Worker Error:', err.message);
-});
+};
 
 export default emailWorker;
