@@ -5,6 +5,7 @@ import Dashboard from '../pages/Dashboard';
 import Users from '../pages/Users';
 import Courses from '../pages/Courses';
 import Login from '../pages/Login';
+import UserDetail from '../pages/UserDetail';
 
 const router = createBrowserRouter([
   // Public route - Login
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: 'users',
         element: <Users />,
+      },
+      {
+        path: 'users/:id',
+        element: <UserDetail />,
       },
       {
         path: 'courses',

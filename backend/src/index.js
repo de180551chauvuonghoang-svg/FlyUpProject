@@ -42,7 +42,7 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -89,7 +89,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
 
@@ -97,8 +97,6 @@ app.listen(PORT, () => {
   (async () => {
     try {
       console.log('🔥 Warming up cache...');
-      console.log('🔥 Warming up cache...');
-      // Run sequentially to avoid DB connection timeout
       await getCategories();
       await getCourses({ page: 1, limit: 12 });
       console.log('✅ Cache warmed up successfully!');
@@ -108,5 +106,19 @@ app.listen(PORT, () => {
   })();
 });
 
+// Graceful shutdown - release port when process exits
+const shutdown = () => {
+  console.log('\n🛑 Shutting down server...');
+  server.close(() => {
+    console.log('✅ Server closed. Port released.');
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 5000);
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
 export default app;
+
 
