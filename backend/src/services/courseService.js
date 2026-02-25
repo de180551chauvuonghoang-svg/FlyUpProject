@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js';
-import redis, { safeGet, safeSet } from '../lib/redis.js';
+import cache, { safeGet, safeSet } from '../lib/cache.js';
 
 // Helper to handle BigInt serialization
 const jsonReplacer = (key, value) => {
