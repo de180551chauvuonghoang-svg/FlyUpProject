@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Search, 
-  Lock, 
-  Unlock, 
-  ChevronLeft, 
+import {
+  Search,
+  Lock,
+  Unlock,
+  ChevronLeft,
   ChevronRight,
   Filter,
   MoreVertical,
@@ -21,6 +22,7 @@ import userService from '../../services/userService';
  * User management with list, search, pagination, lock/unlock
  */
 function Users() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -31,7 +33,7 @@ function Users() {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
-  
+
   // Ref to track if we should reset page
   const shouldResetPage = useRef(false);
 
@@ -58,14 +60,14 @@ function Users() {
   // Initial fetch and refetch on filter/search/page change
   useEffect(() => {
     let pageToFetch = currentPage;
-    
+
     // If we should reset page (filter/search changed), use page 1
     if (shouldResetPage.current) {
       pageToFetch = 1;
       setCurrentPage(1);
       shouldResetPage.current = false;
     }
-    
+
     fetchUsers(pageToFetch, searchQuery, statusFilter);
   }, [currentPage, searchQuery, statusFilter, itemsPerPage]);
 
@@ -130,7 +132,7 @@ function Users() {
   // Generate page numbers for pagination
   const getPageNumbers = () => {
     const pages = [];
-    
+
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -166,7 +168,7 @@ function Users() {
         </tr>
       ));
     }
-    
+
     if (users.length === 0) {
       return (
         <tr>
@@ -179,18 +181,21 @@ function Users() {
         </tr>
       );
     }
-    
+
     return users.map((user, index) => (
       <motion.tr
         key={user.id}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.03, duration: 0.2 }}
+        onClick={() => navigate(`/users/${user.id}`)}
+        style={{ cursor: 'pointer' }}
+        title="Click to view user detail"
       >
         <td>
           <div className="user-cell">
-            <img 
-              src={user.avatar} 
+            <img
+              src={user.avatar}
               alt={user.fullName}
               className="user-avatar-small"
             />
@@ -237,17 +242,17 @@ function Users() {
         </td>
         <td>
           <div className="actions-cell">
-            <button 
+            <button
               className="action-menu-btn"
               onClick={() => setActiveDropdown(activeDropdown === user.id ? null : user.id)}
             >
               <MoreVertical size={16} />
             </button>
-            
+
             {activeDropdown === user.id && (
               <div className="action-dropdown">
                 {user.status === 'ACTIVE' ? (
-                  <button 
+                  <button
                     className="dropdown-item danger"
                     onClick={() => handleLockUser(user.id)}
                     disabled={actionLoading === user.id}
@@ -256,7 +261,7 @@ function Users() {
                     {actionLoading === user.id ? 'Locking...' : 'Lock User'}
                   </button>
                 ) : (
-                  <button 
+                  <button
                     className="dropdown-item success"
                     onClick={() => handleUnlockUser(user.id)}
                     disabled={actionLoading === user.id}
@@ -296,8 +301,8 @@ function Users() {
         <div className="search-filter">
           <div className="search-box large">
             <Search size={18} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Search by name, email or phone..."
               value={searchQuery}
               onChange={handleSearch}
@@ -307,19 +312,19 @@ function Users() {
 
         <div className="status-filters">
           <Filter size={16} />
-          <button 
+          <button
             className={`filter-btn ${statusFilter === 'ALL' ? 'active' : ''}`}
             onClick={() => handleStatusFilter('ALL')}
           >
             All
           </button>
-          <button 
+          <button
             className={`filter-btn ${statusFilter === 'ACTIVE' ? 'active' : ''}`}
             onClick={() => handleStatusFilter('ACTIVE')}
           >
             Active
           </button>
-          <button 
+          <button
             className={`filter-btn ${statusFilter === 'LOCKED' ? 'active' : ''}`}
             onClick={() => handleStatusFilter('LOCKED')}
           >
@@ -357,16 +362,16 @@ function Users() {
               {Math.min(currentPage * itemsPerPage, totalItems)} of{' '}
               {totalItems} users
             </div>
-            
+
             <div className="pagination-controls">
-              <button 
+              <button
                 className="pagination-btn"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={!hasPrevPage}
               >
                 <ChevronLeft size={16} />
               </button>
-              
+
               {getPageNumbers().map((page, index) => (
                 page === '...' ? (
                   <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
@@ -380,8 +385,8 @@ function Users() {
                   </button>
                 )
               ))}
-              
-              <button 
+
+              <button
                 className="pagination-btn"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!hasNextPage}
