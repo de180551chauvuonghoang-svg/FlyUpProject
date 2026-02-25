@@ -521,12 +521,7 @@ export default function CourseDetailsPage() {
               )}
             </div>
 
-            {/* Countdown */}
-            <div className="flex items-center gap-2 text-red-400 text-sm font-medium mb-6 bg-red-500/10 p-3 rounded-xl border border-red-500/20">
-              <Clock className="w-4 h-4" />
-              <span>5 hours left at this price!</span>
-            </div>
-
+          
             {/* Action Buttons */}
             <div className="space-y-3 mb-6">
               <motion.button 

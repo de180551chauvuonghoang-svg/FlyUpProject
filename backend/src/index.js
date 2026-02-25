@@ -1,8 +1,18 @@
+import dns from 'node:dns';
 import express from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+
+// Force IPv4 for DNS resolution to avoid ENOTFOUND with Gmail API on some networks
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch (error) {
+  // Ignore if not supported (older node versions)
+  console.log('Note: dns.setDefaultResultOrder not supported or failed');
+}
 
 // Import routers
 import authRouter from './routers/auth.js';
@@ -13,7 +23,11 @@ import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
 import adminRouter from './routers/admin.js';
+import chatbotRouter from './routers/chatbot.js';
 import { getCourses, getCategories } from './services/courseService.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './configs/swagger.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,9 +35,14 @@ const __dirname = dirname(__filename);
 const result = dotenv.config({ path: join(__dirname, '../.env') });
 
 if (result.error) {
-  console.error('DOTENV LOAD ERROR:', result.error);
+  if (result.error.code !== 'ENOENT') {
+    console.error('DOTENV LOAD ERROR:', result.error);
+  }
 } else {
   console.log('DOTENV LOADED VARS:', Object.keys(result.parsed));
+
+  // Dynamic import worker after env vars are loaded to ensure Redis connection works
+  import('./workers/emailWorker.js').catch(err => console.error('Failed to start email worker:', err));
 }
 
 const app = express();
@@ -38,6 +57,7 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 // Middleware
+app.use(compression());
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, etc.)
@@ -68,6 +88,11 @@ app.use('/api/comments', commentRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/chatbot', chatbotRouter);
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 // Error handling middleware
 
@@ -91,6 +116,7 @@ app.use((err, req, res, next) => {
 // Start server
 const server = app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
+  console.log(`� Swagger Docs available at http://localhost:${PORT}/api-docs`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
 
   // Warm up cache
@@ -106,9 +132,15 @@ const server = app.listen(PORT, () => {
   })();
 });
 
-// Graceful shutdown - release port when process exits
-const shutdown = () => {
+// Graceful shutdown - release port and disconnect Prisma when process exits
+const shutdown = async () => {
   console.log('\n🛑 Shutting down server...');
+  try {
+    await import('./lib/prisma.js').then(m => m.default.$disconnect());
+    console.log('✅ Prisma disconnected');
+  } catch (err) {
+    console.error('❌ Error disconnecting Prisma:', err);
+  }
   server.close(() => {
     console.log('✅ Server closed. Port released.');
     process.exit(0);

@@ -1,18 +1,83 @@
 import * as authService from '../services/authService.js';
 import * as emailService from '../services/emailService.js';
+import prisma from '../lib/prisma.js'; 
+import { validationResult } from 'express-validator';
+
+export const sendOtp = async (req, res) => {
+  try {
+    // Input validation check
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg });
+    }
+
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Check if user already exists
+    // We check directly against the DB to avoid creating a user accidently
+    const userExists = await prisma.users.findFirst({
+        where: { Email: { equals: email.toLowerCase(), mode: 'insensitive' } }
+    });
+
+    if (userExists) {
+      return res.status(409).json({ error: 'Email already exists' });
+    }
+
+    // Generate and Send OTP
+    // Validates rate limit internally
+    let otp;
+    try {
+        otp = await authService.createEmailOtp(email);
+    } catch (err) {
+        if (err.message === 'RATE_LIMIT') {
+             return res.status(429).json({ error: 'Please wait 1 minute before requesting a new OTP' });
+        }
+        throw err;
+    }
+    
+    // Send email
+    const emailSent = await emailService.sendOtpEmail(email, otp);
+    
+    if (!emailSent) {
+        return res.status(500).json({ error: 'Failed to send OTP email' });
+    }
+
+    res.json({ message: 'OTP sent successfully' });
+
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    if (error.code === 'EMAIL_SEND_FAILED') {
+        return res.status(400).json({ error: 'Unable to send verification email. Please check your email address.' });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 export const register = async (req, res) => {
   try {
-    const { email, password, fullName, role } = req.body;
+    const { email, password, fullName, role, otp } = req.body;
 
-    if (!email || !password || !fullName) {
+    if (!email || !password || !fullName || !otp) {
       return res.status(400).json({
         error: 'Missing required fields',
-        message: 'Email, password and full name are required'
+        message: 'Email, password, full name, and OTP are required'
       });
     }
 
+    // Verify OTP first
+    await authService.verifyEmailOtp(email, otp);
+
+    // If verify succeeds, create user
     const newUser = await authService.registerUser({ email, password, fullName, role });
+
+    // Delete used OTP
+    await prisma.emailVerifications.deleteMany({
+        where: { Email: email }
+    });
 
     // Send welcome email asynchronously (don't block response)
     emailService.sendWelcomeEmail(email, fullName, process.env.FRONTEND_URL || 'http://localhost:5173')
@@ -44,6 +109,12 @@ export const register = async (req, res) => {
         error: 'Email already exists',
         message: 'An account with this email already exists'
       });
+    }
+    if (error.message.includes('OTP')) {
+        return res.status(400).json({
+            error: error.message,
+            message: error.message
+        });
     }
     console.error('REGISTRATION ERROR:', error);
     res.status(500).json({ error: 'Registration failed', details: error.message });
@@ -275,20 +346,37 @@ export const githubLogin = async (req, res) => {
 };
 export const changePassword = async (req, res) => {
   try {
-    const { newPassword } = req.body;
+    const { currentPassword, newPassword } = req.body;
     const userId = req.user.userId;
 
-    if (!newPassword) {
-      return res.status(400).json({ error: 'New password is required' });
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
     }
 
-    await authService.changePassword(userId, newPassword);
+    await authService.changePassword(userId, currentPassword, newPassword);
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
     console.error('Change password error:', error);
-    if (error.message === 'Current password is incorrect' || error.message.includes('logged in via')) {
+    if (error.message === 'Current password is incorrect' || error.message.includes('logged in via') || error.message.includes('New password cannot')) {
       return res.status(400).json({ error: error.message });
     }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const verifyPassword = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const userId = req.user.userId;
+
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    const isValid = await authService.verifyCurrentPassword(userId, password);
+    res.json({ isValid });
+  } catch (error) {
+    console.error('Verify password error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

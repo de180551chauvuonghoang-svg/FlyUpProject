@@ -18,13 +18,19 @@ export const validateSignup = [
   body('password')
     .notEmpty()
     .withMessage('Password is required')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    .withMessage('Password must be at least 8 characters, include uppercase, lowercase, number, and special symbol'),
     
   body('role')
     .optional()
     .isIn(['learner', 'instructor'])
     .withMessage('Role must be either learner or instructor'),
+
+  body('otp')
+    .notEmpty()
+    .withMessage('OTP is required')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('OTP must be 6 digits'),
 
   (req, res, next) => {
     const errors = validationResult(req);
