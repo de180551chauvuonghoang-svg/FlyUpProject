@@ -5,6 +5,7 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useCart from '../../hooks/useCart';
 import { getImageUrl } from '../../utils/imageUtils';
+import { Zap } from 'lucide-react';
 import { toggleWishlist, getWishlist } from '../../services/wishlistService';
 import { createCheckout } from '../../services/checkoutService';
 
@@ -17,6 +18,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
 
     // Check if course is already in cart
     const isInCart = cart.some(item => item.id === id);
+    const isEnrolled = enrolledCourseIds?.has(id) ?? false;
 
     // Use query to check wishlist status from cache
     const { data: wishlistCourses } = useQuery({
@@ -162,25 +164,40 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
             navigate('/login');
             return;
         }
+        // Guard: already enrolled
+        if (isEnrolled) {
+            toast.error('Bạn đã học khóa học này!', {
+                icon: '🎓',
+                className: 'flyup-toast flyup-toast--error',
+                style: {
+                    borderRadius: '14px', background: '#c0152a', color: '#fff',
+                    border: '1.5px solid rgba(255,255,255,0.25)',
+                    boxShadow: '0 8px 32px rgba(192,21,42,0.5)',
+                    padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+                    minWidth: '260px', maxWidth: '360px',
+                },
+            });
+            return;
+        }
         setEnrolling(true);
         try {
             const res = await createCheckout({ courseIds: [id] });
-            navigate(`/checkout/${res.data.checkoutId}`);
+            // Guard response before navigating
+            const checkoutId = res?.data?.checkoutId;
+            if (!checkoutId) {
+                throw new Error('Không nhận được mã đơn hàng từ server');
+            }
+            navigate(`/checkout/${checkoutId}`);
         } catch (error) {
             toast.error(error.message || 'Không thể tạo đơn hàng', {
                 icon: '❌',
                 className: 'flyup-toast flyup-toast--error',
                 style: {
-                    borderRadius: '14px',
-                    background: '#c0152a',
-                    color: '#fff',
+                    borderRadius: '14px', background: '#c0152a', color: '#fff',
                     border: '1.5px solid rgba(255,255,255,0.25)',
                     boxShadow: '0 8px 32px rgba(192,21,42,0.5)',
-                    padding: '14px 18px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    minWidth: '260px',
-                    maxWidth: '360px',
+                    padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+                    minWidth: '260px', maxWidth: '360px',
                 },
             });
         } finally {
@@ -281,7 +298,8 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
                     </span>
                 </button>
 
-                {/* Enroll Now – direct checkout */}
+                {/* Enroll Now – hidden when already enrolled */}
+                {!isEnrolled && (
                 <button
                     onClick={handleEnrollNow}
                     disabled={enrolling}
@@ -294,11 +312,12 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
                         </>
                     ) : (
                         <>
-                            <span className="material-symbols-outlined text-[18px]">bolt</span>
+                            <Zap className="w-4 h-4" />
                             <span>Enroll Now</span>
                         </>
                     )}
                 </button>
+                )}
             </div>
         </div>
     );

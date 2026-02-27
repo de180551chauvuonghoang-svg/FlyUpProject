@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   Rocket, ChevronRight, Star, StarHalf, Clock, Globe, Video, 
   FileDown, Infinity as InfinityIcon, Smartphone, Award, Check, ChevronDown, 
-  Play, Users, PlayCircle, Heart
+  Play, Users, PlayCircle, Heart, Zap
 } from 'lucide-react';
 import { 
   staggerContainer, 
@@ -58,6 +58,15 @@ export default function CourseDetailsPage() {
       if (!wishlistCourses) return false;
       return wishlistCourses.some(course => course.Id === courseId);
   }, [wishlistCourses, courseId]);
+
+  // Check enrollment — declared ABOVE handlers so they can reference isEnrolled
+  const { data: enrollmentData } = useQuery({
+      queryKey: ['userEnrollments', user?.id],
+      queryFn: () => fetchUserEnrollments(user.id),
+      enabled: !!user
+  });
+  
+  const isEnrolled = enrollmentData?.enrollments?.some(e => e.CourseId === courseId);
 
   const handleWishlistToggle = async () => {
     if (!user) {
@@ -165,18 +174,7 @@ export default function CourseDetailsPage() {
     }
   };
 
-  // Check enrollment
-  const { data: enrollmentData } = useQuery({
-      queryKey: ['userEnrollments', user?.id],
-      queryFn: () => fetchUserEnrollments(user.id),
-      enabled: !!user
-  });
-  
-  const isEnrolled = enrollmentData?.enrollments?.some(e => e.CourseId === courseId);
-
-  // Helper to resolve image URLs
-  // (Redefined here if needed or just use the global one if it is safe, but assuming we can use member vars)
-  // Actually course is available here.
+  // (enrollment query moved above handleWishlistToggle)
 
   const handleAddToCart = () => {
       // Map course data to match what cart expects
@@ -199,25 +197,30 @@ export default function CourseDetailsPage() {
         navigate('/login');
         return;
     }
+    // Guard: already enrolled — navigate to My Learning instead
+    if (isEnrolled) {
+        navigate('/my-learning');
+        return;
+    }
     setEnrolling(true);
     try {
         const res = await createCheckout({ courseIds: [courseId] });
-        navigate(`/checkout/${res.data.checkoutId}`);
+        // Guard response before navigating
+        const checkoutId = res?.data?.checkoutId;
+        if (!checkoutId) {
+            throw new Error('Không nhận được mã đơn hàng từ server');
+        }
+        navigate(`/checkout/${checkoutId}`);
     } catch (error) {
         toast.error(error.message || 'Không thể tạo đơn hàng', {
             icon: '❌',
             className: 'flyup-toast flyup-toast--error',
             style: {
-                borderRadius: '14px',
-                background: '#c0152a',
-                color: '#fff',
+                borderRadius: '14px', background: '#c0152a', color: '#fff',
                 border: '1.5px solid rgba(255,255,255,0.25)',
                 boxShadow: '0 8px 32px rgba(192,21,42,0.5)',
-                padding: '14px 18px',
-                fontSize: '14px',
-                fontWeight: '600',
-                minWidth: '260px',
-                maxWidth: '360px',
+                padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+                minWidth: '260px', maxWidth: '360px',
             },
         });
     } finally {
@@ -644,7 +647,8 @@ export default function CourseDetailsPage() {
                 Add to Cart
               </motion.button>
 
-              {/* Enroll Now – direct checkout */}
+              {/* Enroll Now – hidden when already enrolled */}
+              {!isEnrolled && (
               <motion.button
                 onClick={handleEnrollNow}
                 disabled={enrolling}
@@ -659,11 +663,12 @@ export default function CourseDetailsPage() {
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[18px]">bolt</span>
+                    <Zap className="w-4 h-4" />
                     Enroll Now
                   </>
                 )}
               </motion.button>
+              )}
             </div>
 
             {/* Money-back guarantee */}
