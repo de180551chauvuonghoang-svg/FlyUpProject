@@ -66,6 +66,24 @@ export const formatRating = (rating, max = 5) => {
 };
 
 /**
+ * Format date string to readable format
+ * @param {string|Date} date - Date to format
+ * @param {object} options - Intl.DateTimeFormat options
+ * @returns {string}
+ */
+export const formatDate = (date, options = {}) => {
+    if (!date) return '—';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        ...options,
+    });
+};
+
+/**
  * Truncate text with ellipsis
  * @param {string} text - Text to truncate
  * @param {number} maxLength - Maximum length

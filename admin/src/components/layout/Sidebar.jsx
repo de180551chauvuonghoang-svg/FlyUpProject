@@ -2,8 +2,8 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   BookOpen,
-  Users,
-  ShoppingCart,
+  GraduationCap,
+  UserCog,
   LogOut,
   Rocket
 } from 'lucide-react';
@@ -19,19 +19,19 @@ const menuItems = [
     icon: LayoutDashboard,
   },
   {
-    path: '/users',
-    label: 'Users',
-    icon: Users,
+    path: '/learners',
+    label: 'Learners',
+    icon: GraduationCap,
+  },
+  {
+    path: '/instructors',
+    label: 'Instructors',
+    icon: UserCog,
   },
   {
     path: '/courses',
     label: 'Courses',
     icon: BookOpen,
-  },
-  {
-    path: '/orders',
-    label: 'Orders',
-    icon: ShoppingCart,
   },
 ];
 
@@ -67,6 +67,7 @@ function Sidebar() {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path ||
+            location.pathname.startsWith(item.path + '/') ||
             (item.path === '/dashboard' && location.pathname === '/');
 
           return (
@@ -107,4 +108,3 @@ function Sidebar() {
 }
 
 export default Sidebar;
-

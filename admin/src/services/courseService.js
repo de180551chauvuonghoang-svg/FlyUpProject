@@ -67,6 +67,15 @@ const courseService = {
   },
 
   /**
+   * Unarchive a course
+   * @param {string} courseId - Course ID to unarchive
+   * @returns {Promise<Object>}
+   */
+  unarchiveCourse: async (courseId) => {
+    return api.put(`/admin/courses/${courseId}/unarchive`, {});
+  },
+
+  /**
    * Search courses (debounced on frontend)
    * @param {string} query - Search query
    * @returns {Promise<Array>}
