@@ -35,13 +35,20 @@ export const CartProvider = ({ children }) => {
 
     const addToCart = (course) => {
         if (!user) {
-            toast.error('Please login to add to cart', {
+            toast.error('Vui lòng đăng nhập để thêm vào giỏ', {
                 icon: '🔒',
+                className: 'flyup-toast flyup-toast--error',
                 style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
+                    borderRadius: '14px',
+                    background: '#c0152a',
                     color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1.5px solid rgba(255,255,255,0.25)',
+                    boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                    padding: '14px 18px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    minWidth: '280px',
+                    maxWidth: '380px',
                 },
             });
             return;
@@ -49,26 +56,40 @@ export const CartProvider = ({ children }) => {
 
         // Check if already enrolled
         if (enrolledCourseIds.has(course.id || course.Id)) { // Handle both id cases just in case
-             toast.error('Course already registered, please choose another course', {
+             toast.error('Khóa học đã đăng ký!', {
                 icon: '🚫',
+                className: 'flyup-toast flyup-toast--error',
                 style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
+                    borderRadius: '14px',
+                    background: '#c0152a',
                     color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1.5px solid rgba(255,255,255,0.25)',
+                    boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                    padding: '14px 18px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    minWidth: '280px',
+                    maxWidth: '380px',
                 },
             });
             return;
         }
 
         if (cart.find((item) => item.id === course.id)) {
-            toast.error('Course already in cart!', {
+            toast.error('Khóa học đã có trong giỏ!', {
                 icon: '🛒',
+                className: 'flyup-toast flyup-toast--error',
                 style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
+                    borderRadius: '14px',
+                    background: '#c0152a',
                     color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1.5px solid rgba(255,255,255,0.25)',
+                    boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                    padding: '14px 18px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    minWidth: '280px',
+                    maxWidth: '380px',
                 },
             });
             return;
@@ -76,37 +97,60 @@ export const CartProvider = ({ children }) => {
 
         setCart((prevCart) => [...prevCart, course]);
 
-        toast.success('Added to cart!', {
+        toast.success('Đã thêm vào giỏ hàng!', {
             icon: '🚀',
+            className: 'flyup-toast flyup-toast--success',
             style: {
-                borderRadius: '10px',
-                background: '#1A1333',
+                borderRadius: '14px',
+                background: '#0f7a45',
                 color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 8px 32px rgba(15,122,69,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                padding: '14px 18px',
+                fontSize: '14px',
+                fontWeight: '600',
+                minWidth: '280px',
+                maxWidth: '380px',
             },
         });
     };
 
     const removeFromCart = (courseId) => {
         setCart((prevCart) => prevCart.filter((item) => item.id !== courseId));
-        toast.success('Removed from cart', {
+        toast.success('Đã xóa khỏi giỏ hàng', {
+            icon: '🗑️',
+            className: 'flyup-toast flyup-toast--success',
             style: {
-                borderRadius: '10px',
-                background: '#1A1333',
+                borderRadius: '14px',
+                background: '#0f7a45',
                 color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 8px 32px rgba(15,122,69,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                padding: '14px 18px',
+                fontSize: '14px',
+                fontWeight: '600',
+                minWidth: '280px',
+                maxWidth: '380px',
             },
         });
     };
 
     const clearCart = () => {
         setCart([]);
-        toast.success('Cart cleared', {
+        toast.success('Đã xóa toàn bộ giỏ hàng', {
+            icon: '✨',
+            className: 'flyup-toast flyup-toast--success',
             style: {
-                borderRadius: '10px',
-                background: '#1A1333',
+                borderRadius: '14px',
+                background: '#0f7a45',
                 color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 8px 32px rgba(15,122,69,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                padding: '14px 18px',
+                fontSize: '14px',
+                fontWeight: '600',
+                minWidth: '280px',
+                maxWidth: '380px',
             },
         });
     };
@@ -126,7 +170,8 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         clearCart,
         cartCount,
-        cartTotal
+        cartTotal,
+        enrolledCourseIds,
     };
 
     return (

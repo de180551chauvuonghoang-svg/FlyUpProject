@@ -24,7 +24,18 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <Router>
-          <Toaster position="top-center" reverseOrder={false} />
+          <Toaster
+            position="top-right"
+            reverseOrder={false}
+            gutter={12}
+            containerStyle={{ top: 80, right: 24 }}
+            toastOptions={{
+              duration: 4000,
+              style: {
+                animation: 'none',
+              },
+            }}
+          />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
