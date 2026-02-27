@@ -6,13 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
  * Revenue chart with period tabs
  */
 function EarningPulse({ data, isLoading, onPeriodChange }) {
-    const [activePeriod, setActivePeriod] = useState('quarterly');
+    const [activePeriod, setActivePeriod] = useState('monthly');
     const canvasRef = useRef(null);
 
     const periods = [
+        { key: 'monthly', label: 'Monthly' },
         { key: 'quarterly', label: 'Quarterly' },
         { key: 'yearly', label: 'Yearly' },
-        { key: 'max', label: 'Max' },
     ];
 
     const handlePeriodChange = (period) => {

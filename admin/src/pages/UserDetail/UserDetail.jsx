@@ -99,8 +99,8 @@ function UserDetail() {
                 <AlertCircle size={48} />
                 <h2>User not found</h2>
                 <p>{error || 'The requested user does not exist.'}</p>
-                <button className="ud-btn ud-btn-primary" onClick={() => navigate('/users')}>
-                    <ArrowLeft size={16} /> Back to Users
+                <button className="ud-btn ud-btn-primary" onClick={() => navigate(-1)}>
+                    <ArrowLeft size={16} /> Go Back
                 </button>
             </div>
         );
@@ -127,35 +127,33 @@ function UserDetail() {
             {/* Back Button */}
             <motion.button
                 className="ud-back-btn"
-                onClick={() => navigate('/users')}
+                onClick={() => navigate(-1)}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
             >
                 <ArrowLeft size={16} />
-                Back to Users
+                Back
             </motion.button>
 
-            {/* Hero Section */}
+            {/* Profile Header Card */}
             <motion.div
-                className="ud-hero"
+                className="ud-profile-header"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35 }}
             >
-                <div className="ud-hero-bg" />
-
-                <div className="ud-hero-content">
+                <div className="ud-profile-left">
                     <div className="ud-avatar-wrap">
                         <img src={user.avatar} alt={user.fullName} className="ud-avatar" />
                         <span className={`ud-avatar-status ${isActive ? 'active' : 'locked'}`} />
                     </div>
 
-                    <div className="ud-hero-info">
+                    <div className="ud-profile-info">
                         <div className="ud-name-row">
                             <h1 className="ud-name">{user.fullName}</h1>
                             {user.isVerified && (
                                 <span className="ud-verified-badge" title="Verified">
-                                    <BadgeCheck size={20} />
+                                    <BadgeCheck size={18} />
                                 </span>
                             )}
                         </div>
@@ -168,32 +166,32 @@ function UserDetail() {
                             </span>
                         </div>
                     </div>
-
-                    {/* Action Buttons */}
-                    {!isAdmin && (
-                        <div className="ud-hero-actions">
-                            {isActive ? (
-                                <button
-                                    className="ud-btn ud-btn-danger"
-                                    onClick={handleLock}
-                                    disabled={actionLoading}
-                                >
-                                    <Lock size={15} />
-                                    {actionLoading ? 'Locking...' : 'Lock User'}
-                                </button>
-                            ) : (
-                                <button
-                                    className="ud-btn ud-btn-success"
-                                    onClick={handleUnlock}
-                                    disabled={actionLoading}
-                                >
-                                    <Unlock size={15} />
-                                    {actionLoading ? 'Unlocking...' : 'Unlock User'}
-                                </button>
-                            )}
-                        </div>
-                    )}
                 </div>
+
+                {/* Action Buttons */}
+                {!isAdmin && (
+                    <div className="ud-profile-actions">
+                        {isActive ? (
+                            <button
+                                className="ud-btn ud-btn-danger"
+                                onClick={handleLock}
+                                disabled={actionLoading}
+                            >
+                                <Lock size={15} />
+                                {actionLoading ? 'Locking...' : 'Lock User'}
+                            </button>
+                        ) : (
+                            <button
+                                className="ud-btn ud-btn-success"
+                                onClick={handleUnlock}
+                                disabled={actionLoading}
+                            >
+                                <Unlock size={15} />
+                                {actionLoading ? 'Unlocking...' : 'Unlock User'}
+                            </button>
+                        )}
+                    </div>
+                )}
             </motion.div>
 
             {/* Stats Row */}

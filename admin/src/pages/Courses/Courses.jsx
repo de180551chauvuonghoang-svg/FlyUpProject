@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     Search,
@@ -10,6 +11,7 @@ import {
     XCircle,
     Clock,
     Archive,
+    RotateCcw,
     Users,
     Star,
     PlayCircle,
@@ -23,6 +25,7 @@ import courseService from '../../services/courseService';
  * Course management with list, search, pagination, approve/reject
  */
 function Courses() {
+    const navigate = useNavigate();
     const [courses, setCourses] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -132,6 +135,20 @@ function Courses() {
         }
     };
 
+    // Handle unarchive course
+    const handleUnarchiveCourse = async (courseId) => {
+        try {
+            setActionLoading(courseId);
+            await courseService.unarchiveCourse(courseId);
+            await fetchCourses(currentPage, searchQuery, statusFilter);
+            setActiveDropdown(null);
+        } catch (error) {
+            console.error('Failed to unarchive course:', error);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     // Format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -224,6 +241,9 @@ function Courses() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.03, duration: 0.2 }}
+                onClick={() => navigate(`/courses/${course.id}`)}
+                style={{ cursor: 'pointer' }}
+                className="clickable-row"
             >
                 <td>
                     <div className="course-cell">
@@ -286,7 +306,7 @@ function Courses() {
                         )}
                     </div>
                 </td>
-                <td>
+                <td onClick={(e) => e.stopPropagation()}>
                     <div className="actions-cell">
                         <button
                             className="action-menu-btn"
@@ -335,6 +355,16 @@ function Courses() {
                                     >
                                         <CheckCircle size={14} />
                                         {actionLoading === course.id ? 'Approving...' : 'Approve'}
+                                    </button>
+                                )}
+                                {course.status === 'ARCHIVED' && (
+                                    <button
+                                        className="dropdown-item success"
+                                        onClick={() => handleUnarchiveCourse(course.id)}
+                                        disabled={actionLoading === course.id}
+                                    >
+                                        <RotateCcw size={14} />
+                                        {actionLoading === course.id ? 'Unarchiving...' : 'Unarchive'}
                                     </button>
                                 )}
                             </div>
@@ -402,6 +432,12 @@ function Courses() {
                         onClick={() => handleStatusFilter('REJECTED')}
                     >
                         Rejected
+                    </button>
+                    <button
+                        className={`filter-btn ${statusFilter === 'ARCHIVED' ? 'active' : ''}`}
+                        onClick={() => handleStatusFilter('ARCHIVED')}
+                    >
+                        Archived
                     </button>
                 </div>
             </section>

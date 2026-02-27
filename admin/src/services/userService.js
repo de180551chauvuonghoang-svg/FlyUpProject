@@ -53,13 +53,17 @@ const userService = {
    * @param {string} params.status - Filter by status ('ALL' | 'ACTIVE' | 'LOCKED')
    * @returns {Promise<Object>}
    */
-  getUsers: async ({ page = 1, limit = 10, search = '', status = 'ALL' } = {}) => {
+  getUsers: async ({ page = 1, limit = 10, search = '', status = 'ALL', role = '' } = {}) => {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
       search,
       status
     });
+
+    if (role) {
+      params.append('role', role);
+    }
 
     const response = await fetch(`${API_URL}/admin/users?${params}`, {
       method: 'GET',

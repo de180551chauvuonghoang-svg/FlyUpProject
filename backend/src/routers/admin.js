@@ -11,15 +11,20 @@ router.use(authorizeRoles('Admin'));
 /**
  * GET /api/admin/users
  * Get all users with pagination, search, and filter
- * Query params: page, limit, search, status (ALL|ACTIVE|LOCKED)
+ * Query params: page, limit, search, status (ALL|ACTIVE|LOCKED), role (Learner|Instructor)
  */
 router.get('/users', async (req, res) => {
     try {
-        const { page = 1, limit = 10, search = '', status = 'ALL' } = req.query;
+        const { page = 1, limit = 10, search = '', status = 'ALL', role } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
         // Build where clause
         const where = {};
+
+        // Filter by role (case-insensitive)
+        if (role) {
+            where.Role = { equals: role, mode: 'insensitive' };
+        }
 
         // Search by name, email, or username
         if (search) {
@@ -275,23 +280,89 @@ router.put('/users/:id/unlock', async (req, res) => {
 
 /**
  * GET /api/admin/stats
- * Get admin dashboard statistics
+ * Get comprehensive admin dashboard statistics
  */
 router.get('/stats', async (req, res) => {
     try {
-        const [totalUsers, activeUsers, lockedUsers, totalCourses] = await Promise.all([
+        // Get all counts in parallel
+        const [
+            totalUsers,
+            activeUsers,
+            lockedUsers,
+            totalLearners,
+            totalInstructors,
+            totalCourses,
+            approvedCourses,
+            pendingCourses,
+            rejectedCourses,
+            totalEnrollments,
+            revenueResult,
+            ratingResult,
+            recentEnrollments,
+        ] = await Promise.all([
             prisma.users.count(),
             prisma.users.count({ where: { IsApproved: true } }),
             prisma.users.count({ where: { IsApproved: false } }),
-            prisma.courses.count()
+            prisma.users.count({ where: { Role: { equals: 'learner', mode: 'insensitive' } } }),
+            prisma.users.count({ where: { Role: { equals: 'instructor', mode: 'insensitive' } } }),
+            prisma.courses.count(),
+            prisma.courses.count({ where: { ApprovalStatus: 'APPROVED' } }),
+            prisma.courses.count({ where: { ApprovalStatus: 'Pending' } }),
+            prisma.courses.count({ where: { ApprovalStatus: 'Rejected' } }),
+            prisma.enrollments.count(),
+            prisma.bills.aggregate({
+                _sum: { Amount: true },
+                where: { IsSuccessful: true }
+            }),
+            prisma.courses.aggregate({
+                _avg: { TotalRating: true },
+                _sum: { TotalRating: true, RatingCount: true },
+            }),
+            // Enrollments in last 30 days
+            prisma.enrollments.count({
+                where: {
+                    CreationTime: {
+                        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+                    }
+                }
+            }),
         ]);
+
+        // Calculate average rating
+        const totalRatingSum = Number(ratingResult._sum?.TotalRating || 0);
+        const totalRatingCount = Number(ratingResult._sum?.RatingCount || 0);
+        const averageRating = totalRatingCount > 0
+            ? (totalRatingSum / totalRatingCount).toFixed(1)
+            : '0.0';
+
+        // Total revenue in dollars (Amount is stored as BigInt in cents/VND)
+        const totalRevenue = Number(revenueResult._sum?.Amount || 0);
 
         res.json({
             stats: {
+                // User stats
                 totalUsers,
                 activeUsers,
                 lockedUsers,
-                totalCourses
+                totalLearners,
+                totalInstructors,
+
+                // Course stats
+                totalCourses,
+                approvedCourses,
+                pendingCourses,
+                rejectedCourses,
+
+                // Enrollment stats
+                totalEnrollments,
+                recentEnrollments,
+
+                // Revenue
+                totalRevenue,
+
+                // Ratings
+                averageRating: parseFloat(averageRating),
+                totalRatingCount,
             }
         });
     } catch (error) {
@@ -299,6 +370,92 @@ router.get('/stats', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+/**
+ * GET /api/admin/stats/chart
+ * Get enrollment chart data by period
+ * Query params: period (monthly|quarterly|yearly)
+ */
+router.get('/stats/chart', async (req, res) => {
+    try {
+        const { period = 'monthly' } = req.query;
+        let labels = [];
+        let data = [];
+
+        if (period === 'monthly') {
+            // Last 30 days — group by day
+            const days = [];
+            for (let i = 29; i >= 0; i--) {
+                const dayStart = new Date();
+                dayStart.setDate(dayStart.getDate() - i);
+                dayStart.setHours(0, 0, 0, 0);
+                const dayEnd = new Date(dayStart);
+                dayEnd.setDate(dayEnd.getDate() + 1);
+
+                const count = await prisma.enrollments.count({
+                    where: {
+                        CreationTime: { gte: dayStart, lt: dayEnd }
+                    }
+                });
+
+                const label = dayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                days.push({ label, count });
+            }
+            labels = days.map(d => d.label);
+            data = days.map(d => d.count);
+
+        } else if (period === 'quarterly') {
+            // Last 12 weeks — group by week
+            const weeks = [];
+            for (let i = 11; i >= 0; i--) {
+                const weekStart = new Date();
+                weekStart.setDate(weekStart.getDate() - (i * 7));
+                weekStart.setHours(0, 0, 0, 0);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 7);
+
+                const count = await prisma.enrollments.count({
+                    where: {
+                        CreationTime: { gte: weekStart, lt: weekEnd }
+                    }
+                });
+
+                const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                weeks.push({ label, count });
+            }
+            labels = weeks.map(w => w.label);
+            data = weeks.map(w => w.count);
+
+        } else {
+            // Yearly — last 12 months by month
+            const months = [];
+            for (let i = 11; i >= 0; i--) {
+                const monthStart = new Date();
+                monthStart.setMonth(monthStart.getMonth() - i, 1);
+                monthStart.setHours(0, 0, 0, 0);
+                const monthEnd = new Date(monthStart);
+                monthEnd.setMonth(monthEnd.getMonth() + 1);
+
+                const count = await prisma.enrollments.count({
+                    where: {
+                        CreationTime: { gte: monthStart, lt: monthEnd }
+                    }
+                });
+
+                const label = monthStart.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                months.push({ label, count });
+            }
+            labels = months.map(m => m.label);
+            data = months.map(m => m.count);
+        }
+
+        res.json({ labels, data });
+    } catch (error) {
+        console.error('Admin chart error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 // =====================================================
 // COURSE MANAGEMENT ENDPOINTS
@@ -729,6 +886,58 @@ router.put('/courses/:id/archive', async (req, res) => {
         });
     } catch (error) {
         console.error('Admin archive course error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * PUT /api/admin/courses/:id/unarchive
+ * Unarchive a course (set Status back to Ongoing)
+ */
+router.put('/courses/:id/unarchive', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if course exists
+        const existingCourse = await prisma.courses.findUnique({
+            where: { Id: id },
+            select: { Id: true, Title: true, Status: true }
+        });
+
+        if (!existingCourse) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        if (existingCourse.Status !== 'Archived') {
+            return res.status(400).json({ error: 'Course is not archived' });
+        }
+
+        // Update course status back to Ongoing
+        const updatedCourse = await prisma.courses.update({
+            where: { Id: id },
+            data: {
+                Status: 'Ongoing',
+                LastModificationTime: new Date()
+            },
+            select: {
+                Id: true,
+                Title: true,
+                Status: true,
+                ApprovalStatus: true
+            }
+        });
+
+        res.json({
+            success: true,
+            message: 'Course unarchived successfully',
+            course: {
+                id: updatedCourse.Id,
+                title: updatedCourse.Title,
+                status: 'APPROVED'
+            }
+        });
+    } catch (error) {
+        console.error('Admin unarchive course error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

@@ -2,8 +2,10 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Dashboard from '../pages/Dashboard';
-import Users from '../pages/Users';
+import Learners from '../pages/Learners';
+import Instructors from '../pages/Instructors';
 import Courses from '../pages/Courses';
+import CourseDetail from '../pages/CourseDetail';
 import Login from '../pages/Login';
 import UserDetail from '../pages/UserDetail';
 
@@ -31,11 +33,19 @@ const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
-        path: 'users',
-        element: <Users />,
+        path: 'learners',
+        element: <Learners />,
       },
       {
-        path: 'users/:id',
+        path: 'learners/:id',
+        element: <UserDetail />,
+      },
+      {
+        path: 'instructors',
+        element: <Instructors />,
+      },
+      {
+        path: 'instructors/:id',
         element: <UserDetail />,
       },
       {
@@ -44,11 +54,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'courses/:id',
-        element: <div className="coming-soon">Course Detail - Coming Soon</div>,
-      },
-      {
-        path: 'orders',
-        element: <div className="coming-soon">Orders - Coming Soon</div>,
+        element: <CourseDetail />,
       },
     ],
   },
