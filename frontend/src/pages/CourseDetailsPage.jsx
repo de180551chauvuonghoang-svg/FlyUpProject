@@ -16,7 +16,7 @@ import {
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import { fetchCourseById, fetchCourseReviews } from '../services/courseService';
-import { fetchUserEnrollments } from '../services/userService';
+import { fetchUserEnrollmentForCourse } from '../services/userService';
 import useCart from '../hooks/useCart';
 import useAuth from '../hooks/useAuth';
 import ReviewList from '../components/Reviews/ReviewList';
@@ -60,13 +60,14 @@ export default function CourseDetailsPage() {
   }, [wishlistCourses, courseId]);
 
   // Check enrollment — declared ABOVE handlers so they can reference isEnrolled
+  // Use course-specific query to avoid pagination limits (fetchUserEnrollments defaults to limit=10)
   const { data: enrollmentData } = useQuery({
-      queryKey: ['userEnrollments', user?.id],
-      queryFn: () => fetchUserEnrollments(user.id),
-      enabled: !!user
+      queryKey: ['userEnrollments', user?.id, courseId],
+      queryFn: () => fetchUserEnrollmentForCourse(user.id, courseId),
+      enabled: !!user && !!courseId,
   });
   
-  const isEnrolled = enrollmentData?.enrollments?.some(e => e.CourseId === courseId);
+  const isEnrolled = enrollmentData?.isEnrolled ?? false;
 
   const handleWishlistToggle = async () => {
     if (!user) {

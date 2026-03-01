@@ -9,6 +9,40 @@ import { Zap } from 'lucide-react';
 import { toggleWishlist, getWishlist } from '../../services/wishlistService';
 import { createCheckout } from '../../services/checkoutService';
 
+// Shared toast style constants for this component
+const TOAST_OPTIONS = {
+    error: {
+        className: 'flyup-toast flyup-toast--error',
+        style: {
+            borderRadius: '14px', background: '#c0152a', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+            padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+            minWidth: '260px', maxWidth: '360px',
+        },
+    },
+    success: {
+        className: 'flyup-toast flyup-toast--success',
+        style: {
+            borderRadius: '14px', background: '#0f7a45', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(15,122,69,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+            padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+            minWidth: '260px', maxWidth: '360px',
+        },
+    },
+    warn: {
+        className: 'flyup-toast flyup-toast--warn',
+        style: {
+            borderRadius: '14px', background: '#b45309', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(180,83,9,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+            padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+            minWidth: '260px', maxWidth: '360px',
+        },
+    },
+};
+
 const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price, showWishlist = true }) => {
     const navigate = useNavigate();
     const { addToCart, cart, enrolledCourseIds } = useCart();
@@ -48,22 +82,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
 
         // Block wishlist if already enrolled
         if (enrolledCourseIds && enrolledCourseIds.has(id)) {
-            toast.error('Khóa học đã trong My Learning!', {
-                icon: '🎓',
-                className: 'flyup-toast flyup-toast--error',
-                style: {
-                    borderRadius: '14px',
-                    background: '#c0152a',
-                    color: '#fff',
-                    border: '1.5px solid rgba(255,255,255,0.25)',
-                    boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
-                    padding: '14px 18px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    minWidth: '260px',
-                    maxWidth: '360px',
-                },
-            });
+            toast.error('Khóa học đã trong My Learning!', { icon: '🎓', ...TOAST_OPTIONS.error });
             return;
         }
 
@@ -88,60 +107,16 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
             const result = await toggleWishlist(id);
             
             if (result.isInWishlist) {
-                toast.success('Đã thêm vào yêu thích! ❤️', {
-                    className: 'flyup-toast flyup-toast--success',
-                    style: {
-                        borderRadius: '14px',
-                        background: '#0f7a45',
-                        color: '#fff',
-                        border: '1.5px solid rgba(255,255,255,0.25)',
-                        boxShadow: '0 8px 32px rgba(15,122,69,0.5), 0 2px 12px rgba(0,0,0,0.4)',
-                        padding: '14px 18px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        minWidth: '260px',
-                        maxWidth: '360px',
-                    },
-                });
+                toast.success('Đã thêm vào yêu thích! ❤️', { ...TOAST_OPTIONS.success });
             } else {
-                toast.success('Đã xóa khỏi yêu thích', {
-                    icon: '💔',
-                    iconTheme: { primary: '#b45309', secondary: '#fff' },
-                    className: 'flyup-toast flyup-toast--warn',
-                    style: {
-                        borderRadius: '14px',
-                        background: '#b45309',
-                        color: '#fff',
-                        border: '1.5px solid rgba(255,255,255,0.25)',
-                        boxShadow: '0 8px 32px rgba(180,83,9,0.5), 0 2px 12px rgba(0,0,0,0.4)',
-                        padding: '14px 18px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        minWidth: '260px',
-                        maxWidth: '360px',
-                    },
-                });
+                toast.success('Đã xóa khỏi yêu thích', { icon: '💔', iconTheme: { primary: '#b45309', secondary: '#fff' }, ...TOAST_OPTIONS.warn });
             }
 
             // Invalidate to ensure we have the correct server state eventually
             queryClient.invalidateQueries({ queryKey: ['wishlist'] });
         } catch (error) {
             console.error("Failed to toggle wishlist", error);
-            toast.error('Không thể cập nhật yêu thích', {
-                className: 'flyup-toast flyup-toast--error',
-                style: {
-                    borderRadius: '14px',
-                    background: '#c0152a',
-                    color: '#fff',
-                    border: '1.5px solid rgba(255,255,255,0.25)',
-                    boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
-                    padding: '14px 18px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    minWidth: '260px',
-                    maxWidth: '360px',
-                },
-            });
+            toast.error('Không thể cập nhật yêu thích', { ...TOAST_OPTIONS.error });
             
             // Revert on error
             if (previousWishlist) {
@@ -166,40 +141,17 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
         }
         // Guard: already enrolled
         if (isEnrolled) {
-            toast.error('Bạn đã học khóa học này!', {
-                icon: '🎓',
-                className: 'flyup-toast flyup-toast--error',
-                style: {
-                    borderRadius: '14px', background: '#c0152a', color: '#fff',
-                    border: '1.5px solid rgba(255,255,255,0.25)',
-                    boxShadow: '0 8px 32px rgba(192,21,42,0.5)',
-                    padding: '14px 18px', fontSize: '14px', fontWeight: '600',
-                    minWidth: '260px', maxWidth: '360px',
-                },
-            });
+            toast.error('Bạn đã học khóa học này!', { icon: '🎓', ...TOAST_OPTIONS.error });
             return;
         }
         setEnrolling(true);
         try {
             const res = await createCheckout({ courseIds: [id] });
-            // Guard response before navigating
             const checkoutId = res?.data?.checkoutId;
-            if (!checkoutId) {
-                throw new Error('Không nhận được mã đơn hàng từ server');
-            }
+            if (!checkoutId) throw new Error('Không nhận được mã đơn hàng từ server');
             navigate(`/checkout/${checkoutId}`);
         } catch (error) {
-            toast.error(error.message || 'Không thể tạo đơn hàng', {
-                icon: '❌',
-                className: 'flyup-toast flyup-toast--error',
-                style: {
-                    borderRadius: '14px', background: '#c0152a', color: '#fff',
-                    border: '1.5px solid rgba(255,255,255,0.25)',
-                    boxShadow: '0 8px 32px rgba(192,21,42,0.5)',
-                    padding: '14px 18px', fontSize: '14px', fontWeight: '600',
-                    minWidth: '260px', maxWidth: '360px',
-                },
-            });
+            toast.error(error.message || 'Không thể tạo đơn hàng', { icon: '❌', ...TOAST_OPTIONS.error });
         } finally {
             setEnrolling(false);
         }
@@ -313,7 +265,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
                     ) : (
                         <>
                             <Zap className="w-4 h-4" />
-                            <span>Enroll Now</span>
+                            <span>Đăng ký ngay</span>
                         </>
                     )}
                 </button>
