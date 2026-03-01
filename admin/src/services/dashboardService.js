@@ -87,33 +87,23 @@ const dashboardService = {
   },
 
   /**
-   * Get courses list for dashboard (real API)
+   * Get transactions with pagination for dashboard
    * @param {Object} params
-   * @param {number} params.limit - Number of courses
-   * @returns {Promise<Array>}
+   * @param {number} params.page - Current page
+   * @param {number} params.limit - Items per page
+   * @returns {Promise<Object>}
    */
-  getCourses: async ({ limit = 3 } = {}) => {
+  getRecentTransactions: async ({ page = 1, limit = 10 } = {}) => {
     const params = new URLSearchParams({
-      page: '1',
+      page: page.toString(),
       limit: limit.toString(),
-      status: 'ALL',
     });
 
-    const response = await fetch(`${API_URL}/admin/courses?${params}`, {
+    const response = await fetch(`${API_URL}/admin/stats/recent-transactions?${params}`, {
       method: 'GET',
       headers: createAuthHeaders(),
     });
-    const data = await handleResponse(response);
-
-    // Map to dashboard card format
-    return (data.courses || []).map(course => ({
-      id: course.id,
-      title: course.title,
-      thumbnail: course.thumbnail || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400',
-      status: course.status,
-      studentsCount: course.studentsCount || 0,
-      rating: course.rating || 0,
-    }));
+    return handleResponse(response);
   },
 
   /**
