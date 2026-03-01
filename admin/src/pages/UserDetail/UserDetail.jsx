@@ -19,10 +19,14 @@ import {
     LogIn,
     AlertCircle,
     CheckCircle2,
+    Receipt,
+    ChevronLeft,
+    ChevronRight,
+    ExternalLink,
 } from 'lucide-react';
 
 import userService from '../../services/userService';
-import { formatDate } from '../../utils/formatters';
+import { formatDate, formatCurrency } from '../../utils/formatters';
 import './UserDetail.css';
 
 function UserDetail() {
@@ -34,6 +38,12 @@ function UserDetail() {
     const [error, setError] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [toast, setToast] = useState(null);
+
+    // Transaction state
+    const [transactions, setTransactions] = useState([]);
+    const [txPagination, setTxPagination] = useState(null);
+    const [txPage, setTxPage] = useState(1);
+    const [txLoading, setTxLoading] = useState(false);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -53,10 +63,31 @@ function UserDetail() {
         }
     };
 
+    const fetchTransactions = async (page = 1) => {
+        try {
+            setTxLoading(true);
+            const result = await userService.getUserTransactions(id, { page, limit: 5 });
+            setTransactions(result.transactions);
+            setTxPagination(result.pagination);
+        } catch (err) {
+            console.error('Failed to fetch transactions:', err);
+        } finally {
+            setTxLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchUser();
+        fetchTransactions(1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
+
+    useEffect(() => {
+        if (txPage > 1) {
+            fetchTransactions(txPage);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [txPage]);
 
     const handleLock = async () => {
         try {
@@ -288,6 +319,127 @@ function UserDetail() {
                         <h3 className="ud-card-title">Bio</h3>
                         <p className="ud-bio-text">{user.bio}</p>
                     </div>
+                )}
+            </motion.div>
+
+            {/* Transaction History */}
+            <motion.div
+                className="ud-tx-section"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.26 }}
+            >
+                <div className="ud-tx-header">
+                    <div className="ud-tx-title-row">
+                        <Receipt size={18} className="ud-tx-icon" />
+                        <h3 className="ud-card-title" style={{ margin: 0, border: 'none', paddingBottom: 0 }}>
+                            Transaction History
+                        </h3>
+                    </div>
+                    {txPagination && (
+                        <span className="ud-tx-count">
+                            {txPagination.totalItems} transaction{txPagination.totalItems !== 1 ? 's' : ''}
+                        </span>
+                    )}
+                </div>
+
+                {txLoading ? (
+                    <div className="ud-tx-loading">
+                        <div className="ud-spinner" />
+                        <span>Loading transactions...</span>
+                    </div>
+                ) : transactions.length === 0 ? (
+                    <div className="ud-tx-empty">
+                        <Receipt size={32} />
+                        <p>No transactions found</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="ud-tx-table-wrap">
+                            <table className="ud-tx-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Courses</th>
+                                        <th>Amount</th>
+                                        <th>Discount</th>
+                                        <th>Gateway</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {transactions.map((tx) => (
+                                        <tr key={tx.id}>
+                                            <td className="ud-tx-date">
+                                                {formatDate(tx.createdAt)}
+                                            </td>
+                                            <td className="ud-tx-courses">
+                                                {tx.courses.length > 0 ? (
+                                                    tx.courses.map((c) => (
+                                                        <span key={c.id} className="ud-tx-course-tag">
+                                                            {c.title}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="ud-tx-no-course">—</span>
+                                                )}
+                                            </td>
+                                            <td className="ud-tx-amount">
+                                                {formatCurrency(tx.amount)}
+                                            </td>
+                                            <td className="ud-tx-discount">
+                                                {tx.discountAmount > 0 ? (
+                                                    <span className="ud-tx-discount-val">
+                                                        -{formatCurrency(tx.discountAmount)}
+                                                        {tx.couponCode && (
+                                                            <span className="ud-tx-coupon">{tx.couponCode}</span>
+                                                        )}
+                                                    </span>
+                                                ) : (
+                                                    '—'
+                                                )}
+                                            </td>
+                                            <td>
+                                                <span className="ud-tx-gateway">{tx.gateway}</span>
+                                            </td>
+                                            <td>
+                                                <span className={`ud-tx-status ${tx.isSuccessful ? 'success' : 'failed'}`}>
+                                                    {tx.isSuccessful ? (
+                                                        <><CheckCircle2 size={12} /> Success</>
+                                                    ) : (
+                                                        <><AlertCircle size={12} /> Failed</>
+                                                    )}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination */}
+                        {txPagination && txPagination.totalPages > 1 && (
+                            <div className="ud-tx-pagination">
+                                <button
+                                    className="ud-tx-page-btn"
+                                    disabled={!txPagination.hasPrevPage}
+                                    onClick={() => setTxPage((p) => p - 1)}
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <span className="ud-tx-page-info">
+                                    Page {txPagination.currentPage} of {txPagination.totalPages}
+                                </span>
+                                <button
+                                    className="ud-tx-page-btn"
+                                    disabled={!txPagination.hasNextPage}
+                                    onClick={() => setTxPage((p) => p + 1)}
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </motion.div>
         </div>

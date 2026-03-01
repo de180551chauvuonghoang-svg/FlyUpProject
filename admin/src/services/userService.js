@@ -152,6 +152,28 @@ const userService = {
 
     return handleResponse(response);
   },
+
+  /**
+   * Get user transaction history
+   * @param {string} userId - User ID
+   * @param {Object} params - Query parameters
+   * @param {number} params.page - Current page (1-indexed)
+   * @param {number} params.limit - Items per page
+   * @returns {Promise<Object>}
+   */
+  getUserTransactions: async (userId, { page = 1, limit = 5 } = {}) => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    const response = await fetch(`${API_URL}/admin/users/${userId}/transactions?${params}`, {
+      method: 'GET',
+      headers: createAuthHeaders(),
+    });
+
+    return handleResponse(response);
+  },
 };
 
 export default userService;
