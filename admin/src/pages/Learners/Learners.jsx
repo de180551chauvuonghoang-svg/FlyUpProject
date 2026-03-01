@@ -89,7 +89,6 @@ function Learners() {
     };
 
     const handleLockUser = async (userId) => {
-        if (!window.confirm('Are you sure you want to lock this user?')) return;
         try {
             setActionLoading(userId);
             await userService.lockUser(userId);
@@ -104,7 +103,6 @@ function Learners() {
     };
 
     const handleUnlockUser = async (userId) => {
-        if (!window.confirm('Are you sure you want to unlock this user?')) return;
         try {
             setActionLoading(userId);
             await userService.unlockUser(userId);
