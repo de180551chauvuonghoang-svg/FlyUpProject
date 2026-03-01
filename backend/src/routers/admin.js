@@ -127,7 +127,6 @@ router.get('/users/:id', async (req, res) => {
                 IsApproved: true,
                 CreationTime: true,
                 LastModificationTime: true,
-                EnrollmentCount: true,
                 LoginProvider: true,
                 SystemBalance: true
             }
@@ -136,6 +135,11 @@ router.get('/users/:id', async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
+
+        // Count real enrollments from Enrollments table
+        const enrollmentCount = await prisma.enrollments.count({
+            where: { CreatorId: id }
+        });
 
         res.json({
             user: {
@@ -151,7 +155,7 @@ router.get('/users/:id', async (req, res) => {
                 avatar: user.AvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.FullName)}&background=a855f7&color=fff`,
                 createdAt: user.CreationTime,
                 lastLogin: user.LastModificationTime,
-                enrollmentCount: user.EnrollmentCount,
+                enrollmentCount,
                 isVerified: user.IsVerified,
                 loginProvider: user.LoginProvider,
                 systemBalance: user.SystemBalance?.toString() || '0'
@@ -455,6 +459,90 @@ router.get('/stats', async (req, res) => {
         });
     } catch (error) {
         console.error('Admin stats error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * GET /api/admin/stats/recent-transactions
+ * Get all transactions with pagination
+ * Query params: page, limit
+ */
+router.get('/stats/recent-transactions', async (req, res) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [bills, total] = await Promise.all([
+            prisma.bills.findMany({
+                skip,
+                take: parseInt(limit),
+                select: {
+                    Id: true,
+                    Action: true,
+                    Amount: true,
+                    DiscountAmount: true,
+                    Gateway: true,
+                    IsSuccessful: true,
+                    CouponCode: true,
+                    CreationTime: true,
+                    Users: {
+                        select: {
+                            Id: true,
+                            FullName: true,
+                            AvatarUrl: true,
+                            Email: true
+                        }
+                    },
+                    Enrollments: {
+                        select: {
+                            Courses: {
+                                select: {
+                                    Id: true,
+                                    Title: true
+                                }
+                            }
+                        }
+                    }
+                },
+                orderBy: { CreationTime: 'desc' }
+            }),
+            prisma.bills.count()
+        ]);
+
+        const transactions = bills.map(bill => ({
+            id: bill.Id,
+            amount: Number(bill.Amount),
+            discountAmount: Number(bill.DiscountAmount),
+            gateway: bill.Gateway,
+            isSuccessful: bill.IsSuccessful,
+            couponCode: bill.CouponCode,
+            createdAt: bill.CreationTime,
+            user: {
+                id: bill.Users?.Id,
+                fullName: bill.Users?.FullName || 'Unknown',
+                avatar: bill.Users?.AvatarUrl || `https://ui-avatars.com/api/?name=Unknown&background=a855f7&color=fff`,
+                email: bill.Users?.Email
+            },
+            courses: bill.Enrollments.map(e => ({
+                id: e.Courses?.Id,
+                title: e.Courses?.Title
+            }))
+        }));
+
+        res.json({
+            transactions,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / parseInt(limit)),
+                totalItems: total,
+                itemsPerPage: parseInt(limit),
+                hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)),
+                hasPrevPage: parseInt(page) > 1
+            }
+        });
+    } catch (error) {
+        console.error('Admin recent transactions error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

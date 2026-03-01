@@ -1,46 +1,66 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Bell, Download, Users, CreditCard, Ship, Star } from 'lucide-react';
+import {
+  Search, Bell, Download, Users, CreditCard, Ship, Star,
+  Receipt, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight,
+} from 'lucide-react';
 
 import StatCard from '../../components/dashboard/StatCard';
 import EarningPulse from '../../components/dashboard/EarningPulse';
-import CourseCard from '../../components/dashboard/CourseCard';
 import dashboardService from '../../services/dashboardService';
+import { formatDate, formatCurrency } from '../../utils/formatters';
 
 /**
  * Dashboard Page
- * Main admin dashboard with statistics, charts, and courses
+ * Main admin dashboard with statistics, charts, and recent transactions
  */
 function Dashboard() {
   const [statistics, setStatistics] = useState(null);
   const [revenueData, setRevenueData] = useState(null);
-  const [courses, setCourses] = useState([]);
+  const [recentTx, setRecentTx] = useState([]);
+  const [txPagination, setTxPagination] = useState(null);
+  const [txPage, setTxPage] = useState(1);
+  const [txLoading, setTxLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(false);
 
-  // Fetch dashboard data
+  // Fetch dashboard stats + chart on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [stats, revenue, coursesData] = await Promise.all([
+        const [stats, revenue] = await Promise.all([
           dashboardService.getStatistics(),
           dashboardService.getRevenueChart('quarterly'),
-          dashboardService.getCourses({ limit: 3 }),
         ]);
-        
         setStatistics(stats);
         setRevenueData(revenue);
-        setCourses(coursesData);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
+
+  // Fetch transactions (paginated)
+  const fetchTransactions = async (page = 1) => {
+    try {
+      setTxLoading(true);
+      const result = await dashboardService.getRecentTransactions({ page, limit: 10 });
+      setRecentTx(result.transactions || []);
+      setTxPagination(result.pagination || null);
+    } catch (error) {
+      console.error('Failed to fetch transactions:', error);
+    } finally {
+      setTxLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions(txPage);
+  }, [txPage]);
 
   // Handle period change for chart
   const handlePeriodChange = async (period) => {
@@ -59,7 +79,6 @@ function Dashboard() {
   const handleExportReport = async () => {
     try {
       await dashboardService.exportReport();
-      // In real implementation, this would trigger file download
       alert('Report exported successfully!');
     } catch (error) {
       console.error('Failed to export report:', error);
@@ -68,22 +87,10 @@ function Dashboard() {
 
   // Stat cards configuration
   const statCards = statistics ? [
-    {
-      icon: Users,
-      ...statistics.totalCadets,
-    },
-    {
-      icon: CreditCard,
-      ...statistics.creditsEarned,
-    },
-    {
-      icon: Ship,
-      ...statistics.fleetUnits,
-    },
-    {
-      icon: Star,
-      ...statistics.approvalRate,
-    },
+    { icon: Users, ...statistics.totalCadets },
+    { icon: CreditCard, ...statistics.creditsEarned },
+    { icon: Ship, ...statistics.fleetUnits },
+    { icon: Star, ...statistics.approvalRate },
   ] : [];
 
   return (
@@ -121,7 +128,6 @@ function Dashboard() {
       <section className="stats-section">
         <div className="stats-grid">
           {isLoading ? (
-            // Loading skeletons
             [...Array(4)].map((_, i) => (
               <div key={i} className="stat-card skeleton">
                 <div className="skeleton-icon"></div>
@@ -131,11 +137,7 @@ function Dashboard() {
             ))
           ) : (
             statCards.map((stat, index) => (
-              <StatCard
-                key={stat.label}
-                {...stat}
-                delay={index * 0.1}
-              />
+              <StatCard key={stat.label} {...stat} delay={index * 0.1} />
             ))
           )}
         </div>
@@ -150,41 +152,141 @@ function Dashboard() {
         />
       </section>
 
-      {/* Course Command Section */}
-      <section className="courses-section">
-        <div className="section-header">
-          <div>
-            <h2 className="section-title">Course Command</h2>
-            <p className="section-subtitle">Deploy and monitor active educational modules</p>
+      {/* Recent Transactions Section */}
+      <motion.section
+        className="dashboard-tx-section"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <div className="dashboard-tx-header">
+          <div className="dashboard-tx-title-row">
+            <Receipt size={18} className="dashboard-tx-icon" />
+            <h2 className="section-title" style={{ margin: 0 }}>Recent Transactions</h2>
+            {txPagination && (
+              <span className="dashboard-tx-count">
+                {txPagination.totalItems} total
+              </span>
+            )}
           </div>
           <button className="export-btn" onClick={handleExportReport}>
             <Download size={16} />
-            <span>Export Fleet</span>
+            <span>Export</span>
           </button>
         </div>
-        
-        <div className="courses-grid">
-          {isLoading ? (
-            [...Array(3)].map((_, i) => (
-              <div key={i} className="course-card skeleton">
-                <div className="skeleton-thumbnail"></div>
-                <div className="skeleton-content">
-                  <div className="skeleton-title"></div>
-                  <div className="skeleton-stats"></div>
-                </div>
+
+        {txLoading ? (
+          <div className="dashboard-tx-loading">
+            <div className="dashboard-tx-skeleton-row" />
+            <div className="dashboard-tx-skeleton-row" />
+            <div className="dashboard-tx-skeleton-row" />
+          </div>
+        ) : recentTx.length === 0 ? (
+          <div className="dashboard-tx-empty">
+            <Receipt size={36} />
+            <p>No transactions yet</p>
+          </div>
+        ) : (
+          <>
+            <div className="dashboard-tx-table-wrap">
+              <table className="dashboard-tx-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Courses</th>
+                    <th>Amount</th>
+                    <th>Gateway</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentTx.map((tx) => (
+                    <tr key={tx.id} className="dashboard-tx-row">
+                      <td>
+                        <div className="dashboard-tx-user">
+                          <img
+                            src={tx.user?.avatar}
+                            alt={tx.user?.fullName}
+                            className="dashboard-tx-avatar"
+                          />
+                          <div>
+                            <span className="dashboard-tx-username">{tx.user?.fullName}</span>
+                            <span className="dashboard-tx-email">{tx.user?.email}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="dashboard-tx-courses">
+                          {tx.courses?.length > 0
+                            ? tx.courses.map(c => (
+                                <span key={c.id} className="dashboard-tx-course-tag">{c.title}</span>
+                              ))
+                            : <span className="dashboard-tx-no-course">—</span>
+                          }
+                        </div>
+                      </td>
+                      <td className="dashboard-tx-amount">{formatCurrency(tx.amount)}</td>
+                      <td>
+                        <span className="dashboard-tx-gateway">{tx.gateway}</span>
+                      </td>
+                      <td className="dashboard-tx-date">{formatDate(tx.createdAt)}</td>
+                      <td>
+                        <span className={`dashboard-tx-status ${tx.isSuccessful ? 'success' : 'failed'}`}>
+                          {tx.isSuccessful
+                            ? <><CheckCircle2 size={12} /> Success</>
+                            : <><AlertCircle size={12} /> Failed</>
+                          }
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {txPagination && txPagination.totalPages > 1 && (
+              <div className="dashboard-tx-pagination">
+                <button
+                  className="dashboard-tx-page-btn"
+                  disabled={!txPagination.hasPrevPage}
+                  onClick={() => setTxPage(p => p - 1)}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {(() => {
+                  const total = txPagination.totalPages;
+                  const current = txPagination.currentPage;
+                  let start = Math.max(1, current - 2);
+                  let end = Math.min(total, start + 4);
+                  if (end - start < 4) start = Math.max(1, end - 4);
+                  const pages = [];
+                  for (let i = start; i <= end; i++) pages.push(i);
+                  return pages.map(p => (
+                    <button
+                      key={p}
+                      className={`dashboard-tx-page-num ${p === current ? 'active' : ''}`}
+                      onClick={() => setTxPage(p)}
+                    >
+                      {p}
+                    </button>
+                  ));
+                })()}
+
+                <button
+                  className="dashboard-tx-page-btn"
+                  disabled={!txPagination.hasNextPage}
+                  onClick={() => setTxPage(p => p + 1)}
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
-            ))
-          ) : (
-            courses.map((course, index) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                delay={0.5 + index * 0.1}
-              />
-            ))
-          )}
-        </div>
-      </section>
+            )}
+          </>
+        )}
+      </motion.section>
     </div>
   );
 }
