@@ -279,6 +279,94 @@ router.put('/users/:id/unlock', async (req, res) => {
 });
 
 /**
+ * GET /api/admin/users/:id/transactions
+ * Get transaction history for a specific user
+ * Query params: page, limit
+ */
+router.get('/users/:id/transactions', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { page = 1, limit = 5 } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        // Verify user exists
+        const user = await prisma.users.findUnique({
+            where: { Id: id },
+            select: { Id: true }
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Get bills with related enrollments and courses
+        const [bills, total] = await Promise.all([
+            prisma.bills.findMany({
+                where: { CreatorId: id },
+                skip,
+                take: parseInt(limit),
+                select: {
+                    Id: true,
+                    Action: true,
+                    Note: true,
+                    Amount: true,
+                    DiscountAmount: true,
+                    Gateway: true,
+                    TransactionId: true,
+                    IsSuccessful: true,
+                    CouponCode: true,
+                    CreationTime: true,
+                    Enrollments: {
+                        select: {
+                            Courses: {
+                                select: {
+                                    Id: true,
+                                    Title: true
+                                }
+                            }
+                        }
+                    }
+                },
+                orderBy: { CreationTime: 'desc' }
+            }),
+            prisma.bills.count({ where: { CreatorId: id } })
+        ]);
+
+        const mappedBills = bills.map(bill => ({
+            id: bill.Id,
+            action: bill.Action,
+            note: bill.Note,
+            amount: Number(bill.Amount),
+            discountAmount: Number(bill.DiscountAmount),
+            gateway: bill.Gateway,
+            transactionId: bill.TransactionId,
+            isSuccessful: bill.IsSuccessful,
+            couponCode: bill.CouponCode,
+            createdAt: bill.CreationTime,
+            courses: bill.Enrollments.map(e => ({
+                id: e.Courses.Id,
+                title: e.Courses.Title
+            }))
+        }));
+
+        res.json({
+            transactions: mappedBills,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / parseInt(limit)),
+                totalItems: total,
+                itemsPerPage: parseInt(limit),
+                hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)),
+                hasPrevPage: parseInt(page) > 1
+            }
+        });
+    } catch (error) {
+        console.error('Admin get user transactions error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
  * GET /api/admin/stats
  * Get comprehensive admin dashboard statistics
  */
@@ -379,77 +467,59 @@ router.get('/stats', async (req, res) => {
 router.get('/stats/chart', async (req, res) => {
     try {
         const { period = 'monthly' } = req.query;
-        let labels = [];
-        let data = [];
+
+        // Build all time ranges first, then query in parallel (NOT sequential)
+        const ranges = [];
 
         if (period === 'monthly') {
-            // Last 30 days — group by day
-            const days = [];
             for (let i = 29; i >= 0; i--) {
-                const dayStart = new Date();
-                dayStart.setDate(dayStart.getDate() - i);
-                dayStart.setHours(0, 0, 0, 0);
-                const dayEnd = new Date(dayStart);
-                dayEnd.setDate(dayEnd.getDate() + 1);
-
-                const count = await prisma.enrollments.count({
-                    where: {
-                        CreationTime: { gte: dayStart, lt: dayEnd }
-                    }
+                const start = new Date();
+                start.setDate(start.getDate() - i);
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(start);
+                end.setDate(end.getDate() + 1);
+                ranges.push({
+                    start, end,
+                    label: start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                 });
-
-                const label = dayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                days.push({ label, count });
             }
-            labels = days.map(d => d.label);
-            data = days.map(d => d.count);
-
         } else if (period === 'quarterly') {
-            // Last 12 weeks — group by week
-            const weeks = [];
             for (let i = 11; i >= 0; i--) {
-                const weekStart = new Date();
-                weekStart.setDate(weekStart.getDate() - (i * 7));
-                weekStart.setHours(0, 0, 0, 0);
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 7);
-
-                const count = await prisma.enrollments.count({
-                    where: {
-                        CreationTime: { gte: weekStart, lt: weekEnd }
-                    }
+                const start = new Date();
+                start.setDate(start.getDate() - (i * 7));
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(start);
+                end.setDate(end.getDate() + 7);
+                ranges.push({
+                    start, end,
+                    label: start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                 });
-
-                const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                weeks.push({ label, count });
             }
-            labels = weeks.map(w => w.label);
-            data = weeks.map(w => w.count);
-
         } else {
-            // Yearly — last 12 months by month
-            const months = [];
             for (let i = 11; i >= 0; i--) {
-                const monthStart = new Date();
-                monthStart.setMonth(monthStart.getMonth() - i, 1);
-                monthStart.setHours(0, 0, 0, 0);
-                const monthEnd = new Date(monthStart);
-                monthEnd.setMonth(monthEnd.getMonth() + 1);
-
-                const count = await prisma.enrollments.count({
-                    where: {
-                        CreationTime: { gte: monthStart, lt: monthEnd }
-                    }
+                const start = new Date();
+                start.setMonth(start.getMonth() - i, 1);
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(start);
+                end.setMonth(end.getMonth() + 1);
+                ranges.push({
+                    start, end,
+                    label: start.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
                 });
-
-                const label = monthStart.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-                months.push({ label, count });
             }
-            labels = months.map(m => m.label);
-            data = months.map(m => m.count);
         }
 
-        res.json({ labels, data });
+        // Execute ALL counts in parallel instead of one-by-one
+        const counts = await Promise.all(
+            ranges.map(r => prisma.enrollments.count({
+                where: { CreationTime: { gte: r.start, lt: r.end } }
+            }))
+        );
+
+        res.json({
+            labels: ranges.map(r => r.label),
+            data: counts
+        });
     } catch (error) {
         console.error('Admin chart error:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -530,15 +600,6 @@ router.get('/courses', async (req, res) => {
                                 }
                             }
                         }
-                    },
-                    Sections: {
-                        select: {
-                            Lectures: {
-                                select: {
-                                    Id: true
-                                }
-                            }
-                        }
                     }
                 },
                 orderBy: { CreationTime: 'desc' }
@@ -548,8 +609,8 @@ router.get('/courses', async (req, res) => {
 
         // Map courses to match frontend expected format
         const mappedCourses = courses.map(course => {
-            // Calculate total lessons
-            const totalLessons = course.Sections.reduce((acc, section) => acc + section.Lectures.length, 0);
+            // Use existing LectureCount field instead of querying Sections->Lectures
+            const totalLessons = course.LectureCount || 0;
 
             // Calculate rating
             const rating = course.RatingCount > 0
