@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import {
-  Search, Bell, Download, Users, CreditCard, Ship, Star,
+  Download, Users, CreditCard, Ship, Star,
   Receipt, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
@@ -36,7 +37,7 @@ function Dashboard() {
         setStatistics(stats);
         setRevenueData(revenue);
       } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
+        toast.error('Failed to fetch dashboard data');
       } finally {
         setIsLoading(false);
       }
@@ -52,7 +53,7 @@ function Dashboard() {
       setRecentTx(result.transactions || []);
       setTxPagination(result.pagination || null);
     } catch (error) {
-      console.error('Failed to fetch transactions:', error);
+      toast.error('Failed to fetch transactions');
     } finally {
       setTxLoading(false);
     }
@@ -69,7 +70,7 @@ function Dashboard() {
       const data = await dashboardService.getRevenueChart(period);
       setRevenueData(data);
     } catch (error) {
-      console.error('Failed to fetch revenue data:', error);
+      toast.error('Failed to fetch revenue data');
     } finally {
       setChartLoading(false);
     }
@@ -78,10 +79,10 @@ function Dashboard() {
   // Handle export report
   const handleExportReport = async () => {
     try {
-      await dashboardService.exportReport();
-      alert('Report exported successfully!');
+      await dashboardService.exportReport(statistics?.raw);
+      toast.success('Report exported successfully!');
     } catch (error) {
-      console.error('Failed to export report:', error);
+      toast.error('Failed to export report');
     }
   };
 
@@ -106,21 +107,7 @@ function Dashboard() {
               <span className="title-accent">System</span>
               <span className="title-main">Overview</span>
             </h1>
-            <p className="page-subtitle">
-              Awaiting commands. Your galactic learning empire is expanding at 1.4x light speed.
-            </p>
           </motion.div>
-        </div>
-        
-        <div className="header-right">
-          <div className="search-box">
-            <Search size={18} />
-            <input type="text" placeholder="Scan records..." />
-          </div>
-          <button className="notification-btn">
-            <Bell size={20} />
-            <span className="notification-dot"></span>
-          </button>
         </div>
       </header>
 

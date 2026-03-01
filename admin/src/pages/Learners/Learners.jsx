@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import {
     Search,
     Lock,
@@ -16,6 +17,8 @@ import {
 } from 'lucide-react';
 
 import userService from '../../services/userService';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 /**
  * Learners Page
@@ -28,13 +31,15 @@ function Learners() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [itemsPerPage] = useState(10);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchInput, setSearchInput] = useState('');
+    const searchQuery = useDebounce(searchInput, 400);
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [isLoading, setIsLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
     const [activeDropdown, setActiveDropdown] = useState(null);
 
     const shouldResetPage = useRef(false);
+    const dropdownRef = useClickOutside(useCallback(() => setActiveDropdown(null), []));
 
     const fetchUsers = async (page, search, status) => {
         try {
@@ -50,7 +55,7 @@ function Learners() {
             setTotalPages(result.pagination.totalPages);
             setTotalItems(result.pagination.totalItems);
         } catch (error) {
-            console.error('Failed to fetch learners:', error);
+            toast.error('Failed to fetch learners');
         } finally {
             setIsLoading(false);
         }
@@ -68,7 +73,7 @@ function Learners() {
 
     const handleSearch = (e) => {
         shouldResetPage.current = true;
-        setSearchQuery(e.target.value);
+        setSearchInput(e.target.value);
     };
 
     const handleStatusFilter = (status) => {
@@ -84,26 +89,30 @@ function Learners() {
     };
 
     const handleLockUser = async (userId) => {
+        if (!window.confirm('Are you sure you want to lock this user?')) return;
         try {
             setActionLoading(userId);
             await userService.lockUser(userId);
+            toast.success('User locked successfully');
             await fetchUsers(currentPage, searchQuery, statusFilter);
             setActiveDropdown(null);
         } catch (error) {
-            console.error('Failed to lock user:', error);
+            toast.error('Failed to lock user');
         } finally {
             setActionLoading(null);
         }
     };
 
     const handleUnlockUser = async (userId) => {
+        if (!window.confirm('Are you sure you want to unlock this user?')) return;
         try {
             setActionLoading(userId);
             await userService.unlockUser(userId);
+            toast.success('User unlocked successfully');
             await fetchUsers(currentPage, searchQuery, statusFilter);
             setActiveDropdown(null);
         } catch (error) {
-            console.error('Failed to unlock user:', error);
+            toast.error('Failed to unlock user');
         } finally {
             setActionLoading(null);
         }
@@ -203,7 +212,7 @@ function Learners() {
                     <span className="date-cell"><Clock size={12} />{formatDate(user.lastLogin)}</span>
                 </td>
                 <td>
-                    <div className="actions-cell">
+                    <div className="actions-cell" ref={activeDropdown === user.id ? dropdownRef : null}>
                         <button
                             className="action-menu-btn"
                             onClick={(e) => { e.stopPropagation(); setActiveDropdown(activeDropdown === user.id ? null : user.id); }}
@@ -247,9 +256,6 @@ function Learners() {
                         <span className="title-accent">Learner</span>{' '}
                         <span className="title-accent">Management</span>
                     </h1>
-                    <p className="page-subtitle">
-                        View and manage all registered learners in the system
-                    </p>
                 </motion.div>
             </header>
 
@@ -260,7 +266,7 @@ function Learners() {
                         <input
                             type="text"
                             placeholder="Search by name, email or phone..."
-                            value={searchQuery}
+                            value={searchInput}
                             onChange={handleSearch}
                         />
                     </div>

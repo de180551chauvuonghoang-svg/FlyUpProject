@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import {
     Search,
     ChevronLeft,
@@ -19,6 +20,8 @@ import {
 } from 'lucide-react';
 
 import courseService from '../../services/courseService';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
 /**
  * Courses Page
@@ -31,7 +34,8 @@ function Courses() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [itemsPerPage] = useState(10);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchInput, setSearchInput] = useState('');
+    const searchQuery = useDebounce(searchInput, 400);
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [isLoading, setIsLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
@@ -39,6 +43,7 @@ function Courses() {
 
     // Ref to track if we should reset page
     const shouldResetPage = useRef(false);
+    const dropdownRef = useClickOutside(useCallback(() => setActiveDropdown(null), []));
 
     // Fetch courses function
     const fetchCourses = async (page, search, status) => {
@@ -54,7 +59,7 @@ function Courses() {
             setTotalPages(result.pagination.totalPages);
             setTotalItems(result.pagination.totalItems);
         } catch (error) {
-            console.error('Failed to fetch courses:', error);
+            toast.error('Failed to fetch courses');
         } finally {
             setIsLoading(false);
         }
@@ -76,7 +81,7 @@ function Courses() {
     // Handle search
     const handleSearch = (e) => {
         shouldResetPage.current = true;
-        setSearchQuery(e.target.value);
+        setSearchInput(e.target.value);
     };
 
     // Handle status filter
@@ -95,13 +100,15 @@ function Courses() {
 
     // Handle approve course
     const handleApproveCourse = async (courseId) => {
+        if (!window.confirm('Are you sure you want to approve this course?')) return;
         try {
             setActionLoading(courseId);
             await courseService.approveCourse(courseId);
+            toast.success('Course approved successfully');
             await fetchCourses(currentPage, searchQuery, statusFilter);
             setActiveDropdown(null);
         } catch (error) {
-            console.error('Failed to approve course:', error);
+            toast.error('Failed to approve course');
         } finally {
             setActionLoading(null);
         }
@@ -109,13 +116,16 @@ function Courses() {
 
     // Handle reject course
     const handleRejectCourse = async (courseId) => {
+        const reason = window.prompt('Enter rejection reason:');
+        if (!reason) return;
         try {
             setActionLoading(courseId);
-            await courseService.rejectCourse(courseId, 'Content does not meet quality standards');
+            await courseService.rejectCourse(courseId, reason);
+            toast.success('Course rejected');
             await fetchCourses(currentPage, searchQuery, statusFilter);
             setActiveDropdown(null);
         } catch (error) {
-            console.error('Failed to reject course:', error);
+            toast.error('Failed to reject course');
         } finally {
             setActionLoading(null);
         }
@@ -123,13 +133,15 @@ function Courses() {
 
     // Handle archive course
     const handleArchiveCourse = async (courseId) => {
+        if (!window.confirm('Are you sure you want to archive this course?')) return;
         try {
             setActionLoading(courseId);
             await courseService.archiveCourse(courseId);
+            toast.success('Course archived');
             await fetchCourses(currentPage, searchQuery, statusFilter);
             setActiveDropdown(null);
         } catch (error) {
-            console.error('Failed to archive course:', error);
+            toast.error('Failed to archive course');
         } finally {
             setActionLoading(null);
         }
@@ -137,13 +149,15 @@ function Courses() {
 
     // Handle unarchive course
     const handleUnarchiveCourse = async (courseId) => {
+        if (!window.confirm('Are you sure you want to unarchive this course?')) return;
         try {
             setActionLoading(courseId);
             await courseService.unarchiveCourse(courseId);
+            toast.success('Course unarchived');
             await fetchCourses(currentPage, searchQuery, statusFilter);
             setActiveDropdown(null);
         } catch (error) {
-            console.error('Failed to unarchive course:', error);
+            toast.error('Failed to unarchive course');
         } finally {
             setActionLoading(null);
         }
@@ -307,7 +321,7 @@ function Courses() {
                     </div>
                 </td>
                 <td onClick={(e) => e.stopPropagation()}>
-                    <div className="actions-cell">
+                    <div className="actions-cell" ref={activeDropdown === course.id ? dropdownRef : null}>
                         <button
                             className="action-menu-btn"
                             onClick={() => setActiveDropdown(activeDropdown === course.id ? null : course.id)}
@@ -387,9 +401,6 @@ function Courses() {
                         <span className="title-accent">Course</span>{' '}
                         <span className="title-accent">Management</span>
                     </h1>
-                    <p className="page-subtitle">
-                        Review, approve, and manage all courses in the system
-                    </p>
                 </motion.div>
             </header>
 
@@ -401,7 +412,7 @@ function Courses() {
                         <input
                             type="text"
                             placeholder="Search by title, instructor or category..."
-                            value={searchQuery}
+                            value={searchInput}
                             onChange={handleSearch}
                         />
                     </div>
