@@ -100,7 +100,6 @@ function Courses() {
 
     // Handle approve course
     const handleApproveCourse = async (courseId) => {
-        if (!window.confirm('Are you sure you want to approve this course?')) return;
         try {
             setActionLoading(courseId);
             await courseService.approveCourse(courseId);
@@ -116,11 +115,9 @@ function Courses() {
 
     // Handle reject course
     const handleRejectCourse = async (courseId) => {
-        const reason = window.prompt('Enter rejection reason:');
-        if (!reason) return;
         try {
             setActionLoading(courseId);
-            await courseService.rejectCourse(courseId, reason);
+            await courseService.rejectCourse(courseId, 'Content does not meet quality standards');
             toast.success('Course rejected');
             await fetchCourses(currentPage, searchQuery, statusFilter);
             setActiveDropdown(null);
@@ -133,7 +130,6 @@ function Courses() {
 
     // Handle archive course
     const handleArchiveCourse = async (courseId) => {
-        if (!window.confirm('Are you sure you want to archive this course?')) return;
         try {
             setActionLoading(courseId);
             await courseService.archiveCourse(courseId);
@@ -149,7 +145,6 @@ function Courses() {
 
     // Handle unarchive course
     const handleUnarchiveCourse = async (courseId) => {
-        if (!window.confirm('Are you sure you want to unarchive this course?')) return;
         try {
             setActionLoading(courseId);
             await courseService.unarchiveCourse(courseId);
