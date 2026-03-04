@@ -23,7 +23,6 @@ export const CartProvider = ({ children }) => {
     }, [cart]);
 
     // Fetch user enrollments to check for duplicates
-    // eslint-disable-next-line no-unused-vars
     const { data: enrollmentData } = useQuery({
         queryKey: ['userEnrollments', user?.id],
         queryFn: () => fetchUserEnrollments(user.id),

@@ -168,10 +168,10 @@ export const CourseUpdateForm = ({ courseId, onSuccess }) => {
         description: formData.description,
         price: formData.price,
         level: formData.level,
-        sections: formData.sections.map((section, sectionIndex) => ({
+        sections: formData.sections.map((section) => ({
           ...(section.id && { id: section.id }),
           title: section.title,
-          lectures: section.lectures.map((lecture, lectureIndex) => ({
+          lectures: section.lectures.map((lecture) => ({
             ...(lecture.id && { id: lecture.id }),
             title: lecture.title,
             description: lecture.description,

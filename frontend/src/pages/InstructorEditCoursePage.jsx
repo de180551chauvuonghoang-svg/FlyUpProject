@@ -34,7 +34,7 @@ export default function InstructorEditCoursePage() {
           discount: c.Discount ?? c.discount ?? 0,
           level: c.Level || c.level || "Beginner",
         });
-      } catch (err) {
+      } catch {
         toast.error("Failed to load course");
         navigate("/instructor/dashboard");
       } finally {

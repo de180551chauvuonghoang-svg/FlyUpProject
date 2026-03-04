@@ -65,6 +65,7 @@ const CheckoutPage = () => {
         }, 3000);
 
         return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [checkoutId, checkout?.status]);
 
     // Timer countdown (Restored)

@@ -13,6 +13,7 @@ export default function Quiz({ courseId, onClose }) {
 
   useEffect(() => {
     fetchQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
   const fetchQuestions = async () => {

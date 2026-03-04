@@ -16,7 +16,7 @@ export default function InstructorCourseCurriculumPage() {
     },
   ]);
 
-  const [editingSection, setEditingSection] = useState(null);
+  const [, setEditingSection] = useState(null);
   const [showNewSection, setShowNewSection] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [expandedSections, setExpandedSections] = useState(new Set([1]));
@@ -24,6 +24,7 @@ export default function InstructorCourseCurriculumPage() {
   useEffect(() => {
     const basics = sessionStorage.getItem("courseBasics");
     if (basics) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCourseBasics(JSON.parse(basics));
     } else {
       navigate("/instructor/create-course");

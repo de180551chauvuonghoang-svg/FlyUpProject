@@ -75,8 +75,7 @@ export default function CourseLessonPage() {
     lessonId || "lecture-003",
   );
   const [isInstructorPreview, setIsInstructorPreview] = useState(false);
-  const [videoProgress, setVideoProgress] = useState(35);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [, setIsVideoPlaying] = useState(false);
 
   // Check if this is instructor preview mode
   // NEVER use instructor preview in CourseLessonPage - it's for enrolled students only
@@ -178,11 +177,11 @@ export default function CourseLessonPage() {
     return null;
   };
 
-  // Get the first lecture if no specific lecture is selected
   useEffect(() => {
     if (!lessonId && course?.Sections && course.Sections.length > 0) {
       const firstLecture = course.Sections[0]?.Lectures?.[0];
       if (firstLecture?.Id) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedLessonId(firstLecture.Id);
       }
     }

@@ -7,7 +7,7 @@ import useAuth from "../hooks/useAuth";
 
 export default function InstructorCourseReviewPage() {
   const navigate = useNavigate();
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const [courseBasics, setCourseBasics] = useState(null);
   const [courseCurriculum, setCourseCurriculum] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
