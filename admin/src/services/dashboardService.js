@@ -1,25 +1,10 @@
 /**
  * Dashboard Service
  * Handles all dashboard-related API calls — connected to real backend API
+ * Uses shared fetchWithAuth for automatic token refresh
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-const createAuthHeaders = () => {
-  const token = localStorage.getItem('adminAccessToken');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
-};
-
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `HTTP ${response.status}`);
-  }
-  return response.json();
-};
+import { API_BASE_URL, fetchWithAuth, createAuthHeaders } from './api';
 
 /**
  * Format a number for display (e.g. 18420 -> "18.4K")
@@ -36,11 +21,9 @@ const dashboardService = {
    * @returns {Promise<Object>}
    */
   getStatistics: async () => {
-    const response = await fetch(`${API_URL}/admin/stats`, {
+    const data = await fetchWithAuth(`${API_BASE_URL}/admin/stats`, {
       method: 'GET',
-      headers: createAuthHeaders(),
     });
-    const data = await handleResponse(response);
     const s = data.stats;
 
     // Map to dashboard card format
@@ -79,11 +62,9 @@ const dashboardService = {
    */
   getRevenueChart: async (period = 'quarterly') => {
     const params = new URLSearchParams({ period });
-    const response = await fetch(`${API_URL}/admin/stats/chart?${params}`, {
+    return fetchWithAuth(`${API_BASE_URL}/admin/stats/chart?${params}`, {
       method: 'GET',
-      headers: createAuthHeaders(),
     });
-    return handleResponse(response);
   },
 
   /**
@@ -99,11 +80,9 @@ const dashboardService = {
       limit: limit.toString(),
     });
 
-    const response = await fetch(`${API_URL}/admin/stats/recent-transactions?${params}`, {
+    return fetchWithAuth(`${API_BASE_URL}/admin/stats/recent-transactions?${params}`, {
       method: 'GET',
-      headers: createAuthHeaders(),
     });
-    return handleResponse(response);
   },
 
   /**
@@ -152,12 +131,9 @@ const dashboardService = {
 
     for (const period of periods) {
       try {
-        const params = new URLSearchParams({ period });
-        const response = await fetch(`${API_URL}/admin/stats/chart?${params}`, {
+        const chartData = await fetchWithAuth(`${API_BASE_URL}/admin/stats/chart?period=${period}`, {
           method: 'GET',
-          headers: createAuthHeaders(),
         });
-        const chartData = await handleResponse(response);
 
         const sheetData = [
           [`Enrollment Data — ${periodLabels[period]}`],
