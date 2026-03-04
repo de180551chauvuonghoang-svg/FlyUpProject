@@ -1,44 +1,10 @@
 /**
  * User Service
  * Handles all user management API calls
- * Now using real API endpoints
+ * Uses shared fetchWithAuth for automatic token refresh
  */
 
-// API URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-/**
- * Get auth token from localStorage
- * @returns {string|null}
- */
-const getAuthToken = () => {
-  return localStorage.getItem('adminAccessToken');
-};
-
-/**
- * Create headers with authentication
- * @returns {Object}
- */
-const createAuthHeaders = () => {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
-
-/**
- * Handle API response
- * @param {Response} response
- * @returns {Promise}
- */
-const handleResponse = async (response) => {
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || data.error || `HTTP error! status: ${response.status}`);
-  }
-  return data;
-};
+import { API_BASE_URL, fetchWithAuth } from './api';
 
 /**
  * User Service Object
@@ -65,12 +31,9 @@ const userService = {
       params.append('role', role);
     }
 
-    const response = await fetch(`${API_URL}/admin/users?${params}`, {
+    return fetchWithAuth(`${API_BASE_URL}/admin/users?${params}`, {
       method: 'GET',
-      headers: createAuthHeaders(),
     });
-
-    return handleResponse(response);
   },
 
   /**
@@ -79,12 +42,9 @@ const userService = {
    * @returns {Promise<Object>}
    */
   getUserById: async (userId) => {
-    const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+    return fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}`, {
       method: 'GET',
-      headers: createAuthHeaders(),
     });
-
-    return handleResponse(response);
   },
 
   /**
@@ -94,13 +54,10 @@ const userService = {
    * @returns {Promise<Object>}
    */
   lockUser: async (userId, reason = '') => {
-    const response = await fetch(`${API_URL}/admin/users/${userId}/lock`, {
+    return fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}/lock`, {
       method: 'PUT',
-      headers: createAuthHeaders(),
       body: JSON.stringify({ reason }),
     });
-
-    return handleResponse(response);
   },
 
   /**
@@ -109,12 +66,9 @@ const userService = {
    * @returns {Promise<Object>}
    */
   unlockUser: async (userId) => {
-    const response = await fetch(`${API_URL}/admin/users/${userId}/unlock`, {
+    return fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}/unlock`, {
       method: 'PUT',
-      headers: createAuthHeaders(),
     });
-
-    return handleResponse(response);
   },
 
   /**
@@ -131,12 +85,9 @@ const userService = {
       search: query
     });
 
-    const response = await fetch(`${API_URL}/admin/users?${params}`, {
+    const data = await fetchWithAuth(`${API_BASE_URL}/admin/users?${params}`, {
       method: 'GET',
-      headers: createAuthHeaders(),
     });
-
-    const data = await handleResponse(response);
     return data.users || [];
   },
 
@@ -145,12 +96,9 @@ const userService = {
    * @returns {Promise<Object>}
    */
   getStats: async () => {
-    const response = await fetch(`${API_URL}/admin/stats`, {
+    return fetchWithAuth(`${API_BASE_URL}/admin/stats`, {
       method: 'GET',
-      headers: createAuthHeaders(),
     });
-
-    return handleResponse(response);
   },
 
   /**
@@ -167,12 +115,9 @@ const userService = {
       limit: limit.toString(),
     });
 
-    const response = await fetch(`${API_URL}/admin/users/${userId}/transactions?${params}`, {
+    return fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}/transactions?${params}`, {
       method: 'GET',
-      headers: createAuthHeaders(),
     });
-
-    return handleResponse(response);
   },
 };
 

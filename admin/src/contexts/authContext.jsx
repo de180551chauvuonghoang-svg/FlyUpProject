@@ -88,8 +88,8 @@ export function AuthProvider({ children }) {
         try {
             const result = await authService.login(email, password);
 
-            // Check admin role
-            if (result.user.role !== 'admin') {
+            // Check admin role (case-insensitive to match backend)
+            if (result.user.role?.toLowerCase() !== 'admin') {
                 throw new Error('Access denied. Admin privileges required.');
             }
 
