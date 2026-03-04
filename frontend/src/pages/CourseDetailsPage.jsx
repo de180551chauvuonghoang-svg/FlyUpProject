@@ -21,6 +21,7 @@ import useAuth from '../hooks/useAuth';
 import ReviewList from '../components/Reviews/ReviewList';
 import ReviewForm from '../components/Reviews/ReviewForm';
 import { toggleWishlist, getWishlist } from '../services/wishlistService';
+import { createCheckout } from '../services/checkoutService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -124,6 +125,38 @@ export default function CourseDetailsPage() {
           duration: `${course.Sections?.reduce((acc, sec) => acc + (sec.Lectures?.length || 0), 0)} lectures`
       };
       addToCart(cartItem);
+  };
+
+  const handleBuyNow = async () => {
+      if (!user) {
+          toast.error('Please login to purchase', {
+              icon: '🔒',
+              style: {
+                  borderRadius: '10px',
+                  background: '#1A1333',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.1)',
+              },
+          });
+          navigate('/login');
+          return;
+      }
+
+      try {
+          toast.loading('Preparing checkout...');
+          const res = await createCheckout({
+              courseIds: [course.Id],
+              totalAmount: course.Price
+          });
+          
+          toast.dismiss();
+          if (res.success) {
+              navigate(`/checkout/${res.data.checkoutId}`);
+          }
+      } catch (err) {
+          toast.dismiss();
+          toast.error(err.message || 'Checkout failed');
+      }
   };
 
   // React Query for caching
@@ -543,10 +576,7 @@ export default function CourseDetailsPage() {
                 Add to Cart
               </motion.button>
               <motion.button 
-                onClick={() => {
-                  handleAddToCart();
-                  navigate('/cart');
-                }}
+                onClick={handleBuyNow}
                 whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors"

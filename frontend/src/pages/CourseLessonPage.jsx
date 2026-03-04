@@ -332,25 +332,20 @@ export default function CourseLessonPage() {
   // Loading state
   if (courseLoading) {
     return (
-      <div className="flex h-screen w-full bg-background-light dark:bg-background-dark items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-white">Loading course...</p>
-          <div className="mt-4 p-4 bg-slate-900/50 rounded-lg border border-slate-700 max-w-md">
-            <p className="text-xs text-slate-400 mb-2">Debug Info:</p>
-            <pre className="text-xs text-slate-300">
-              {JSON.stringify(
-                {
-                  courseId,
-                  isInstructorPreview,
-                  userRole: user?.role,
-                  hasInstructor: !!user?.instructor,
-                  lessonId,
-                },
-                null,
-                2,
-              )}
-            </pre>
+      <div className="flex h-screen w-full bg-[#0a0a14] items-center justify-center relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div className="flex flex-col items-center gap-6 p-8 relative z-10">
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
+            <span className="material-symbols-outlined text-primary text-2xl animate-pulse">menu_book</span>
+          </div>
+          <div className="flex flex-col items-center text-center max-w-sm">
+           <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Đang tải bài học...</h3>
+           <p className="text-slate-400 text-sm leading-relaxed">Vui lòng đợi trong giây lát, hệ thống đang chuẩn bị nội dung khóa học cho bạn.</p>
           </div>
         </div>
       </div>
@@ -359,26 +354,37 @@ export default function CourseLessonPage() {
 
   if (courseError) {
     return (
-      <div className="flex h-screen w-full bg-background-light dark:bg-background-dark items-center justify-center">
-        <div className="flex flex-col items-center gap-4 p-8 bg-slate-900/50 rounded-lg border border-red-500/20 max-w-md">
-          <span className="material-symbols-outlined text-4xl text-red-500">
-            error
-          </span>
-          <p className="text-white font-bold">Failed to load course</p>
-          <p className="text-slate-400 text-sm text-center">
-            {courseError.message}
-          </p>
-          <div className="text-xs text-slate-500 max-h-24 overflow-auto bg-slate-950 p-2 rounded w-full">
-            <pre>
-              {JSON.stringify({ courseId, error: courseError }, null, 2)}
-            </pre>
+      <div className="flex h-screen w-full bg-[#0a0a14] items-center justify-center relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div className="flex flex-col items-center gap-6 p-8 bg-[#130d1a]/80 backdrop-blur-xl rounded-3xl border border-red-500/20 max-w-md text-center shadow-2xl relative z-10 w-full mx-4">
+          <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-2 ring-8 ring-red-500/5">
+            <span className="material-symbols-outlined text-5xl text-red-500">
+              error_outline
+            </span>
           </div>
-          <button
-            onClick={() => navigate("/my-learning")}
-            className="px-6 py-2 rounded-lg bg-primary text-white font-bold hover:bg-purple-600"
-          >
-            Back to My Learning
-          </button>
+          <div>
+            <h3 className="text-white text-2xl font-bold mb-3 tracking-tight">Không thể tải khóa học</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-8 px-4">
+              Đã xảy ra lỗi khi tải dữ liệu khóa học. Vui lòng thử lại sau hoặc quay về trang My Learning.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <button
+              onClick={() => window.location.reload()}
+              className="flex-1 py-3.5 rounded-xl bg-slate-800 text-white font-semibold hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">refresh</span>
+              Thử lại
+            </button>
+            <button
+              onClick={() => navigate("/my-learning")}
+              className="flex-1 py-3.5 rounded-xl bg-primary text-white font-semibold hover:bg-purple-600 transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+              Quay về
+            </button>
+          </div>
         </div>
       </div>
     );
