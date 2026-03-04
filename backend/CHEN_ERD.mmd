@@ -1,0 +1,166 @@
+flowchart LR
+    %% Styles
+    classDef entity fill:#e1f5fe,stroke:#01579b,stroke-width:2px,rx:5,ry:5;
+    classDef relation fill:#e0f2f1,stroke:#00695c,stroke-width:2px,shape:diamond,font-style:italic;
+
+    %% Entities
+    Articles[Articles]:::entity
+    AssignmentCompletions[AssignmentCompletions]:::entity
+    Assignments[Assignments]:::entity
+    Bills[Bills]:::entity
+    CAT_Logs[CAT_Logs]:::entity
+    CAT_Results[CAT_Results]:::entity
+    CartCheckout[CartCheckout]:::entity
+    Categories[Categories]:::entity
+    ChatMessages[ChatMessages]:::entity
+    CommentMedia[CommentMedia]:::entity
+    Comments[Comments]:::entity
+    ConversationMembers[ConversationMembers]:::entity
+    Conversations[Conversations]:::entity
+    CourseMeta[CourseMeta]:::entity
+    CourseNotifications[CourseNotifications]:::entity
+    CourseReviews[CourseReviews]:::entity
+    Courses[Courses]:::entity
+    Enrollments[Enrollments]:::entity
+    Instructors[Instructors]:::entity
+    LectureCompletions[LectureCompletions]:::entity
+    LectureMaterial[LectureMaterial]:::entity
+    Lectures[Lectures]:::entity
+    McqChoices[McqChoices]:::entity
+    McqQuestions[McqQuestions]:::entity
+    McqUserAnswer[McqUserAnswer]:::entity
+    Notifications[Notifications]:::entity
+    PrivateConversations[PrivateConversations]:::entity
+    PrivateMessages[PrivateMessages]:::entity
+    Reactions[Reactions]:::entity
+    Sections[Sections]:::entity
+    Submissions[Submissions]:::entity
+    Tag[Tag]:::entity
+    UserAbilities[UserAbilities]:::entity
+    Users[Users]:::entity
+    EFMigrationsHistory[EFMigrationsHistory]:::entity
+    Wishlist[Wishlist]:::entity
+
+    %% Relationships
+    Articles --- Articles_Users_Users_rel{"Users"}:::relation --> Users
+    Articles --- Articles_Comments_Comments_rel{"Comments"}:::relation --> Comments
+    Articles --- Articles_Reactions_Reactions_rel{"Reactions"}:::relation --> Reactions
+    Articles --- Articles_Tag_Tag_rel{"Tag"}:::relation --> Tag
+    AssignmentCompletions --- AssignmentCompletions_Assignments_Assignments_rel{"Assignments"}:::relation --> Assignments
+    AssignmentCompletions --- AssignmentCompletions_Users_Users_rel{"Users"}:::relation --> Users
+    Assignments --- Assignments_AssignmentCompletions_AssignmentCompletions_rel{"AssignmentCompletions"}:::relation --> AssignmentCompletions
+    Assignments --- Assignments_Sections_Sections_rel{"Sections"}:::relation --> Sections
+    Assignments --- Assignments_Users_Users_rel{"Users"}:::relation --> Users
+    Assignments --- Assignments_CAT_Logs_CAT_Logs_rel{"CAT_Logs"}:::relation --> CAT_Logs
+    Assignments --- Assignments_CAT_Results_CAT_Results_rel{"CAT_Results"}:::relation --> CAT_Results
+    Assignments --- Assignments_McqQuestions_McqQuestions_rel{"McqQuestions"}:::relation --> McqQuestions
+    Assignments --- Assignments_Submissions_Submissions_rel{"Submissions"}:::relation --> Submissions
+    Bills --- Bills_Users_Users_rel{"Users"}:::relation --> Users
+    Bills --- Bills_Enrollments_Enrollments_rel{"Enrollments"}:::relation --> Enrollments
+    CAT_Logs --- CAT_Logs_Assignments_Assignments_rel{"Assignments"}:::relation --> Assignments
+    CAT_Logs --- CAT_Logs_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    CAT_Logs --- CAT_Logs_McqQuestions_McqQuestions_rel{"McqQuestions"}:::relation --> McqQuestions
+    CAT_Logs --- CAT_Logs_Users_Users_rel{"Users"}:::relation --> Users
+    CAT_Results --- CAT_Results_Assignments_Assignments_rel{"Assignments"}:::relation --> Assignments
+    CAT_Results --- CAT_Results_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    CAT_Results --- CAT_Results_Users_Users_rel{"Users"}:::relation --> Users
+    CartCheckout --- CartCheckout_Users_Users_rel{"Users"}:::relation --> Users
+    Categories --- Categories_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    ChatMessages --- ChatMessages_Conversations_Conversations_rel{"Conversations"}:::relation --> Conversations
+    ChatMessages --- ChatMessages_Users_Users_rel{"Users"}:::relation --> Users
+    ChatMessages --- ChatMessages_Reactions_Reactions_rel{"Reactions"}:::relation --> Reactions
+    CommentMedia --- CommentMedia_Comments_Comments_rel{"Comments"}:::relation --> Comments
+    Comments --- Comments_CommentMedia_CommentMedia_rel{"CommentMedia"}:::relation --> CommentMedia
+    Comments --- Comments_Articles_Articles_rel{"Articles"}:::relation --> Articles
+    Comments --- Comments_Comments_Comments_rel{"Comments"}:::relation --> Comments
+    Comments --- Comments_Comments_other_Comments_rel{"other_Comments"}:::relation --> Comments
+    Comments --- Comments_Lectures_Lectures_rel{"Lectures"}:::relation --> Lectures
+    Comments --- Comments_Users_Users_rel{"Users"}:::relation --> Users
+    Comments --- Comments_Reactions_Reactions_rel{"Reactions"}:::relation --> Reactions
+    ConversationMembers --- ConversationMembers_Conversations_Conversations_rel{"Conversations"}:::relation --> Conversations
+    ConversationMembers --- ConversationMembers_Users_Users_rel{"Users"}:::relation --> Users
+    Conversations --- Conversations_ChatMessages_ChatMessages_rel{"ChatMessages"}:::relation --> ChatMessages
+    Conversations --- Conversations_ConversationMembers_ConversationMembers_rel{"ConversationMembers"}:::relation --> ConversationMembers
+    Conversations --- Conversations_Users_Users_rel{"Users"}:::relation --> Users
+    CourseMeta --- CourseMeta_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    CourseNotifications --- CourseNotifications_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    CourseNotifications --- CourseNotifications_Instructors_Instructors_rel{"Instructors"}:::relation --> Instructors
+    CourseReviews --- CourseReviews_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    CourseReviews --- CourseReviews_Users_Users_rel{"Users"}:::relation --> Users
+    Courses --- Courses_CAT_Logs_CAT_Logs_rel{"CAT_Logs"}:::relation --> CAT_Logs
+    Courses --- Courses_CAT_Results_CAT_Results_rel{"CAT_Results"}:::relation --> CAT_Results
+    Courses --- Courses_Wishlist_Wishlist_rel{"Wishlist"}:::relation --> Wishlist
+    Courses --- Courses_CourseMeta_CourseMeta_rel{"CourseMeta"}:::relation --> CourseMeta
+    Courses --- Courses_CourseNotifications_CourseNotifications_rel{"CourseNotifications"}:::relation --> CourseNotifications
+    Courses --- Courses_CourseReviews_CourseReviews_rel{"CourseReviews"}:::relation --> CourseReviews
+    Courses --- Courses_Categories_Categories_rel{"Categories"}:::relation --> Categories
+    Courses --- Courses_Instructors_Instructors_rel{"Instructors"}:::relation --> Instructors
+    Courses --- Courses_Users_Users_rel{"Users"}:::relation --> Users
+    Courses --- Courses_Enrollments_Enrollments_rel{"Enrollments"}:::relation --> Enrollments
+    Courses --- Courses_Sections_Sections_rel{"Sections"}:::relation --> Sections
+    Courses --- Courses_UserAbilities_UserAbilities_rel{"UserAbilities"}:::relation --> UserAbilities
+    Enrollments --- Enrollments_Bills_Bills_rel{"Bills"}:::relation --> Bills
+    Enrollments --- Enrollments_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    Enrollments --- Enrollments_Lectures_Lectures_rel{"Lectures"}:::relation --> Lectures
+    Enrollments --- Enrollments_Users_Users_rel{"Users"}:::relation --> Users
+    Instructors --- Instructors_CourseNotifications_CourseNotifications_rel{"CourseNotifications"}:::relation --> CourseNotifications
+    Instructors --- Instructors_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    Instructors --- Instructors_Users_Users_Instructors_CreatorIdToUsers_rel{"Users_Instructors_CreatorIdToUsers"}:::relation --> Users
+    Instructors --- Instructors_Users_Users_Users_InstructorIdToInstructors_rel{"Users_Users_InstructorIdToInstructors"}:::relation --> Users
+    LectureCompletions --- LectureCompletions_Lectures_Lectures_rel{"Lectures"}:::relation --> Lectures
+    LectureCompletions --- LectureCompletions_Users_Users_rel{"Users"}:::relation --> Users
+    LectureMaterial --- LectureMaterial_Lectures_Lectures_rel{"Lectures"}:::relation --> Lectures
+    Lectures --- Lectures_Comments_Comments_rel{"Comments"}:::relation --> Comments
+    Lectures --- Lectures_Enrollments_Enrollments_rel{"Enrollments"}:::relation --> Enrollments
+    Lectures --- Lectures_LectureCompletions_LectureCompletions_rel{"LectureCompletions"}:::relation --> LectureCompletions
+    Lectures --- Lectures_LectureMaterial_LectureMaterial_rel{"LectureMaterial"}:::relation --> LectureMaterial
+    Lectures --- Lectures_Sections_Sections_rel{"Sections"}:::relation --> Sections
+    McqChoices --- McqChoices_McqQuestions_McqQuestions_rel{"McqQuestions"}:::relation --> McqQuestions
+    McqChoices --- McqChoices_McqUserAnswer_McqUserAnswer_rel{"McqUserAnswer"}:::relation --> McqUserAnswer
+    McqQuestions --- McqQuestions_CAT_Logs_CAT_Logs_rel{"CAT_Logs"}:::relation --> CAT_Logs
+    McqQuestions --- McqQuestions_McqChoices_McqChoices_rel{"McqChoices"}:::relation --> McqChoices
+    McqQuestions --- McqQuestions_Assignments_Assignments_rel{"Assignments"}:::relation --> Assignments
+    McqUserAnswer --- McqUserAnswer_McqChoices_McqChoices_rel{"McqChoices"}:::relation --> McqChoices
+    McqUserAnswer --- McqUserAnswer_Submissions_Submissions_rel{"Submissions"}:::relation --> Submissions
+    Notifications --- Notifications_Users_Users_Notifications_CreatorIdToUsers_rel{"Users_Notifications_CreatorIdToUsers"}:::relation --> Users
+    Notifications --- Notifications_Users_Users_Notifications_ReceiverIdToUsers_rel{"Users_Notifications_ReceiverIdToUsers"}:::relation --> Users
+    PrivateConversations --- PrivateConversations_PrivateMessages_PrivateMessages_rel{"PrivateMessages"}:::relation --> PrivateMessages
+    PrivateMessages --- PrivateMessages_PrivateConversations_PrivateConversations_rel{"PrivateConversations"}:::relation --> PrivateConversations
+    Reactions --- Reactions_Articles_Articles_rel{"Articles"}:::relation --> Articles
+    Reactions --- Reactions_ChatMessages_ChatMessages_rel{"ChatMessages"}:::relation --> ChatMessages
+    Reactions --- Reactions_Comments_Comments_rel{"Comments"}:::relation --> Comments
+    Reactions --- Reactions_Users_Users_rel{"Users"}:::relation --> Users
+    Sections --- Sections_Assignments_Assignments_rel{"Assignments"}:::relation --> Assignments
+    Sections --- Sections_Lectures_Lectures_rel{"Lectures"}:::relation --> Lectures
+    Sections --- Sections_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    Submissions --- Submissions_McqUserAnswer_McqUserAnswer_rel{"McqUserAnswer"}:::relation --> McqUserAnswer
+    Submissions --- Submissions_Assignments_Assignments_rel{"Assignments"}:::relation --> Assignments
+    Submissions --- Submissions_Users_Users_rel{"Users"}:::relation --> Users
+    Tag --- Tag_Articles_Articles_rel{"Articles"}:::relation --> Articles
+    UserAbilities --- UserAbilities_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    UserAbilities --- UserAbilities_Users_Users_rel{"Users"}:::relation --> Users
+    Users --- Users_Articles_Articles_rel{"Articles"}:::relation --> Articles
+    Users --- Users_AssignmentCompletions_AssignmentCompletions_rel{"AssignmentCompletions"}:::relation --> AssignmentCompletions
+    Users --- Users_Assignments_Assignments_rel{"Assignments"}:::relation --> Assignments
+    Users --- Users_Bills_Bills_rel{"Bills"}:::relation --> Bills
+    Users --- Users_CAT_Logs_CAT_Logs_rel{"CAT_Logs"}:::relation --> CAT_Logs
+    Users --- Users_CAT_Results_CAT_Results_rel{"CAT_Results"}:::relation --> CAT_Results
+    Users --- Users_CartCheckout_CartCheckout_rel{"CartCheckout"}:::relation --> CartCheckout
+    Users --- Users_ChatMessages_ChatMessages_rel{"ChatMessages"}:::relation --> ChatMessages
+    Users --- Users_Comments_Comments_rel{"Comments"}:::relation --> Comments
+    Users --- Users_ConversationMembers_ConversationMembers_rel{"ConversationMembers"}:::relation --> ConversationMembers
+    Users --- Users_Conversations_Conversations_rel{"Conversations"}:::relation --> Conversations
+    Users --- Users_CourseReviews_CourseReviews_rel{"CourseReviews"}:::relation --> CourseReviews
+    Users --- Users_Courses_Courses_rel{"Courses"}:::relation --> Courses
+    Users --- Users_Enrollments_Enrollments_rel{"Enrollments"}:::relation --> Enrollments
+    Users --- Users_Instructors_Instructors_Instructors_CreatorIdToUsers_rel{"Instructors_Instructors_CreatorIdToUsers"}:::relation --> Instructors
+    Users --- Users_LectureCompletions_LectureCompletions_rel{"LectureCompletions"}:::relation --> LectureCompletions
+    Users --- Users_Notifications_Notifications_Notifications_CreatorIdToUsers_rel{"Notifications_Notifications_CreatorIdToUsers"}:::relation --> Notifications
+    Users --- Users_Notifications_Notifications_Notifications_ReceiverIdToUsers_rel{"Notifications_Notifications_ReceiverIdToUsers"}:::relation --> Notifications
+    Users --- Users_Reactions_Reactions_rel{"Reactions"}:::relation --> Reactions
+    Users --- Users_Submissions_Submissions_rel{"Submissions"}:::relation --> Submissions
+    Users --- Users_UserAbilities_UserAbilities_rel{"UserAbilities"}:::relation --> UserAbilities
+    Users --- Users_Wishlist_Wishlist_rel{"Wishlist"}:::relation --> Wishlist
+    Users --- Users_Instructors_Instructors_Users_InstructorIdToInstructors_rel{"Instructors_Users_InstructorIdToInstructors"}:::relation --> Instructors
+    Wishlist --- Wishlist_Users_Users_rel{"Users"}:::relation --> Users
+    Wishlist --- Wishlist_Courses_Courses_rel{"Courses"}:::relation --> Courses
