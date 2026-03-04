@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
     const { addToCart, cart } = useCart();
     const { user } = useAuth();
     const queryClient = useQueryClient();
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
 
     // Check if course is already in cart
     const isInCart = cart.some(item => item.id === id);
@@ -86,22 +87,19 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
         e.stopPropagation();
         e.preventDefault();
 
+        if (isCheckingOut) return;
+
         if (!user) {
-            toast.error('Please login to enroll', {
+            toast.error('Vui lòng đăng nhập để đăng ký', {
                 icon: '🔒',
-                style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
             });
             navigate('/login');
             return;
         }
 
+        setIsCheckingOut(true);
         try {
-            toast.loading('Preparing checkout...');
+            toast.loading('Đang chuẩn bị thanh toán...');
             const res = await createCheckout({
                 courseIds: [id],
                 totalAmount: price
@@ -114,6 +112,8 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
         } catch (error) {
             toast.dismiss();
             toast.error(error.message || 'Checkout failed');
+        } finally {
+            setIsCheckingOut(false);
         }
     };
 
@@ -220,10 +220,11 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
                     </button>
                     <button 
                         onClick={handleEnrollNow}
-                        className="flex flex-[2] items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110"
+                        disabled={isCheckingOut}
+                        className={`flex flex-[2] items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110 ${isCheckingOut ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                        <span>Enroll Now</span>
-                        <span className="material-symbols-outlined text-[18px]">bolt</span>
+                        <span>{isCheckingOut ? 'Processing...' : 'Enroll Now'}</span>
+                        <span className="material-symbols-outlined text-[18px]">{isCheckingOut ? 'hourglass_top' : 'bolt'}</span>
                     </button>
                 </div>
             </div>

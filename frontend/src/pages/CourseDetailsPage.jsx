@@ -41,6 +41,7 @@ export default function CourseDetailsPage() {
   
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedSections, setExpandedSections] = useState({});
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const { addToCart } = useCart();
   const { user, accessToken } = useAuth();
   
@@ -128,22 +129,19 @@ export default function CourseDetailsPage() {
   };
 
   const handleBuyNow = async () => {
+      if (isCheckingOut) return;
+
       if (!user) {
-          toast.error('Please login to purchase', {
+          toast.error('Vui lòng đăng nhập để mua khóa học.', {
               icon: '🔒',
-              style: {
-                  borderRadius: '10px',
-                  background: '#1A1333',
-                  color: '#fff',
-                  border: '1px solid rgba(255,255,255,0.1)',
-              },
           });
           navigate('/login');
           return;
       }
 
+      setIsCheckingOut(true);
       try {
-          toast.loading('Preparing checkout...');
+          toast.loading('Đang chuẩn bị thanh toán...');
           const res = await createCheckout({
               courseIds: [course.Id],
               totalAmount: course.Price
@@ -156,6 +154,8 @@ export default function CourseDetailsPage() {
       } catch (err) {
           toast.dismiss();
           toast.error(err.message || 'Checkout failed');
+      } finally {
+          setIsCheckingOut(false);
       }
   };
 
@@ -577,11 +577,12 @@ export default function CourseDetailsPage() {
               </motion.button>
               <motion.button 
                 onClick={handleBuyNow}
-                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors"
+                disabled={isCheckingOut}
+                whileHover={{ scale: isCheckingOut ? 1 : 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                whileTap={{ scale: isCheckingOut ? 1 : 0.98 }}
+                className={`w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors ${isCheckingOut ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                Buy Now
+                {isCheckingOut ? 'Đang xử lý...' : 'Buy Now'}
               </motion.button>
             </div>
 
