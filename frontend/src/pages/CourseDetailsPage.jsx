@@ -1,165 +1,144 @@
-import { useState, useMemo } from "react";
-import { toast } from "react-hot-toast";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useMemo } from 'react';
+import { toast } from 'react-hot-toast';
+import { useParams, useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
-import { motion } from "framer-motion";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Rocket,
-  ChevronRight,
-  Star,
-  StarHalf,
-  Clock,
-  Globe,
-  Video,
-  FileDown,
-  Infinity as InfinityIcon,
-  Smartphone,
-  Award,
-  Check,
-  ChevronDown,
-  Play,
-  Users,
-  PlayCircle,
-  Heart,
-} from "lucide-react";
-import { staggerContainer, staggerItem } from "../utils/animations";
-import Header from "../components/Header/Header";
-import { fetchCourseById, fetchCourseReviews } from "../services/courseService";
-import { fetchUserEnrollments } from "../services/userService";
-import useCart from "../hooks/useCart";
-import useAuth from "../hooks/useAuth";
-import ReviewList from "../components/Reviews/ReviewList";
-import ReviewForm from "../components/Reviews/ReviewForm";
-import { toggleWishlist, getWishlist } from "../services/wishlistService";
+import { motion } from 'framer-motion';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { 
+  Rocket, ChevronRight, Star, StarHalf, Clock, Globe, Video, 
+  FileDown, Infinity as InfinityIcon, Smartphone, Award, Check, ChevronDown, 
+  Play, Users, PlayCircle, Heart
+} from 'lucide-react';
+import { 
+  staggerContainer, 
+  staggerItem
+} from '../utils/animations';
+import Header from '../components/Header/Header';
+import { fetchCourseById, fetchCourseReviews } from '../services/courseService';
+import { fetchUserEnrollments } from '../services/userService';
+import useCart from '../hooks/useCart';
+import useAuth from '../hooks/useAuth';
+import ReviewList from '../components/Reviews/ReviewList';
+import ReviewForm from '../components/Reviews/ReviewForm';
+import { toggleWishlist, getWishlist } from '../services/wishlistService';
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Helper to resolve image URLs
 const getImageUrl = (path) => {
-  if (!path) return "https://via.placeholder.com/150";
-  if (path.startsWith("http")) return path;
-  const baseUrl = API_URL.replace(/\/api\/?$/, "");
-  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
-  return `${baseUrl}/public/${cleanPath}`;
+    if (!path) return 'https://via.placeholder.com/150';
+    if (path.startsWith('http')) return path;
+    const baseUrl = API_URL.replace(/\/api\/?$/, '');
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `${baseUrl}/public/${cleanPath}`;
 };
 
 export default function CourseDetailsPage() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
-  const [activeTab, setActiveTab] = useState("overview");
+  
+  const [activeTab, setActiveTab] = useState('overview');
   const [expandedSections, setExpandedSections] = useState({});
   const { addToCart } = useCart();
   const { user, accessToken } = useAuth();
-
+  
   // Use query to check wishlist status from cache
   const { data: wishlistCourses } = useQuery({
-    queryKey: ["wishlist"],
-    queryFn: getWishlist,
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+      queryKey: ['wishlist'],
+      queryFn: getWishlist,
+      enabled: !!user,
+      staleTime: 5 * 60 * 1000, 
   });
 
   const isInWishlist = useMemo(() => {
-    if (!wishlistCourses) return false;
-    return wishlistCourses.some((course) => course.Id === courseId);
+      if (!wishlistCourses) return false;
+      return wishlistCourses.some(course => course.Id === courseId);
   }, [wishlistCourses, courseId]);
 
   const handleWishlistToggle = async () => {
     if (!user) {
-      navigate("/login");
-      return;
+        navigate('/login');
+        return;
     }
 
     // Optimistic update
-    const previousWishlist = queryClient.getQueryData(["wishlist"]);
-
+    const previousWishlist = queryClient.getQueryData(['wishlist']);
+    
     // Optimistically update the cache
-    queryClient.setQueryData(["wishlist"], (old) => {
-      if (!old) return [];
-      const isCurrentlyIn = old.some((c) => c.Id === courseId);
-      if (isCurrentlyIn) {
-        return old.filter((c) => c.Id !== courseId);
-      } else {
-        return [...old, { Id: courseId }];
-      }
+    queryClient.setQueryData(['wishlist'], (old) => {
+        if (!old) return [];
+        const isCurrentlyIn = old.some(c => c.Id === courseId);
+        if (isCurrentlyIn) {
+            return old.filter(c => c.Id !== courseId);
+        } else {
+            return [...old, { Id: courseId }]; 
+        }
     });
-
+    
     try {
-      const result = await toggleWishlist(courseId);
+        const result = await toggleWishlist(courseId);
+        
+        // Invalidate wishlist query to keep other parts of app in sync
+        queryClient.invalidateQueries({ queryKey: ['wishlist'] });
 
-      // Invalidate wishlist query to keep other parts of app in sync
-      queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-
-      if (result.isInWishlist) {
-        toast.success("Added to wishlist");
-      } else {
-        toast.success("Removed from wishlist");
-      }
+        if (result.isInWishlist) {
+            toast.success('Added to wishlist');
+        } else {
+            toast.success('Removed from wishlist');
+        }
     } catch (error) {
-      console.error("Wishlist toggle failed", error);
-      toast.error("Failed to update wishlist");
-      // Revert on error
-      if (previousWishlist) {
-        queryClient.setQueryData(["wishlist"], previousWishlist);
-      }
+        console.error("Wishlist toggle failed", error);
+        toast.error('Failed to update wishlist');
+        // Revert on error
+        if (previousWishlist) {
+            queryClient.setQueryData(['wishlist'], previousWishlist);
+        }
     }
   };
 
   // Check enrollment
   const { data: enrollmentData } = useQuery({
-    queryKey: ["userEnrollments", user?.id],
-    queryFn: () => fetchUserEnrollments(user.id),
-    enabled: !!user,
+      queryKey: ['userEnrollments', user?.id],
+      queryFn: () => fetchUserEnrollments(user.id),
+      enabled: !!user
   });
-
-  const isEnrolled = enrollmentData?.enrollments?.some(
-    (e) => e.course?.Id === courseId || e.CourseId === courseId,
-  );
+  
+  const isEnrolled = enrollmentData?.enrollments?.some(e => e.CourseId === courseId);
 
   // Helper to resolve image URLs
   // (Redefined here if needed or just use the global one if it is safe, but assuming we can use member vars)
   // Actually course is available here.
 
   const handleAddToCart = () => {
-    // Map course data to match what cart expects
-    const cartItem = {
-      id: course.Id,
-      title: course.Title,
-      price: course.Price,
-      image: course.ThumbUrl || course.Image,
-      instructorName: instructor.FullName || "Unknown",
-      instructorRole: "Instructor",
-      rating: rating,
-      reviews: course.RatingCount,
-      duration: `${course.Sections?.reduce((acc, sec) => acc + (sec.Lectures?.length || 0), 0)} lectures`,
-    };
-    addToCart(cartItem);
+      // Map course data to match what cart expects
+      const cartItem = {
+          id: course.Id,
+          title: course.Title,
+          price: course.Price,
+          image: course.ThumbUrl || course.Image, 
+          instructorName: instructor.FullName || 'Unknown',
+          instructorRole: 'Instructor',
+          rating: rating,
+          reviews: course.RatingCount,
+          duration: `${course.Sections?.reduce((acc, sec) => acc + (sec.Lectures?.length || 0), 0)} lectures`
+      };
+      addToCart(cartItem);
   };
 
   // React Query for caching
-  const {
-    data,
-    isLoading,
-    error: queryError,
-  } = useQuery({
-    queryKey: ["course", courseId],
+  const { data, isLoading, error: queryError } = useQuery({
+    queryKey: ['course', courseId],
     queryFn: () => fetchCourseById(courseId),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 1,
+    retry: 1
   });
 
-  const {
-    data: reviewsData,
-    isLoading: reviewsLoading,
-    refetch: refetchReviews,
-  } = useQuery({
-    queryKey: ["reviews", courseId],
+  const { data: reviewsData, isLoading: reviewsLoading, refetch: refetchReviews } = useQuery({
+    queryKey: ['reviews', courseId],
     queryFn: () => fetchCourseReviews(courseId),
     enabled: !!courseId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5
   });
 
   const reviews = reviewsData?.reviews || [];
@@ -169,28 +148,27 @@ export default function CourseDetailsPage() {
   const error = queryError?.message || null;
 
   const toggleSection = (section) => {
-    setExpandedSections((prev) => ({
+    setExpandedSections(prev => ({
       ...prev,
-      [section]: !prev[section],
+      [section]: !prev[section]
     }));
   };
 
   // Helper function to format price in Vietnamese
   const formatVNPrice = (price) => {
-    const numPrice = typeof price === "string" ? parseFloat(price) : price;
-    return numPrice.toLocaleString("vi-VN");
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    return numPrice.toLocaleString('vi-VN');
   };
 
   // Memoized helper to calculate rating
-  const rating = course
-    ? course.RatingCount && course.RatingCount > 0
+  const rating = course ? (
+    course.RatingCount && course.RatingCount > 0
       ? (Number(course.TotalRating) / course.RatingCount).toFixed(1)
       : 0
-    : 0;
+  ) : 0;
 
   // Memoized helper to calculate discount percentage
-  const discount =
-    course && course.Discount ? Math.round(parseFloat(course.Discount)) : 0;
+  const discount = course && course.Discount ? Math.round(parseFloat(course.Discount)) : 0;
 
   // Skeleton Loading state with better UX
   if (loading) {
@@ -206,7 +184,7 @@ export default function CourseDetailsPage() {
               <div className="h-4 w-4 bg-white/5 rounded animate-pulse"></div>
               <div className="h-4 w-20 bg-white/5 rounded animate-pulse"></div>
             </div>
-
+            
             {/* Title skeleton */}
             <div>
               <div className="h-10 w-3/4 bg-white/5 rounded animate-pulse mb-4"></div>
@@ -215,10 +193,10 @@ export default function CourseDetailsPage() {
                 <div className="h-4 w-32 bg-white/5 rounded animate-pulse"></div>
               </div>
             </div>
-
+            
             {/* Video skeleton */}
             <div className="w-full aspect-video rounded-xl bg-white/5 animate-pulse"></div>
-
+            
             {/* Content skeleton */}
             <div className="space-y-4">
               <div className="h-6 w-48 bg-white/5 rounded animate-pulse"></div>
@@ -226,7 +204,7 @@ export default function CourseDetailsPage() {
               <div className="h-4 w-5/6 bg-white/5 rounded animate-pulse"></div>
             </div>
           </div>
-
+          
           {/* Right Column Skeleton */}
           <div className="sticky top-24">
             <div className="bg-[#1A1333] border border-white/5 rounded-2xl p-6 space-y-6">
@@ -251,7 +229,7 @@ export default function CourseDetailsPage() {
             <h2 className="text-2xl font-bold mb-2">Course Not Found</h2>
             <p className="text-slate-400 mb-6">{error}</p>
             <button
-              onClick={() => navigate("/courses")}
+              onClick={() => navigate('/courses')}
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold hover:shadow-lg transition-all"
             >
               Back to Courses
@@ -269,11 +247,11 @@ export default function CourseDetailsPage() {
 
   // Extract data from backend format
   // Handle Instructors being an array from Prisma relation
-  const instructor = Array.isArray(course.Instructors)
-    ? course.Instructors[0]?.Users_Instructors_CreatorIdToUsers
+  const instructor = Array.isArray(course.Instructors) 
+    ? course.Instructors[0]?.Users_Instructors_CreatorIdToUsers 
     : course.Instructors?.Users_Instructors_CreatorIdToUsers || {};
-
-  const category = course.Categories?.Title || "Uncategorized";
+  
+  const category = course.Categories?.Title || 'Uncategorized';
 
   return (
     <div className="bg-[#0D071E] text-white font-display overflow-x-hidden min-h-screen flex flex-col antialiased">
@@ -285,68 +263,41 @@ export default function CourseDetailsPage() {
         <div className="flex flex-col min-w-0">
           {/* Breadcrumb - Simplified animation */}
           <div className="flex flex-wrap gap-2 items-center mb-6">
-            <a
-              className="text-slate-400 hover:text-violet-400 text-sm font-medium transition-colors"
-              href="/"
-            >
-              Home
-            </a>
+            <a className="text-slate-400 hover:text-violet-400 text-sm font-medium transition-colors" href="/">Home</a>
             <ChevronRight className="w-4 h-4 text-slate-600" />
-            <a
-              className="text-slate-400 hover:text-violet-400 text-sm font-medium transition-colors"
-              href="/courses"
-            >
-              Courses
-            </a>
+            <a className="text-slate-400 hover:text-violet-400 text-sm font-medium transition-colors" href="/courses">Courses</a>
             <ChevronRight className="w-4 h-4 text-slate-600" />
-            <span className="text-violet-400 text-sm font-medium">
-              {category}
-            </span>
+            <span className="text-violet-400 text-sm font-medium">{category}</span>
           </div>
 
           {/* Course Title - Simplified */}
           <div className="mb-8">
-            <h1
-              className="text-white text-3xl lg:text-4xl font-bold leading-tight tracking-tight mb-4"
-              style={{ textShadow: "0 0 20px rgba(167, 139, 250, 0.4)" }}
-            >
+            <h1 className="text-white text-3xl lg:text-4xl font-bold leading-tight tracking-tight mb-4" style={{ textShadow: '0 0 20px rgba(167, 139, 250, 0.4)' }}>
               {course.Title}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400">
               <div className="flex items-center gap-1 text-yellow-500">
-                <span className="font-bold text-white mr-1">
-                  {rating || "0"}
-                </span>
+                <span className="font-bold text-white mr-1">{rating || '0'}</span>
                 <Star className="w-4 h-4 fill-current text-yellow-500" />
-                <span className="text-slate-400 ml-1">
-                  ({course.RatingCount || 0} ratings)
-                </span>
+                <span className="text-slate-400 ml-1">({course.RatingCount || 0} ratings)</span>
               </div>
               <span className="hidden sm:inline text-slate-600">•</span>
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                <span>
-                  Last updated{" "}
-                  {new Date(
-                    course.UpdateTime || course.CreationTime,
-                  ).toLocaleDateString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
+                <span>Last updated {new Date(course.UpdateTime || course.CreationTime).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
               </div>
               <span className="hidden sm:inline text-slate-600">•</span>
               <div className="flex items-center gap-1.5">
                 <Globe className="w-4 h-4" />
-                <span>{course.Level || "All Levels"}</span>
+                <span>{course.Level || 'All Levels'}</span>
               </div>
             </div>
           </div>
 
           {/* Video Preview - Lazy loaded */}
           <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-white/10 group mb-10 shadow-2xl shadow-violet-900/10 hover:scale-[1.01] transition-transform">
-            <img
-              src={course.ThumbUrl || "https://via.placeholder.com/800x450"}
+            <img 
+              src={course.ThumbUrl || 'https://via.placeholder.com/800x450'}
               alt={course.Title}
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-70 transition-opacity duration-500"
@@ -369,30 +320,25 @@ export default function CourseDetailsPage() {
 
           {/* Tabs - Simplified */}
           <div className="border-b border-white/10 mb-8">
-            <nav
-              aria-label="Tabs"
-              className="flex space-x-8 min-w-max overflow-x-auto pb-px"
-            >
-              {["Overview", "Curriculum", "Instructor", "Reviews"].map(
-                (tab, index) => (
-                  <motion.button
-                    key={tab}
-                    onClick={() => setActiveTab(tab.toLowerCase())}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + index * 0.05 }}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
-                      activeTab === tab.toLowerCase()
-                        ? "border-violet-500 text-white"
-                        : "border-transparent text-slate-400 hover:text-white hover:border-white/20"
-                    }`}
-                  >
-                    {tab}
-                  </motion.button>
-                ),
-              )}
+            <nav aria-label="Tabs" className="flex space-x-8 min-w-max overflow-x-auto pb-px">
+              {['Overview', 'Curriculum', 'Instructor', 'Reviews'].map((tab, index) => (
+                <motion.button
+                  key={tab}
+                  onClick={() => setActiveTab(tab.toLowerCase())}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + index * 0.05 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+                    activeTab === tab.toLowerCase()
+                      ? 'border-violet-500 text-white'
+                      : 'border-transparent text-slate-400 hover:text-white hover:border-white/20'
+                  }`}
+                >
+                  {tab}
+                </motion.button>
+              ))}
             </nav>
           </div>
 
@@ -400,31 +346,23 @@ export default function CourseDetailsPage() {
           <div className="space-y-10">
             {/* What you'll learn - Simplified */}
             <div className="bg-[#1A1333] border border-white/5 rounded-2xl p-6 lg:p-8">
-              <h3 className="text-xl font-bold text-white mb-6">
-                What you'll learn
-              </h3>
-              <motion.div
+              <h3 className="text-xl font-bold text-white mb-6">What you'll learn</h3>
+              <motion.div 
                 variants={staggerContainer}
                 initial="hidden"
                 animate="visible"
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                {(course.Description || course.Intro || "")
-                  .split(".")
-                  .filter((item) => item.trim())
-                  .slice(0, 6)
-                  .map((item, index) => (
-                    <motion.div
-                      key={index}
-                      variants={staggerItem}
-                      className="flex gap-3 items-start"
-                    >
-                      <Check className="w-5 h-5 text-violet-400 shrink-0 mt-0.5" />
-                      <span className="text-sm text-slate-300">
-                        {item.trim()}
-                      </span>
-                    </motion.div>
-                  ))}
+                {(course.Description || course.Intro || '').split('.').filter(item => item.trim()).slice(0, 6).map((item, index) => (
+                  <motion.div 
+                    key={index} 
+                    variants={staggerItem}
+                    className="flex gap-3 items-start"
+                  >
+                    <Check className="w-5 h-5 text-violet-400 shrink-0 mt-0.5" />
+                    <span className="text-sm text-slate-300">{item.trim()}</span>
+                  </motion.div>
+                ))}
               </motion.div>
             </div>
 
@@ -432,31 +370,25 @@ export default function CourseDetailsPage() {
             <div className="text-slate-300 leading-relaxed space-y-4">
               <h3 className="text-xl font-bold text-white mb-2">Description</h3>
               <p>{course.Intro}</p>
-              {course.Description && (
-                <p className="mt-4">{course.Description}</p>
-              )}
+              {course.Description && <p className="mt-4">{course.Description}</p>}
             </div>
 
             {/* Course Content - Simplified */}
             <div>
-              <h3 className="text-xl font-bold text-white mb-6">
-                Course Content
-              </h3>
+              <h3 className="text-xl font-bold text-white mb-6">Course Content</h3>
               <div className="rounded-xl border border-white/5 overflow-hidden">
-                {course.Sections && course.Sections.length > 0 ? (
+                {(course.Sections && course.Sections.length > 0) ? (
                   course.Sections.map((section, index) => (
-                    <motion.div
-                      key={section.Id}
+                    <motion.div 
+                      key={section.Id} 
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.7 + index * 0.1 }}
-                      className={`bg-[#1A1333] ${index !== course.Sections.length - 1 ? "border-b border-white/5" : ""}`}
+                      className={`bg-[#1A1333] ${index !== course.Sections.length - 1 ? 'border-b border-white/5' : ''}`}
                     >
                       <motion.button
                         onClick={() => toggleSection(section.Id)}
-                        whileHover={{
-                          backgroundColor: "rgba(255, 255, 255, 0.05)",
-                        }}
+                        whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
                         className="w-full flex items-center justify-between p-4 transition-colors text-left group"
                       >
                         <div className="flex items-center gap-3">
@@ -465,13 +397,9 @@ export default function CourseDetailsPage() {
                           ) : (
                             <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" />
                           )}
-                          <span className="font-semibold text-white">
-                            {section.Title}
-                          </span>
+                          <span className="font-semibold text-white">{section.Title}</span>
                         </div>
-                        <span className="text-sm text-slate-400">
-                          {section.Lectures?.length || 0} lectures
-                        </span>
+                        <span className="text-sm text-slate-400">{section.Lectures?.length || 0} lectures</span>
                       </motion.button>
                     </motion.div>
                   ))
@@ -486,93 +414,78 @@ export default function CourseDetailsPage() {
             {/* Instructor - Lazy loaded avatar */}
             <div>
               <h3 className="text-xl font-bold text-white mb-6">Instructor</h3>
-              <motion.div
+              <motion.div 
                 whileHover={{ scale: 1.02 }}
                 className="bg-[#1A1333] border border-white/5 rounded-2xl p-6 flex flex-col sm:flex-row items-start gap-6"
               >
-                <motion.div
+                <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                   className="size-20 rounded-full overflow-hidden bg-white/10 shrink-0 border border-white/20"
                 >
-                  <img
-                    className="w-full h-full object-cover"
-                    alt="Portrait of instructor"
-                    src={
-                      getImageUrl(instructor.AvatarUrl) ||
-                      "https://via.placeholder.com/100?text=Instructor"
-                    }
+                  <img 
+                    className="w-full h-full object-cover" 
+                    alt="Portrait of instructor" 
+                    src={getImageUrl(instructor.AvatarUrl) || 'https://via.placeholder.com/100?text=Instructor'}
                     loading="lazy"
                   />
                 </motion.div>
                 <div>
-                  <h4 className="text-white font-bold text-lg mb-1">
-                    {instructor.FullName || "Unknown Instructor"}
-                  </h4>
-                  <p className="text-violet-400 text-sm mb-3 font-medium">
-                    Instructor
-                  </p>
+                  <h4 className="text-white font-bold text-lg mb-1">{instructor.FullName || 'Unknown Instructor'}</h4>
+                  <p className="text-violet-400 text-sm mb-3 font-medium">Instructor</p>
                   <div className="flex gap-4 text-xs text-slate-400 mb-4">
                     <span className="flex items-center gap-1.5">
-                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />{" "}
-                      {rating} Rating
+                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" /> {rating} Rating
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5" />
-                      {course.LearnerCount || 0} Students
+                      <Users className="w-3.5 h-3.5" />{course.LearnerCount || 0} Students
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <PlayCircle className="w-3.5 h-3.5" />{" "}
-                      {course.Sections?.length || 0} Sections
+                      <PlayCircle className="w-3.5 h-3.5" /> {course.Sections?.length || 0} Sections
                     </span>
                   </div>
                   <p className="text-sm text-slate-400 leading-relaxed">
-                    {course.Description ||
-                      "Professional instructor with years of experience."}
+                    {course.Description || 'Professional instructor with years of experience.'}
                   </p>
                 </div>
               </motion.div>
             </div>
 
             {/* Reviews Tab */}
-            {activeTab === "reviews" && (
+            {activeTab === 'reviews' && (
               <div className="animate-fade-in">
-                <h3 className="text-xl font-bold text-white mb-6">
-                  Student Reviews
-                </h3>
-                <div className="space-y-8">
-                  {/* Review Form Logic */}
-                  {isEnrolled ? (
-                    <ReviewForm
-                      courseId={courseId}
-                      token={accessToken}
-                      onReviewSubmitted={() => {
-                        refetchReviews();
-                        // Optional: Show success toast
-                      }}
-                    />
-                  ) : user ? (
-                    <div className="bg-[#1A1333] p-6 rounded-xl border border-white/5 text-center mb-6">
-                      <p className="text-slate-300 mb-2">
-                        Enroll in this course to leave a rating and review.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="bg-[#1A1333] p-6 rounded-xl border border-white/5 text-center mb-6">
-                      <p className="text-slate-300 mb-4">
-                        Please log in to review this course.
-                      </p>
-                      <button
-                        onClick={() => navigate("/login")}
-                        className="px-6 py-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white font-bold transition-colors"
-                      >
-                        Log In
-                      </button>
-                    </div>
-                  )}
+                 <h3 className="text-xl font-bold text-white mb-6">Student Reviews</h3>
+                 <div className="space-y-8">
+                    {/* Review Form Logic */}
+                    {isEnrolled ? (
+                      <ReviewForm 
+                        courseId={courseId} 
+                        token={accessToken}
+                        onReviewSubmitted={() => {
+                          refetchReviews();
+                          // Optional: Show success toast
+                        }}
+                      />
+                    ) : (
+                      user ? (
+                        <div className="bg-[#1A1333] p-6 rounded-xl border border-white/5 text-center mb-6">
+                           <p className="text-slate-300 mb-2">Enroll in this course to leave a rating and review.</p>
+                        </div>
+                      ) : (
+                        <div className="bg-[#1A1333] p-6 rounded-xl border border-white/5 text-center mb-6">
+                           <p className="text-slate-300 mb-4">Please log in to review this course.</p>
+                           <button 
+                             onClick={() => navigate('/login')}
+                             className="px-6 py-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white font-bold transition-colors"
+                           >
+                             Log In
+                           </button>
+                        </div>
+                      )
+                    )}
 
-                  <ReviewList reviews={reviews} isLoading={reviewsLoading} />
-                </div>
+                    <ReviewList reviews={reviews} isLoading={reviewsLoading} />
+                 </div>
               </div>
             )}
           </div>
@@ -580,33 +493,26 @@ export default function CourseDetailsPage() {
 
         {/* Right Column - Sidebar - Simplified */}
         <div className="relative">
-          <motion.div
+          <motion.div 
             whileHover={{ y: -4 }}
             className="sticky top-24 bg-[#1A1333] border border-white/5 rounded-2xl p-6 shadow-xl shadow-black/40 relative"
           >
             {/* Wishlist Button */}
-            <button
-              onClick={handleWishlistToggle}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors z-10"
-              title={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
-            >
-              <Heart
-                className={`w-6 h-6 transition-colors ${isInWishlist ? "text-red-500 fill-red-500" : "text-slate-400"}`}
-              />
-            </button>
+             <button 
+                onClick={handleWishlistToggle}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors z-10"
+                title={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+             >
+                <Heart className={`w-6 h-6 transition-colors ${isInWishlist ? 'text-red-500 fill-red-500' : 'text-slate-400'}`} />
+             </button>
 
             {/* Pricing */}
             <div className="flex items-end gap-3 mb-6">
-              <span className="text-4xl font-bold text-white">
-                {formatVNPrice(course.Price)}₫
-              </span>
+              <span className="text-4xl font-bold text-white">{formatVNPrice(course.Price)}₫</span>
               {discount > 0 && (
                 <>
                   <span className="text-lg text-slate-500 line-through mb-1.5">
-                    {formatVNPrice(
-                      parseFloat(course.Price) / (1 - discount / 100),
-                    )}
-                    ₫
+                    {formatVNPrice(parseFloat(course.Price) / (1 - discount / 100))}₫
                   </span>
                   <span className="px-2 py-0.5 rounded bg-pink-500/20 text-pink-500 text-sm font-bold mb-2 ml-auto border border-pink-500/20">
                     {discount}% OFF
@@ -615,100 +521,38 @@ export default function CourseDetailsPage() {
               )}
             </div>
 
+          
             {/* Action Buttons */}
             <div className="space-y-3 mb-6">
-              {isEnrolled ? (
-                <motion.button
-                  onClick={() => {
-                    // Navigate to first lecture
-                    console.log("[StartLearning] Course data:", course);
-                    console.log("[StartLearning] Sections:", course?.Sections);
-                    const firstLecture = course?.Sections?.[0]?.Lectures?.[0];
-                    if (firstLecture?.Id) {
-                      navigate(`/course/${courseId}/lesson/${firstLecture.Id}`);
-                    } else if (
-                      !course?.Sections ||
-                      course.Sections.length === 0
-                    ) {
-                      toast.error("Course has no sections yet");
-                    } else {
-                      // Try to find first available lecture
-                      for (const section of course.Sections) {
-                        console.log(
-                          "[StartLearning] Checking section:",
-                          section,
-                        );
-                        if (section.Lectures && section.Lectures.length > 0) {
-                          navigate(
-                            `/course/${courseId}/lesson/${section.Lectures[0].Id}`,
-                          );
-                          return;
-                        }
-                      }
-                      toast.error("No lessons available in this course");
-                    }
-                  }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  animate={{
-                    boxShadow: [
-                      "0 10px 30px rgba(34, 197, 94, 0.3)",
-                      "0 10px 40px rgba(34, 197, 94, 0.5)",
-                      "0 10px 30px rgba(34, 197, 94, 0.3)",
-                    ],
-                  }}
-                  transition={{
-                    boxShadow: {
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    },
-                  }}
-                  className="w-full h-12 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base shadow-lg shadow-green-500/30 hover:shadow-green-500/50 flex items-center justify-center gap-2"
-                >
-                  <span className="material-symbols-outlined">play_arrow</span>
-                  Start Learning
-                </motion.button>
-              ) : (
-                <>
-                  <motion.button
-                    onClick={handleAddToCart}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    animate={{
-                      boxShadow: [
-                        "0 10px 30px rgba(168, 85, 247, 0.3)",
-                        "0 10px 40px rgba(168, 85, 247, 0.5)",
-                        "0 10px 30px rgba(168, 85, 247, 0.3)",
-                      ],
-                    }}
-                    transition={{
-                      boxShadow: {
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      },
-                    }}
-                    className="w-full h-12 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold text-base shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 flex items-center justify-center gap-2"
-                  >
-                    Add to Cart
-                  </motion.button>
-                  <motion.button
-                    onClick={() => {
-                      handleAddToCart();
-                      navigate("/cart");
-                    }}
-                    whileHover={{
-                      scale: 1.02,
-                      backgroundColor: "rgba(255, 255, 255, 0.05)",
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors"
-                  >
-                    Buy Now
-                  </motion.button>
-                </>
-              )}
+              <motion.button 
+                onClick={handleAddToCart}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                animate={{ 
+                  boxShadow: [
+                    '0 10px 30px rgba(168, 85, 247, 0.3)',
+                    '0 10px 40px rgba(168, 85, 247, 0.5)',
+                    '0 10px 30px rgba(168, 85, 247, 0.3)'
+                  ]
+                }}
+                transition={{ 
+                  boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className="w-full h-12 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold text-base shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 flex items-center justify-center gap-2"
+              >
+                Add to Cart
+              </motion.button>
+              <motion.button 
+                onClick={() => {
+                  handleAddToCart();
+                  navigate('/cart');
+                }}
+                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors"
+              >
+                Buy Now
+              </motion.button>
             </div>
 
             {/* Money-back guarantee */}
@@ -718,24 +562,16 @@ export default function CourseDetailsPage() {
 
             {/* Course Includes */}
             <div className="space-y-4 pt-6 border-t border-white/10">
-              <h4 className="font-bold text-white text-sm">
-                This course includes:
-              </h4>
+              <h4 className="font-bold text-white text-sm">This course includes:</h4>
               <ul className="space-y-3">
                 {[
-                  {
-                    icon: Video,
-                    text: `${course.LectureCount || 0} lectures on-demand`,
-                  },
-                  { icon: FileDown, text: `Level: ${course.Level || "All"}` },
-                  { icon: InfinityIcon, text: "Full lifetime access" },
-                  { icon: Smartphone, text: "Access on mobile and TV" },
-                  { icon: Award, text: "Certificate of completion" },
+                  { icon: Video, text: `${course.LectureCount || 0} lectures on-demand` },
+                  { icon: FileDown, text: `Level: ${course.Level || 'All'}` },
+                  { icon: InfinityIcon, text: 'Full lifetime access' },
+                  { icon: Smartphone, text: 'Access on mobile and TV' },
+                  { icon: Award, text: 'Certificate of completion' }
                 ].map((item, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center gap-3 text-sm text-slate-400"
-                  >
+                  <li key={index} className="flex items-center gap-3 text-sm text-slate-400">
                     <item.icon className="w-4 h-4 text-violet-400 shrink-0" />
                     {item.text}
                   </li>
@@ -745,15 +581,9 @@ export default function CourseDetailsPage() {
 
             {/* Footer Links */}
             <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center px-1">
-              <button className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-                Share
-              </button>
-              <button className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-                Gift course
-              </button>
-              <button className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-                Coupons
-              </button>
+              <button className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Share</button>
+              <button className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Gift course</button>
+              <button className="text-sm font-medium text-slate-400 hover:text-white transition-colors">Coupons</button>
             </div>
           </motion.div>
         </div>
@@ -766,9 +596,7 @@ export default function CourseDetailsPage() {
             <Rocket className="w-5 h-5 text-violet-400" />
             <span className="font-bold tracking-tight">Cosmos Learn</span>
           </div>
-          <p className="text-slate-400 text-sm">
-            © 2024 Cosmos Learn Inc. All rights reserved.
-          </p>
+          <p className="text-slate-400 text-sm">© 2024 Cosmos Learn Inc. All rights reserved.</p>
         </div>
       </footer>
     </div>

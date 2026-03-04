@@ -1,51 +1,140 @@
-import express from "express";
-import * as courseController from "../controllers/courseController.js";
-import { authenticateJWT } from "../middleware/authMiddleware.js";
+import express from 'express';
+import * as courseController from '../controllers/courseController.js';
+import { authenticateJWT } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Create course - MUST come before /:id route
-router.post("/create", authenticateJWT, courseController.createCourse);
+/**
+ * @swagger
+ * tags:
+ *   name: Courses
+ *   description: Course management API
+ */
 
-// Update course - MUST come before /:id route
-router.put("/:id/update", authenticateJWT, courseController.updateCourse);
+/**
+ * @swagger
+ * /courses/{id}/reviews:
+ *   post:
+ *     summary: Add a review to a course
+ *     tags: [Courses]
+ *     security: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rating
+ *               - content
+ *             properties:
+ *               rating:
+ *                 type: integer
+ *               content:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Review added successfully
+ *       400:
+ *         description: Invalid input
+ */
+router.post('/:id/reviews', authenticateJWT, courseController.addReview);
 
-// Delete course - MUST come before /:id route
-router.delete("/:id", authenticateJWT, courseController.deleteCourse);
+/**
+ * @swagger
+ * /courses/{id}/reviews:
+ *   get:
+ *     summary: Get reviews for a course
+ *     tags: [Courses]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of reviews
+ */
+router.get('/:id/reviews', courseController.getReviews);
 
-// Publish/Unpublish course - MUST come before /:id route
-router.put("/:id/publish", authenticateJWT, courseController.publishCourse);
-router.put("/:id/unpublish", authenticateJWT, courseController.unpublishCourse);
+/**
+ * @swagger
+ * /courses/categories:
+ *   get:
+ *     summary: Get all course categories
+ *     tags: [Courses]
+ *     responses:
+ *       200:
+ *         description: List of categories
+ */
+router.get('/categories', courseController.getCategories);
 
-// Get all categories - MUST come before /:id route
-router.get("/categories", courseController.getCategories);
+/**
+ * @swagger
+ * /courses:
+ *   get:
+ *     summary: Get all courses with optional filters
+ *     tags: [Courses]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: level
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: List of courses
+ */
+router.get('/', courseController.getCourses);
 
-// Instructor routes - MUST come before /:id route
-router.get(
-  "/instructor/courses",
-  authenticateJWT,
-  courseController.getInstructorCourses,
-);
-router.get(
-  "/instructor/stats",
-  authenticateJWT,
-  courseController.getInstructorStats,
-);
-router.get(
-  "/instructor/course/:id",
-  authenticateJWT,
-  courseController.getInstructorCourseById,
-);
-
-// Reviews
-router.post("/:id/reviews", authenticateJWT, courseController.addReview);
-router.get("/:id/reviews", courseController.getReviews);
-
-// Get all courses with optional filters
-// Supports: categoryId, level, minPrice, maxPrice, search, page, limit
-router.get("/", courseController.getCourses);
-
-// Get single course by ID - MUST come last
-router.get("/:id", courseController.getCourseById);
+/**
+ * @swagger
+ * /courses/{id}:
+ *   get:
+ *     summary: Get single course by ID
+ *     tags: [Courses]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Course details
+ *       404:
+ *         description: Course not found
+ */
+router.get('/:id', courseController.getCourseById);
 
 export default router;

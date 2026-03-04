@@ -1,0 +1,372 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1080" width="1800" height="1080"
+  font-family="'Segoe UI', system-ui, -apple-system, sans-serif">
+  <defs>
+    <filter id="glow-blue">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#38bdf8"/>
+    </marker>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080e17"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <linearGradient id="be-title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="fe-title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#0891b2" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ── Global background ── -->
+  <rect width="1800" height="1080" fill="url(#bg-grad)"/>
+
+  <!-- ── Page title ── -->
+  <text x="900" y="36" text-anchor="middle" font-size="18" font-weight="700"
+        fill="#e2e8f0" letter-spacing="4">FLYUP PROJECT  ·  PACKAGE ARCHITECTURE</text>
+  <line x1="60" y1="48" x2="1740" y2="48" stroke="#1e293b" stroke-width="1.5"/>
+
+  <!-- ─────────────────────────────────────────────────────────────
+       BACKEND PANEL
+  ───────────────────────────────────────────────────────────────── -->
+  <rect x="18" y="58" width="858" height="1004" rx="14" fill="#0b1623" stroke="#1e3a5f" stroke-width="1.5"/>
+  <!-- title bar -->
+  <rect x="18" y="58" width="858" height="42" rx="14" fill="url(#be-title)"/>
+  <rect x="18" y="84"  width="858" height="16" fill="url(#be-title)"/>
+  <text x="447" y="87" text-anchor="middle" font-size="15" font-weight="700"
+        fill="#93c5fd" letter-spacing="3">⚙️  BACKEND  ·  NodeJS + Express + Prisma</text>
+
+  <!-- prisma/ & scripts/ (outside src/) -->
+  <text x="38" y="120" font-size="10" fill="#334155" font-weight="700" letter-spacing="1.5">ROOT</text>
+  <rect x="38" y="126" width="175" height="36" rx="6" fill="#0f1f35" stroke="#334155" stroke-width="1"/>
+  <text x="125" y="149" text-anchor="middle" font-size="12" fill="#4b6280" font-weight="600">📋 prisma/</text>
+  <rect x="224" y="126" width="175" height="36" rx="6" fill="#0f1f35" stroke="#334155" stroke-width="1"/>
+  <text x="311" y="149" text-anchor="middle" font-size="12" fill="#4b6280" font-weight="600">🔧 scripts/</text>
+
+  <!-- src/ dashed outline -->
+  <rect x="28" y="174" width="838" height="876" rx="10" fill="#080f1c"
+        stroke="#1e3a5f" stroke-width="1" stroke-dasharray="5 4"/>
+  <text x="48" y="193" font-size="10" fill="#2563eb" font-weight="700" letter-spacing="2">src/</text>
+
+  <!-- ── MODULES box ── -->
+  <rect x="42" y="200" width="810" height="290" rx="8" fill="#0e1f44" stroke="#3b82f6" stroke-width="1.5"/>
+  <rect x="42" y="200" width="810" height="30" rx="8" fill="#1d4ed8" fill-opacity="0.85"/>
+  <rect x="42" y="216" width="810" height="14" fill="#1d4ed8" fill-opacity="0.85"/>
+  <text x="447" y="222" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#bfdbfe" letter-spacing="2">modules/  ·  Presentation → Application Layer</text>
+
+  <!-- Feature chips: 3 col × 3 row -->
+  <!-- Row 1 -->
+  <rect x="56"  y="242" width="244" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="178" y="264" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">auth/</text>
+  <text x="178" y="281" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="178" y="295" text-anchor="middle" font-size="9"  fill="#2e4a88">validation · JWT auth flow</text>
+  <text x="178" y="308" text-anchor="middle" font-size="8.5" fill="#1e3a6e">OAuth · password reset · email verify</text>
+
+  <rect x="311" y="242" width="244" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="433" y="264" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">user/</text>
+  <text x="433" y="281" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="433" y="295" text-anchor="middle" font-size="9"  fill="#2e4a88">profile · settings · my learning</text>
+  <text x="433" y="308" text-anchor="middle" font-size="8.5" fill="#1e3a6e">User CRUD, avatar, password change</text>
+
+  <rect x="566" y="242" width="268" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="700" y="264" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">course/</text>
+  <text x="700" y="281" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="700" y="295" text-anchor="middle" font-size="9"  fill="#2e4a88">catalog · details · search · filter</text>
+  <text x="700" y="308" text-anchor="middle" font-size="8.5" fill="#1e3a6e">Course listing, discovery, reviews</text>
+
+  <!-- Row 2 -->
+  <rect x="56"  y="322" width="244" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="178" y="344" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">checkout/</text>
+  <text x="178" y="361" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="178" y="375" text-anchor="middle" font-size="9"  fill="#2e4a88">cart · order creation · coupon</text>
+  <text x="178" y="388" text-anchor="middle" font-size="8.5" fill="#1e3a6e">Cart management, checkout flow</text>
+
+  <rect x="311" y="322" width="244" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="433" y="344" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">payment/</text>
+  <text x="433" y="361" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="433" y="375" text-anchor="middle" font-size="9"  fill="#2e4a88">gateway · webhook · refund</text>
+  <text x="433" y="388" text-anchor="middle" font-size="8.5" fill="#1e3a6e">Payment processing, status tracking</text>
+
+  <rect x="566" y="322" width="268" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="700" y="344" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">transaction/</text>
+  <text x="700" y="361" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="700" y="375" text-anchor="middle" font-size="9"  fill="#2e4a88">history · receipts · reports</text>
+  <text x="700" y="388" text-anchor="middle" font-size="8.5" fill="#1e3a6e">Transaction records and ledger</text>
+
+  <!-- Row 3 -->
+  <rect x="56"  y="402" width="244" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="178" y="424" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">wishlist/</text>
+  <text x="178" y="441" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="178" y="455" text-anchor="middle" font-size="9"  fill="#2e4a88">save course · remove · list</text>
+  <text x="178" y="468" text-anchor="middle" font-size="8.5" fill="#1e3a6e">Wishlist CRUD per user</text>
+
+  <rect x="311" y="402" width="244" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="433" y="424" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">comment/</text>
+  <text x="433" y="441" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="433" y="455" text-anchor="middle" font-size="9"  fill="#2e4a88">post · reply · moderate</text>
+  <text x="433" y="468" text-anchor="middle" font-size="8.5" fill="#1e3a6e">Course Q&amp;A and reviews</text>
+
+  <rect x="566" y="402" width="268" height="70" rx="6" fill="#0d1f4a" stroke="#2563eb" stroke-width="1"/>
+  <text x="700" y="424" text-anchor="middle" font-size="13" fill="#60a5fa" font-weight="700">chatbot/</text>
+  <text x="700" y="441" text-anchor="middle" font-size="9"  fill="#3b5ba3">routes · controller · service</text>
+  <text x="700" y="455" text-anchor="middle" font-size="9"  fill="#2e4a88">AI conversation · context</text>
+  <text x="700" y="468" text-anchor="middle" font-size="8.5" fill="#1e3a6e">LLM-backed student assistant</text>
+
+  <!-- arrow modules → shared -->
+  <line x1="447" y1="490" x2="447" y2="516" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── SHARED box ── -->
+  <rect x="42"  y="516" width="810" height="128" rx="8" fill="#16102e" stroke="#8b5cf6" stroke-width="1.5"/>
+  <rect x="42"  y="516" width="810" height="30"  rx="8" fill="#5b21b6" fill-opacity="0.85"/>
+  <rect x="42"  y="530"  width="810" height="16" fill="#5b21b6" fill-opacity="0.85"/>
+  <text x="447" y="534" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#ddd6fe" letter-spacing="2">shared/  ·  Cross-Cutting Concerns</text>
+
+  <rect x="58"  y="556" width="248" height="72" rx="6" fill="#1e0d4e" stroke="#7c3aed" stroke-width="1"/>
+  <text x="182" y="577" text-anchor="middle" font-size="12" fill="#c4b5fd" font-weight="700">middleware/</text>
+  <text x="182" y="594" text-anchor="middle" font-size="9"  fill="#6d4ec7">auth · rateLimit · validation</text>
+  <text x="182" y="608" text-anchor="middle" font-size="9"  fill="#6d4ec7">Applied at route level</text>
+
+  <rect x="319" y="556" width="248" height="72" rx="6" fill="#1e0d4e" stroke="#7c3aed" stroke-width="1"/>
+  <text x="443" y="577" text-anchor="middle" font-size="12" fill="#c4b5fd" font-weight="700">utils/</text>
+  <text x="443" y="594" text-anchor="middle" font-size="9"  fill="#6d4ec7">jwt · formatters · helpers</text>
+  <text x="443" y="608" text-anchor="middle" font-size="9"  fill="#6d4ec7">Pure functions, no side effects</text>
+
+  <rect x="580" y="556" width="254" height="72" rx="6" fill="#1e0d4e" stroke="#7c3aed" stroke-width="1"/>
+  <text x="707" y="577" text-anchor="middle" font-size="12" fill="#c4b5fd" font-weight="700">workers/</text>
+  <text x="707" y="594" text-anchor="middle" font-size="9"  fill="#6d4ec7">email.worker</text>
+  <text x="707" y="608" text-anchor="middle" font-size="9"  fill="#6d4ec7">Background job consumers</text>
+
+  <!-- arrow shared → infra -->
+  <line x1="447" y1="644" x2="447" y2="670" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── INFRASTRUCTURE box ── -->
+  <rect x="42"  y="670" width="810" height="148" rx="8" fill="#1a0d00" stroke="#f97316" stroke-width="1.5"/>
+  <rect x="42"  y="670" width="810" height="30"  rx="8" fill="#9a3412" fill-opacity="0.85"/>
+  <rect x="42"  y="684"  width="810" height="16" fill="#9a3412" fill-opacity="0.85"/>
+  <text x="447" y="688" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#fed7aa" letter-spacing="2">infrastructure/  ·  External Adapters &amp; Drivers</text>
+
+  <!-- 5 infra boxes -->
+  <rect x="48"  y="710" width="148" height="96" rx="6" fill="#2a0d00" stroke="#ea580c" stroke-width="1"/>
+  <text x="122" y="737" text-anchor="middle" font-size="12" fill="#fb923c" font-weight="700">database/</text>
+  <text x="122" y="754" text-anchor="middle" font-size="9"  fill="#7a3010">prisma.client</text>
+  <text x="122" y="768" text-anchor="middle" font-size="9"  fill="#7a3010">ORM layer</text>
+  <text x="122" y="800" text-anchor="middle" font-size="8"  fill="#5a2508">Only touched by services</text>
+
+  <rect x="207" y="710" width="148" height="96" rx="6" fill="#2a0d00" stroke="#ea580c" stroke-width="1"/>
+  <text x="281" y="737" text-anchor="middle" font-size="12" fill="#fb923c" font-weight="700">cache/</text>
+  <text x="281" y="754" text-anchor="middle" font-size="9"  fill="#7a3010">in-memory adapter</text>
+  <text x="281" y="768" text-anchor="middle" font-size="9"  fill="#7a3010">Redis-compatible</text>
+  <text x="281" y="800" text-anchor="middle" font-size="8"  fill="#5a2508">Response caching layer</text>
+
+  <rect x="366" y="710" width="148" height="96" rx="6" fill="#2a0d00" stroke="#ea580c" stroke-width="1"/>
+  <text x="440" y="737" text-anchor="middle" font-size="12" fill="#fb923c" font-weight="700">queue/</text>
+  <text x="440" y="754" text-anchor="middle" font-size="9"  fill="#7a3010">job producer</text>
+  <text x="440" y="768" text-anchor="middle" font-size="9"  fill="#7a3010">BullMQ setup</text>
+  <text x="440" y="800" text-anchor="middle" font-size="8"  fill="#5a2508">Enqueue background tasks</text>
+
+  <rect x="525" y="710" width="148" height="96" rx="6" fill="#2a0d00" stroke="#ea580c" stroke-width="1"/>
+  <text x="599" y="737" text-anchor="middle" font-size="12" fill="#fb923c" font-weight="700">email/</text>
+  <text x="599" y="754" text-anchor="middle" font-size="9"  fill="#7a3010">SMTP transport</text>
+  <text x="599" y="768" text-anchor="middle" font-size="9"  fill="#7a3010">Nodemailer adapter</text>
+  <text x="599" y="800" text-anchor="middle" font-size="8"  fill="#5a2508">Email send &amp; templates</text>
+
+  <rect x="684" y="710" width="160" height="96" rx="6" fill="#2a0d00" stroke="#ea580c" stroke-width="1"/>
+  <text x="764" y="737" text-anchor="middle" font-size="12" fill="#fb923c" font-weight="700">external/</text>
+  <text x="764" y="754" text-anchor="middle" font-size="9"  fill="#7a3010">supabase.client</text>
+  <text x="764" y="768" text-anchor="middle" font-size="9"  fill="#7a3010">3rd-party APIs</text>
+  <text x="764" y="800" text-anchor="middle" font-size="8"  fill="#5a2508">Cloudinary, storage, etc.</text>
+
+  <!-- arrow infra → config -->
+  <line x1="447" y1="818" x2="447" y2="844" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── CONFIG box ── -->
+  <rect x="42"  y="844" width="810" height="56" rx="8" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+  <text x="447" y="877" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#6b7280" letter-spacing="2">config/  ·  App Constants · Swagger · Environment Variables</text>
+
+  <!-- Dependency direction label -->
+  <text x="447" y="942" text-anchor="middle" font-size="9.5" fill="#1e3a5f" font-weight="600">
+    DEPENDENCY DIRECTION:  modules → shared → infrastructure → config
+  </text>
+  <line x1="42" y1="948" x2="852" y2="948" stroke="#1e3a5f" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+  <!-- ─────────────────────────────────────────────────────────────
+       HTTP REST CONNECTION ARROW (center gap)
+  ───────────────────────────────────────────────────────────────── -->
+  <path d="M 924 878 L 876 878 L 876 318 L 852 318"
+        stroke="#38bdf8" stroke-width="2" stroke-dasharray="7 4"
+        fill="none" marker-end="url(#arr-blue)"/>
+  <rect x="858" y="574" width="34" height="82" rx="4" fill="#080e17"/>
+  <text transform="translate(882,620) rotate(-90)"
+        text-anchor="middle" font-size="10" fill="#38bdf8" font-weight="700" letter-spacing="1">HTTP REST</text>
+
+  <!-- ─────────────────────────────────────────────────────────────
+       FRONTEND PANEL
+  ───────────────────────────────────────────────────────────────── -->
+  <rect x="924" y="58" width="858" height="1004" rx="14" fill="#080f0d" stroke="#064e3b" stroke-width="1.5"/>
+  <!-- title bar -->
+  <rect x="924" y="58" width="858" height="42" rx="14" fill="url(#fe-title)"/>
+  <rect x="924" y="84"  width="858" height="16" fill="url(#fe-title)"/>
+  <text x="1353" y="87" text-anchor="middle" font-size="15" font-weight="700"
+        fill="#6ee7b7" letter-spacing="3">🖥️  FRONTEND  ·  React + Vite</text>
+
+  <!-- src/ dashed outline -->
+  <rect x="934" y="108" width="838" height="942" rx="10" fill="#040c09"
+        stroke="#064e3b" stroke-width="1" stroke-dasharray="5 4"/>
+  <text x="954" y="127" font-size="10" fill="#059669" font-weight="700" letter-spacing="2">src/</text>
+
+  <!-- ── APP box (entry point) ── -->
+  <rect x="948" y="132" width="810" height="52" rx="8" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+  <text x="1353" y="160" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#9ca3af" letter-spacing="1">app/  ·  Router · Provider Tree · Root Entry Point</text>
+  <text x="1353" y="176" text-anchor="middle" font-size="9.5" fill="#374151">
+    Composes features, layouts, global providers
+  </text>
+  <!-- arrow app → features -->
+  <line x1="1353" y1="184" x2="1353" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── FEATURES box ── -->
+  <rect x="948"  y="204" width="810" height="458" rx="8" fill="#031a11" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="948"  y="204" width="810" height="30"  rx="8" fill="#065f46" fill-opacity="0.9"/>
+  <rect x="948"  y="218"  width="810" height="16" fill="#065f46" fill-opacity="0.9"/>
+  <text x="1353" y="222" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#a7f3d0" letter-spacing="2">features/  ·  Domain Feature Slices  ·  Self-Contained</text>
+
+  <!-- Feature boxes 2 col × 3 row -->
+  <!-- auth -->
+  <rect x="962"  y="242" width="385" height="96" rx="6" fill="#011c0e" stroke="#059669" stroke-width="1"/>
+  <text x="1154" y="264" text-anchor="middle" font-size="13" fill="#34d399" font-weight="700">auth/</text>
+  <text x="1154" y="282" text-anchor="middle" font-size="9.5" fill="#065f46">pages/  ·  api/  ·  store/  ·  hooks/</text>
+  <text x="1154" y="298" text-anchor="middle" font-size="9"   fill="#023d20">LoginPage · RegisterPage · ForgotPasswordPage · ResetPasswordPage</text>
+  <text x="1154" y="313" text-anchor="middle" font-size="9"   fill="#023d20">AuthContext · useAuth · auth.api</text>
+  <text x="1154" y="328" text-anchor="middle" font-size="8.5" fill="#01280f">Token storage · Protected routes · OAuth callback</text>
+
+  <!-- course -->
+  <rect x="1361" y="242" width="389" height="96" rx="6" fill="#011c0e" stroke="#059669" stroke-width="1"/>
+  <text x="1555" y="264" text-anchor="middle" font-size="13" fill="#34d399" font-weight="700">course/</text>
+  <text x="1555" y="282" text-anchor="middle" font-size="9.5" fill="#065f46">pages/  ·  components/  ·  api/  ·  hooks/</text>
+  <text x="1555" y="298" text-anchor="middle" font-size="9"   fill="#023d20">CoursesPage · CourseDetailsPage</text>
+  <text x="1555" y="313" text-anchor="middle" font-size="9"   fill="#023d20">CourseCard · useCourse · course.api</text>
+  <text x="1555" y="328" text-anchor="middle" font-size="8.5" fill="#01280f">Catalog, filters, detail view, reviews</text>
+
+  <!-- checkout -->
+  <rect x="962"  y="348" width="385" height="96" rx="6" fill="#011c0e" stroke="#059669" stroke-width="1"/>
+  <text x="1154" y="370" text-anchor="middle" font-size="13" fill="#34d399" font-weight="700">checkout/</text>
+  <text x="1154" y="388" text-anchor="middle" font-size="9.5" fill="#065f46">pages/  ·  api/  ·  store/  ·  hooks/</text>
+  <text x="1154" y="404" text-anchor="middle" font-size="9"   fill="#023d20">CartPage · CheckoutPage</text>
+  <text x="1154" y="419" text-anchor="middle" font-size="9"   fill="#023d20">CartContext · useCart · checkout.api</text>
+  <text x="1154" y="434" text-anchor="middle" font-size="8.5" fill="#01280f">Cart state, checkout flow, order confirmation</text>
+
+  <!-- user -->
+  <rect x="1361" y="348" width="389" height="96" rx="6" fill="#011c0e" stroke="#059669" stroke-width="1"/>
+  <text x="1555" y="370" text-anchor="middle" font-size="13" fill="#34d399" font-weight="700">user/</text>
+  <text x="1555" y="388" text-anchor="middle" font-size="9.5" fill="#065f46">pages/  ·  components/  ·  api/</text>
+  <text x="1555" y="404" text-anchor="middle" font-size="9"   fill="#023d20">ProfilePage · SettingsPage · MyLearningPage</text>
+  <text x="1555" y="419" text-anchor="middle" font-size="9"   fill="#023d20">ProfileCard · user.api</text>
+  <text x="1555" y="434" text-anchor="middle" font-size="8.5" fill="#01280f">Profile edit, account settings, enrolled courses</text>
+
+  <!-- chatbot -->
+  <rect x="962"  y="454" width="385" height="90" rx="6" fill="#011c0e" stroke="#059669" stroke-width="1"/>
+  <text x="1154" y="476" text-anchor="middle" font-size="13" fill="#34d399" font-weight="700">chatbot/</text>
+  <text x="1154" y="494" text-anchor="middle" font-size="9.5" fill="#065f46">components/  ·  api/</text>
+  <text x="1154" y="510" text-anchor="middle" font-size="9"   fill="#023d20">ChatbotWidget · chatbot.api</text>
+  <text x="1154" y="525" text-anchor="middle" font-size="8.5" fill="#01280f">Floating AI assistant, conversation state</text>
+
+  <!-- home -->
+  <rect x="1361" y="454" width="389" height="90" rx="6" fill="#011c0e" stroke="#059669" stroke-width="1"/>
+  <text x="1555" y="476" text-anchor="middle" font-size="13" fill="#34d399" font-weight="700">home/</text>
+  <text x="1555" y="494" text-anchor="middle" font-size="9.5" fill="#065f46">pages/  ·  components/</text>
+  <text x="1555" y="510" text-anchor="middle" font-size="9"   fill="#023d20">HomePage · HeroSection · StatsSection</text>
+  <text x="1555" y="525" text-anchor="middle" font-size="8.5" fill="#01280f">LearningPathsSection · CourseBenefitsSection</text>
+
+  <!-- arrow features → shared -->
+  <line x1="1353" y1="662" x2="1353" y2="688" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── SHARED box ── -->
+  <rect x="948"  y="688" width="810" height="122" rx="8" fill="#120d25" stroke="#8b5cf6" stroke-width="1.5"/>
+  <rect x="948"  y="688" width="810" height="30"  rx="8" fill="#5b21b6" fill-opacity="0.85"/>
+  <rect x="948"  y="702"  width="810" height="16" fill="#5b21b6" fill-opacity="0.85"/>
+  <text x="1353" y="706" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#ddd6fe" letter-spacing="2">shared/  ·  Reusable Across ≥ 2 Features</text>
+
+  <rect x="963"  y="728" width="248" height="68" rx="6" fill="#1e0d4e" stroke="#7c3aed" stroke-width="1"/>
+  <text x="1087" y="749" text-anchor="middle" font-size="12" fill="#c4b5fd" font-weight="700">components/</text>
+  <text x="1087" y="766" text-anchor="middle" font-size="9"  fill="#5e3ea1">Header · Footer · Reviews</text>
+  <text x="1087" y="780" text-anchor="middle" font-size="9"  fill="#5e3ea1">ShareModal · UI kits</text>
+
+  <rect x="1223" y="728" width="248" height="68" rx="6" fill="#1e0d4e" stroke="#7c3aed" stroke-width="1"/>
+  <text x="1347" y="749" text-anchor="middle" font-size="12" fill="#c4b5fd" font-weight="700">hooks/</text>
+  <text x="1347" y="766" text-anchor="middle" font-size="9"  fill="#5e3ea1">useCounter</text>
+  <text x="1347" y="780" text-anchor="middle" font-size="9"  fill="#5e3ea1">useScrollAnimation</text>
+
+  <rect x="1483" y="728" width="267" height="68" rx="6" fill="#1e0d4e" stroke="#7c3aed" stroke-width="1"/>
+  <text x="1616" y="749" text-anchor="middle" font-size="12" fill="#c4b5fd" font-weight="700">utils/</text>
+  <text x="1616" y="766" text-anchor="middle" font-size="9"  fill="#5e3ea1">formatters · validators</text>
+  <text x="1616" y="780" text-anchor="middle" font-size="9"  fill="#5e3ea1">Pure helpers, no React</text>
+
+  <!-- arrow shared → core -->
+  <line x1="1353" y1="810" x2="1353" y2="836" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── CORE box ── -->
+  <rect x="948"  y="836" width="810" height="56" rx="8" fill="#150c00" stroke="#d97706" stroke-width="1.5"/>
+  <text x="1353" y="862" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#fbbf24" letter-spacing="2">core/  →  api/  ·  Axios Base Instance · Interceptors · Auth Token Injection</text>
+  <text x="1353" y="879" text-anchor="middle" font-size="9.5" fill="#78350f">
+    Single HTTP client consumed by all feature api/ layers
+  </text>
+
+  <!-- ── LAYOUTS box ── -->
+  <rect x="948"  y="908" width="386" height="54" rx="8" fill="#031a11" stroke="#059669" stroke-width="1"/>
+  <text x="1141" y="933" text-anchor="middle" font-size="12" font-weight="700" fill="#34d399">layouts/</text>
+  <text x="1141" y="950" text-anchor="middle" font-size="9.5" fill="#065f46">MainLayout · AuthLayout · Page Shell Templates</text>
+
+  <!-- ── CONFIG box ── -->
+  <rect x="1346" y="908" width="412" height="54" rx="8" fill="#111827" stroke="#374151" stroke-width="1"/>
+  <text x="1552" y="933" text-anchor="middle" font-size="12" font-weight="700" fill="#6b7280">config/</text>
+  <text x="1552" y="950" text-anchor="middle" font-size="9.5" fill="#374151">Route constants · Env keys · App-level config</text>
+
+  <!-- Dependency direction label -->
+  <text x="1353" y="998" text-anchor="middle" font-size="9.5" fill="#064e3b" font-weight="600">
+    DEPENDENCY DIRECTION:  app → features → shared → core/api  →  Backend
+  </text>
+  <line x1="934" y1="1004" x2="1772" y2="1004" stroke="#064e3b" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+  <!-- ─────────────────────────────────────────────────────────────
+       LEGEND / FOOTER
+  ───────────────────────────────────────────────────────────────── -->
+  <line x1="18" y1="1066" x2="1782" y2="1066" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Layer legend -->
+  <rect x="60"  y="1072" width="12" height="12" rx="2" fill="#1d4ed8"/>
+  <text x="78"  y="1083" font-size="10" fill="#64748b">modules / features  (domain slices)</text>
+
+  <rect x="330" y="1072" width="12" height="12" rx="2" fill="#5b21b6"/>
+  <text x="348" y="1083" font-size="10" fill="#64748b">shared  (cross-cutting)</text>
+
+  <rect x="530" y="1072" width="12" height="12" rx="2" fill="#9a3412"/>
+  <text x="548" y="1083" font-size="10" fill="#64748b">infrastructure  (adapters)</text>
+
+  <rect x="748" y="1072" width="12" height="12" rx="2" fill="#d97706"/>
+  <text x="766" y="1083" font-size="10" fill="#64748b">core / api  (HTTP client)</text>
+
+  <rect x="968" y="1072" width="12" height="12" rx="2" fill="#374151"/>
+  <text x="986" y="1083" font-size="10" fill="#64748b">config  (constants)</text>
+
+  <!-- dashed line legend -->
+  <line x1="1148" y1="1078" x2="1198" y2="1078" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 3"/>
+  <text x="1206" y="1083" font-size="10" fill="#64748b">HTTP REST call  (FE → BE)</text>
+
+  <line x1="1448" y1="1078" x2="1498" y2="1078" stroke="#475569" stroke-width="1.5"/>
+  <polygon points="1498,1075 1504,1078 1498,1081" fill="#475569"/>
+  <text x="1510" y="1083" font-size="10" fill="#64748b">dependency direction</text>
+</svg>

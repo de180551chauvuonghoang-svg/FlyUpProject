@@ -1,18 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #8b5cf6;
+  --color-primary: #a855f7;
   --color-background-light: #0a0a14;
-  --color-background-dark: #050214;
+  --color-background-dark: #0a0a14;
   --color-surface-dark: #16161e;
   --color-surface-light: #16161e;
-  --color-surface: rgba(26, 19, 51, 0.4);
-  --color-accent-fuchsia: #ff00ff;
-  --color-accent-violet: #a855f7;
-  --color-accent-cyan: #00f0ff;
 
-  --font-family-display: "Outfit", sans-serif;
-  --font-family-body: "Space Grotesk", sans-serif;
+  --font-family-display: "Spline Sans", sans-serif;
 
   --radius-DEFAULT: 1rem;
   --radius-lg: 1.5rem;
@@ -27,21 +22,9 @@ html {
 }
 
 body {
-  font-family: "Space Grotesk", sans-serif;
-  background-color: #050214;
+  font-family: "Spline Sans", sans-serif;
+  background-color: #0a0a14;
   color: #ffffff;
-  background-image:
-    radial-gradient(
-      circle at 20% 30%,
-      rgba(139, 92, 246, 0.15) 0%,
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at 80% 70%,
-      rgba(255, 0, 255, 0.1) 0%,
-      transparent 40%
-    ),
-    url("https://www.transparenttextures.com/patterns/stardust.png");
 }
 
 /* Custom scrollbar */
@@ -186,8 +169,8 @@ body {
 
 /* Smooth transitions */
 * {
-  transition-property:
-    color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-property: color, background-color, border-color,
+    text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }

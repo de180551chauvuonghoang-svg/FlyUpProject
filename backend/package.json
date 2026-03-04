@@ -8,33 +8,40 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "postinstall": "prisma generate",
-    "check-course-status": "node scripts/checkCourseStatus.js",
-    "setup-instructor": "node scripts/setup-instructor.js",
-    "init-storage": "node scripts/init-storage.js"
+    "check-course-status": "node scripts/checkCourseStatus.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.7.0",
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
     "@supabase/supabase-js": "^2.39.0",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",
     "google-auth-library": "^10.5.0",
     "googleapis": "^170.0.0",
+    "groq-sdk": "^0.37.0",
     "jsonwebtoken": "^9.0.3",
-    "multer": "^2.0.2",
     "node-cache": "^5.1.2",
     "nodemailer": "^7.0.11",
     "open": "^11.0.0",
-    "prisma": "^5.7.0",
+    "pg": "^8.17.2",
+    "prisma": "^7.3.0",
     "resend": "^6.7.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",
+    "@types/node": "^25.1.0",
     "nodemon": "^3.0.2",
-    "prisma-erd-generator": "^2.4.2"
+    "prisma-erd-generator": "^2.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
