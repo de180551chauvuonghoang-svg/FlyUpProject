@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "../hooks/useAuth";
 import Quiz from "../components/Quiz";
@@ -443,24 +443,22 @@ export default function CourseLessonPage() {
       <aside className="w-[340px] flex-shrink-0 flex flex-col glass-panel border-r border-glass-border h-full relative z-20">
         {/* Header Area */}
         <div className="p-6 border-b border-glass-border bg-[#130d1a]/50">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="size-6 text-primary">
-              <svg
-                fill="none"
-                viewBox="0 0 48 48"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g clipPath="url(#clip0_6_319)">
-                  <path
-                    d="M8.57829 8.57829C5.52816 11.6284 3.451 15.5145 2.60947 19.7452C1.76794 23.9758 2.19984 28.361 3.85056 32.3462C5.50128 36.3314 8.29667 39.7376 11.8832 42.134C15.4698 44.5305 19.6865 45.8096 24 45.8096C28.3135 45.8096 32.5302 44.5305 36.1168 42.134C39.7033 39.7375 42.4987 36.3314 44.1494 32.3462C45.8002 28.361 46.2321 23.9758 45.3905 19.7452C44.549 15.5145 42.4718 11.6284 39.4217 8.57829L24 24L8.57829 8.57829Z"
-                    fill="currentColor"
-                  ></path>
-                </g>
-              </svg>
-            </div>
-            <h2 className="text-white text-lg font-bold tracking-tight">
-              FlyUp
-            </h2>
+          <div className="flex items-center justify-between mb-6">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="h-8 w-auto">
+                <img src="/FlyUpTeam.png" alt="FlyUp Logo" className="h-full w-auto object-contain transition-transform group-hover:scale-105" />
+              </div>
+              <h2 className="text-white text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
+                FlyUp
+              </h2>
+            </Link>
+            <button 
+              onClick={() => navigate('/')}
+              className="size-8 rounded-full bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+              title="Back to Home"
+            >
+              <span className="material-symbols-outlined text-[18px]">home</span>
+            </button>
           </div>
           <h3 className="text-white text-xl font-bold leading-tight mb-3">
             {course?.Title || "Loading..."}

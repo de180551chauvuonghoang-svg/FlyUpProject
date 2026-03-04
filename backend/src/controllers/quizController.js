@@ -24,7 +24,6 @@ export const getQuizQuestions = async (req, res) => {
               select: {
                 Id: true,
                 Content: true,
-                // Don't send IsCorrect to frontend for security
               },
             },
           },
@@ -36,17 +35,19 @@ export const getQuizQuestions = async (req, res) => {
     // Flatten all questions from all assignments
     let allQuestions = [];
     assignments.forEach((assignment) => {
-      allQuestions = allQuestions.concat(
-        assignment.McqQuestions.map((q) => ({
-          id: q.Id,
-          content: q.Content,
-          difficulty: q.Difficulty,
-          choices: q.McqChoices.map((c) => ({
-            id: c.Id,
-            content: c.Content,
+      if (assignment.McqQuestions) {
+        allQuestions = allQuestions.concat(
+          assignment.McqQuestions.map((q) => ({
+            id: q.Id,
+            content: q.Content,
+            difficulty: q.Difficulty,
+            choices: q.McqChoices ? q.McqChoices.map((c) => ({
+              id: c.Id,
+              content: c.Content,
+            })) : [],
           })),
-        })),
-      );
+        );
+      }
     });
 
     // Shuffle questions

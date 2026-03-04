@@ -6,7 +6,7 @@ import useAuth from "../hooks/useAuth";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function InstructorDashboard() {
-  const { user, logout } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const [timeframe, setTimeframe] = useState("6months");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -18,6 +18,9 @@ export default function InstructorDashboard() {
 
   // Check if user is logged in and is an instructor
   useEffect(() => {
+    // Wait for auth to finish loading before checking
+    if (loading) return;
+
     if (!user) {
       toast.error("Please login as an instructor");
       navigate("/login?role=instructor");
@@ -31,7 +34,7 @@ export default function InstructorDashboard() {
       navigate("/");
       return;
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   // Fetch instructor stats and courses
   useEffect(() => {
@@ -136,8 +139,8 @@ export default function InstructorDashboard() {
         topCourse: { title: "Loading...", rating: 0, learners: "0" },
       };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     toast.success("Logged out successfully");
     navigate("/login?role=instructor");
   };
@@ -337,11 +340,16 @@ export default function InstructorDashboard() {
               </p>
             </div>
           </div>
+          
           <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleLogout();
+            }}
+            className="w-full relative z-[100] flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-all cursor-pointer pointer-events-auto shadow-lg"
           >
-            <span className="material-symbols-outlined text-sm">logout</span>
+            <span className="material-symbols-outlined text-[18px]">logout</span>
             Sign Out
           </button>
         </div>
