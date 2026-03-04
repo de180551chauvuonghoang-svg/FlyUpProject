@@ -7,20 +7,22 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   Rocket, ChevronRight, Star, StarHalf, Clock, Globe, Video, 
   FileDown, Infinity as InfinityIcon, Smartphone, Award, Check, ChevronDown, 
-  Play, Users, PlayCircle, Heart
+  Play, Users, PlayCircle, Heart, Zap
 } from 'lucide-react';
 import { 
   staggerContainer, 
   staggerItem
 } from '../utils/animations';
 import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import { fetchCourseById, fetchCourseReviews } from '../services/courseService';
-import { fetchUserEnrollments } from '../services/userService';
+import { fetchUserEnrollmentForCourse } from '../services/userService';
 import useCart from '../hooks/useCart';
 import useAuth from '../hooks/useAuth';
 import ReviewList from '../components/Reviews/ReviewList';
 import ReviewForm from '../components/Reviews/ReviewForm';
 import { toggleWishlist, getWishlist } from '../services/wishlistService';
+import { createCheckout } from '../services/checkoutService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -40,6 +42,7 @@ export default function CourseDetailsPage() {
   
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedSections, setExpandedSections] = useState({});
+  const [enrolling, setEnrolling] = useState(false);
   const { addToCart } = useCart();
   const { user, accessToken } = useAuth();
   
@@ -56,9 +59,40 @@ export default function CourseDetailsPage() {
       return wishlistCourses.some(course => course.Id === courseId);
   }, [wishlistCourses, courseId]);
 
+  // Check enrollment — declared ABOVE handlers so they can reference isEnrolled
+  // Use course-specific query to avoid pagination limits (fetchUserEnrollments defaults to limit=10)
+  const { data: enrollmentData } = useQuery({
+      queryKey: ['userEnrollments', user?.id, courseId],
+      queryFn: () => fetchUserEnrollmentForCourse(user.id, courseId),
+      enabled: !!user && !!courseId,
+  });
+  
+  const isEnrolled = enrollmentData?.isEnrolled ?? false;
+
   const handleWishlistToggle = async () => {
     if (!user) {
         navigate('/login');
+        return;
+    }
+
+    // Block wishlist if already enrolled in this course
+    if (isEnrolled) {
+        toast.error('Khóa học đã trong My Learning!', {
+            icon: '🎓',
+            className: 'flyup-toast flyup-toast--error',
+            style: {
+                borderRadius: '14px',
+                background: '#c0152a',
+                color: '#fff',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                padding: '14px 18px',
+                fontSize: '14px',
+                fontWeight: '600',
+                minWidth: '260px',
+                maxWidth: '360px',
+            },
+        });
         return;
     }
 
@@ -83,13 +117,57 @@ export default function CourseDetailsPage() {
         queryClient.invalidateQueries({ queryKey: ['wishlist'] });
 
         if (result.isInWishlist) {
-            toast.success('Added to wishlist');
+            toast.success('Đã thêm vào yêu thích! ❤️', {
+                className: 'flyup-toast flyup-toast--success',
+                style: {
+                    borderRadius: '14px',
+                    background: '#0f7a45',
+                    color: '#fff',
+                    border: '1.5px solid rgba(255,255,255,0.25)',
+                    boxShadow: '0 8px 32px rgba(15,122,69,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                    padding: '14px 18px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    minWidth: '260px',
+                    maxWidth: '360px',
+                },
+            });
         } else {
-            toast.success('Removed from wishlist');
+            toast.success('Đã xóa khỏi yêu thích', {
+                icon: '💔',
+                iconTheme: { primary: '#b45309', secondary: '#fff' },
+                className: 'flyup-toast flyup-toast--warn',
+                style: {
+                    borderRadius: '14px',
+                    background: '#b45309',
+                    color: '#fff',
+                    border: '1.5px solid rgba(255,255,255,0.25)',
+                    boxShadow: '0 8px 32px rgba(180,83,9,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                    padding: '14px 18px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    minWidth: '260px',
+                    maxWidth: '360px',
+                },
+            });
         }
     } catch (error) {
         console.error("Wishlist toggle failed", error);
-        toast.error('Failed to update wishlist');
+        toast.error('Không thể cập nhật yêu thích', {
+            className: 'flyup-toast flyup-toast--error',
+            style: {
+                borderRadius: '14px',
+                background: '#c0152a',
+                color: '#fff',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+                padding: '14px 18px',
+                fontSize: '14px',
+                fontWeight: '600',
+                minWidth: '260px',
+                maxWidth: '360px',
+            },
+        });
         // Revert on error
         if (previousWishlist) {
             queryClient.setQueryData(['wishlist'], previousWishlist);
@@ -97,18 +175,7 @@ export default function CourseDetailsPage() {
     }
   };
 
-  // Check enrollment
-  const { data: enrollmentData } = useQuery({
-      queryKey: ['userEnrollments', user?.id],
-      queryFn: () => fetchUserEnrollments(user.id),
-      enabled: !!user
-  });
-  
-  const isEnrolled = enrollmentData?.enrollments?.some(e => e.CourseId === courseId);
-
-  // Helper to resolve image URLs
-  // (Redefined here if needed or just use the global one if it is safe, but assuming we can use member vars)
-  // Actually course is available here.
+  // (enrollment query moved above handleWishlistToggle)
 
   const handleAddToCart = () => {
       // Map course data to match what cart expects
@@ -124,6 +191,42 @@ export default function CourseDetailsPage() {
           duration: `${course.Sections?.reduce((acc, sec) => acc + (sec.Lectures?.length || 0), 0)} lectures`
       };
       addToCart(cartItem);
+  };
+
+  const handleEnrollNow = async () => {
+    if (!user) {
+        navigate('/login');
+        return;
+    }
+    // Guard: already enrolled — navigate to My Learning instead
+    if (isEnrolled) {
+        navigate('/my-learning');
+        return;
+    }
+    setEnrolling(true);
+    try {
+        const res = await createCheckout({ courseIds: [courseId] });
+        // Guard response before navigating
+        const checkoutId = res?.data?.checkoutId;
+        if (!checkoutId) {
+            throw new Error('Không nhận được mã đơn hàng từ server');
+        }
+        navigate(`/checkout/${checkoutId}`);
+    } catch (error) {
+        toast.error(error.message || 'Không thể tạo đơn hàng', {
+            icon: '❌',
+            className: 'flyup-toast flyup-toast--error',
+            style: {
+                borderRadius: '14px', background: '#c0152a', color: '#fff',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 8px 32px rgba(192,21,42,0.5)',
+                padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+                minWidth: '260px', maxWidth: '360px',
+            },
+        });
+    } finally {
+        setEnrolling(false);
+    }
   };
 
   // React Query for caching
@@ -497,7 +600,8 @@ export default function CourseDetailsPage() {
             whileHover={{ y: -4 }}
             className="sticky top-24 bg-[#1A1333] border border-white/5 rounded-2xl p-6 shadow-xl shadow-black/40 relative"
           >
-            {/* Wishlist Button */}
+            {/* Wishlist Button – hidden when already enrolled */}
+             {!isEnrolled && (
              <button 
                 onClick={handleWishlistToggle}
                 className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors z-10"
@@ -505,6 +609,7 @@ export default function CourseDetailsPage() {
              >
                 <Heart className={`w-6 h-6 transition-colors ${isInWishlist ? 'text-red-500 fill-red-500' : 'text-slate-400'}`} />
              </button>
+             )}
 
             {/* Pricing */}
             <div className="flex items-end gap-3 mb-6">
@@ -529,30 +634,42 @@ export default function CourseDetailsPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 animate={{ 
-                  boxShadow: [
-                    '0 10px 30px rgba(168, 85, 247, 0.3)',
-                    '0 10px 40px rgba(168, 85, 247, 0.5)',
-                    '0 10px 30px rgba(168, 85, 247, 0.3)'
-                  ]
+                    boxShadow: [
+                        '0 10px 30px rgba(168, 85, 247, 0.3)',
+                        '0 10px 40px rgba(168, 85, 247, 0.5)',
+                        '0 10px 30px rgba(168, 85, 247, 0.3)'
+                    ]
                 }}
                 transition={{ 
-                  boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                    boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
                 }}
                 className="w-full h-12 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold text-base shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 flex items-center justify-center gap-2"
               >
                 Add to Cart
               </motion.button>
-              <motion.button 
-                onClick={() => {
-                  handleAddToCart();
-                  navigate('/cart');
-                }}
-                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors"
+
+              {/* Enroll Now – hidden when already enrolled */}
+              {!isEnrolled && (
+              <motion.button
+                onClick={handleEnrollNow}
+                disabled={enrolling}
+                whileHover={{ scale: enrolling ? 1 : 1.02 }}
+                whileTap={{ scale: enrolling ? 1 : 0.98 }}
+                className="w-full h-12 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-base shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Buy Now
+                {enrolling ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-4 h-4" />
+                    Enroll Now
+                  </>
+                )}
               </motion.button>
+              )}
             </div>
 
             {/* Money-back guarantee */}
@@ -590,15 +707,7 @@ export default function CourseDetailsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-12 py-8 bg-[#1A1333] border-t border-white/5">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2 text-white">
-            <Rocket className="w-5 h-5 text-violet-400" />
-            <span className="font-bold tracking-tight">Cosmos Learn</span>
-          </div>
-          <p className="text-slate-400 text-sm">© 2024 Cosmos Learn Inc. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

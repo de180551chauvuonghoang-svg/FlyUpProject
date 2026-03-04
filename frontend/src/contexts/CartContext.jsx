@@ -1,9 +1,33 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useQuery } from '@tanstack/react-query';
 import { fetchUserEnrollments } from '../services/userService';
 import { CartContext } from './cartContextDef';
 import { AuthContext } from './authContextDef';
+
+// Shared toast style constants
+const TOAST_STYLES = {
+    error: {
+        className: 'flyup-toast flyup-toast--error',
+        style: {
+            borderRadius: '14px', background: '#c0152a', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+            padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+            minWidth: '280px', maxWidth: '380px',
+        },
+    },
+    success: {
+        className: 'flyup-toast flyup-toast--success',
+        style: {
+            borderRadius: '14px', background: '#0f7a45', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(15,122,69,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+            padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+            minWidth: '280px', maxWidth: '380px',
+        },
+    },
+};
 
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(() => {
@@ -30,84 +54,42 @@ export const CartProvider = ({ children }) => {
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
-    const enrolledCourseIds = new Set(enrollmentData?.enrollments?.map(e => e.CourseId) || []);
+    const enrolledCourseIds = useMemo(
+        () => new Set(enrollmentData?.enrollments?.map(e => e.CourseId) || []),
+        [enrollmentData?.enrollments]
+    );
 
     const addToCart = (course) => {
+        // Normalize id: prefer lowercase, fall back to PascalCase
+        const courseId = course.id ?? course.Id;
+
         if (!user) {
-            toast.error('Please login to add to cart', {
-                icon: '🔒',
-                style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
-            });
+            toast.error('Vui lòng đăng nhập để thêm vào giỏ', { icon: '🔒', ...TOAST_STYLES.error });
             return;
         }
 
-        // Check if already enrolled
-        if (enrolledCourseIds.has(course.id || course.Id)) { // Handle both id cases just in case
-             toast.error('Course already registered, please choose another course', {
-                icon: '🚫',
-                style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
-            });
+        if (enrolledCourseIds.has(courseId)) {
+            toast.error('Khóa học đã đăng ký!', { icon: '🚫', ...TOAST_STYLES.error });
             return;
         }
 
-        if (cart.find((item) => item.id === course.id)) {
-            toast.error('Course already in cart!', {
-                icon: '🛒',
-                style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
-            });
+        if (cart.find((item) => item.id === courseId)) {
+            toast.error('Khóa học đã có trong giỏ!', { icon: '🛒', ...TOAST_STYLES.error });
             return;
         }
 
         setCart((prevCart) => [...prevCart, course]);
-
-        toast.success('Added to cart!', {
-            icon: '🚀',
-            style: {
-                borderRadius: '10px',
-                background: '#1A1333',
-                color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
-            },
-        });
+        toast.success('Đã thêm vào giỏ hàng!', { icon: '🚀', ...TOAST_STYLES.success });
     };
 
     const removeFromCart = (courseId) => {
         setCart((prevCart) => prevCart.filter((item) => item.id !== courseId));
-        toast.success('Removed from cart', {
-            style: {
-                borderRadius: '10px',
-                background: '#1A1333',
-                color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
-            },
-        });
+        toast.success('Đã xóa khỏi giỏ hàng', { icon: '🗑️', ...TOAST_STYLES.success });
     };
 
     const clearCart = () => {
         setCart([]);
-        toast.success('Cart cleared', {
-            style: {
-                borderRadius: '10px',
-                background: '#1A1333',
-                color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
-            },
-        });
+        toast.success('Đã xóa toàn bộ giỏ hàng', { icon: '✨', ...TOAST_STYLES.success });
     };
 
     const cartCount = cart.length;
@@ -125,7 +107,8 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         clearCart,
         cartCount,
-        cartTotal
+        cartTotal,
+        enrolledCourseIds,
     };
 
     return (

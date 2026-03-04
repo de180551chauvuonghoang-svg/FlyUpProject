@@ -186,3 +186,70 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ============================================================
+   FlyUp Toast Notification – Slide In from Right / Slide Out to Right
+   ============================================================ */
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+/* Base toast – slide in */
+.flyup-toast {
+  animation: toast-slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Slide-out when hidden */
+.flyup-toast[data-visible="false"] {
+  animation: toast-slide-out 0.38s cubic-bezier(0.55, 0, 0.45, 1) both !important;
+}
+
+/* Error – pulsing red glow */
+.flyup-toast--error {
+  animation: toast-slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both,
+             error-glow-pulse 2s 0.5s ease-in-out infinite !important;
+}
+
+@keyframes error-glow-pulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(255, 60, 120, 0.35), 0 2px 12px rgba(0,0,0,0.5); }
+  50%       { box-shadow: 0 8px 40px rgba(255, 60, 120, 0.65), 0 2px 16px rgba(0,0,0,0.6); }
+}
+
+/* Success – subtle green glow */
+.flyup-toast--success {
+  animation: toast-slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both,
+             success-glow-pulse 2s 0.5s ease-in-out infinite !important;
+}
+
+@keyframes success-glow-pulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(100, 220, 160, 0.30), 0 2px 12px rgba(0,0,0,0.5); }
+  50%       { box-shadow: 0 8px 40px rgba(100, 220, 160, 0.55), 0 2px 16px rgba(0,0,0,0.6); }
+}
+
+/* Dismiss state */
+.flyup-toast--error[data-visible="false"],
+.flyup-toast--success[data-visible="false"] {
+  animation: toast-slide-out 0.38s cubic-bezier(0.55, 0, 0.45, 1) both !important;
+}
+

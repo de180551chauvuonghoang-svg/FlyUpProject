@@ -5,16 +5,54 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useCart from '../../hooks/useCart';
 import { getImageUrl } from '../../utils/imageUtils';
+import { Zap } from 'lucide-react';
 import { toggleWishlist, getWishlist } from '../../services/wishlistService';
+import { createCheckout } from '../../services/checkoutService';
+
+// Shared toast style constants for this component
+const TOAST_OPTIONS = {
+    error: {
+        className: 'flyup-toast flyup-toast--error',
+        style: {
+            borderRadius: '14px', background: '#c0152a', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(192,21,42,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+            padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+            minWidth: '260px', maxWidth: '360px',
+        },
+    },
+    success: {
+        className: 'flyup-toast flyup-toast--success',
+        style: {
+            borderRadius: '14px', background: '#0f7a45', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(15,122,69,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+            padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+            minWidth: '260px', maxWidth: '360px',
+        },
+    },
+    warn: {
+        className: 'flyup-toast flyup-toast--warn',
+        style: {
+            borderRadius: '14px', background: '#b45309', color: '#fff',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow: '0 8px 32px rgba(180,83,9,0.5), 0 2px 12px rgba(0,0,0,0.4)',
+            padding: '14px 18px', fontSize: '14px', fontWeight: '600',
+            minWidth: '260px', maxWidth: '360px',
+        },
+    },
+};
 
 const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price, showWishlist = true }) => {
     const navigate = useNavigate();
-    const { addToCart, cart } = useCart();
+    const { addToCart, cart, enrolledCourseIds } = useCart();
     const { user } = useAuth();
     const queryClient = useQueryClient();
+    const [enrolling, setEnrolling] = React.useState(false);
 
     // Check if course is already in cart
     const isInCart = cart.some(item => item.id === id);
+    const isEnrolled = enrolledCourseIds?.has(id) ?? false;
 
     // Use query to check wishlist status from cache
     const { data: wishlistCourses } = useQuery({
@@ -42,6 +80,12 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
             return;
         }
 
+        // Block wishlist if already enrolled
+        if (enrolledCourseIds && enrolledCourseIds.has(id)) {
+            toast.error('Khóa học đã trong My Learning!', { icon: '🎓', ...TOAST_OPTIONS.error });
+            return;
+        }
+
         // Optimistic update
         const previousWishlist = queryClient.getQueryData(['wishlist']);
         
@@ -63,16 +107,16 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
             const result = await toggleWishlist(id);
             
             if (result.isInWishlist) {
-                toast.success('Added to wishlist');
+                toast.success('Đã thêm vào yêu thích! ❤️', { ...TOAST_OPTIONS.success });
             } else {
-                toast.success('Removed from wishlist');
+                toast.success('Đã xóa khỏi yêu thích', { icon: '💔', iconTheme: { primary: '#b45309', secondary: '#fff' }, ...TOAST_OPTIONS.warn });
             }
 
             // Invalidate to ensure we have the correct server state eventually
             queryClient.invalidateQueries({ queryKey: ['wishlist'] });
         } catch (error) {
             console.error("Failed to toggle wishlist", error);
-            toast.error('Failed to update wishlist');
+            toast.error('Không thể cập nhật yêu thích', { ...TOAST_OPTIONS.error });
             
             // Revert on error
             if (previousWishlist) {
@@ -89,6 +133,30 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
         return numPrice.toLocaleString('vi-VN');
     };
 
+    const handleEnrollNow = async (e) => {
+        e.stopPropagation();
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        // Guard: already enrolled
+        if (isEnrolled) {
+            toast.error('Bạn đã học khóa học này!', { icon: '🎓', ...TOAST_OPTIONS.error });
+            return;
+        }
+        setEnrolling(true);
+        try {
+            const res = await createCheckout({ courseIds: [id] });
+            const checkoutId = res?.data?.checkoutId;
+            if (!checkoutId) throw new Error('Không nhận được mã đơn hàng từ server');
+            navigate(`/checkout/${checkoutId}`);
+        } catch (error) {
+            toast.error(error.message || 'Không thể tạo đơn hàng', { icon: '❌', ...TOAST_OPTIONS.error });
+        } finally {
+            setEnrolling(false);
+        }
+    };
+
     return (
         <div 
             onClick={handleCardClick}
@@ -103,7 +171,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
                 />
                 
                 {/* Wishlist Button */}
-                {showWishlist && (
+                {showWishlist && !enrolledCourseIds?.has(id) && (
                     <button
                         onClick={handleWishlistToggle}
                         className="absolute right-3 bottom-3 z-30 rounded-full bg-black/40 p-2 text-white backdrop-blur-md transition-all hover:bg-black/60 hover:scale-110 group-hover/btn:bg-primary"
@@ -181,6 +249,27 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
                         {isInCart ? 'check_circle' : 'add_shopping_cart'}
                     </span>
                 </button>
+
+                {/* Enroll Now – hidden when already enrolled */}
+                {!isEnrolled && (
+                <button
+                    onClick={handleEnrollNow}
+                    disabled={enrolling}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                    {enrolling ? (
+                        <>
+                            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                            <span>Đang xử lý...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Zap className="w-4 h-4" />
+                            <span>Đăng ký ngay</span>
+                        </>
+                    )}
+                </button>
+                )}
             </div>
         </div>
     );
