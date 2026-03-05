@@ -21,6 +21,7 @@ import useAuth from '../hooks/useAuth';
 import ReviewList from '../components/Reviews/ReviewList';
 import ReviewForm from '../components/Reviews/ReviewForm';
 import { toggleWishlist, getWishlist } from '../services/wishlistService';
+import { createCheckout } from '../services/checkoutService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -40,6 +41,7 @@ export default function CourseDetailsPage() {
   
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedSections, setExpandedSections] = useState({});
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const { addToCart } = useCart();
   const { user, accessToken } = useAuth();
   
@@ -124,6 +126,37 @@ export default function CourseDetailsPage() {
           duration: `${course.Sections?.reduce((acc, sec) => acc + (sec.Lectures?.length || 0), 0)} lectures`
       };
       addToCart(cartItem);
+  };
+
+  const handleBuyNow = async () => {
+      if (isCheckingOut) return;
+
+      if (!user) {
+          toast.error('Vui lòng đăng nhập để mua khóa học.', {
+              icon: '🔒',
+          });
+          navigate('/login');
+          return;
+      }
+
+      setIsCheckingOut(true);
+      try {
+          toast.loading('Đang chuẩn bị thanh toán...');
+          const res = await createCheckout({
+              courseIds: [course.Id],
+              totalAmount: course.Price
+          });
+          
+          toast.dismiss();
+          if (res.success) {
+              navigate(`/checkout/${res.data.checkoutId}`);
+          }
+      } catch (err) {
+          toast.dismiss();
+          toast.error(err.message || 'Checkout failed');
+      } finally {
+          setIsCheckingOut(false);
+      }
   };
 
   // React Query for caching
@@ -543,15 +576,13 @@ export default function CourseDetailsPage() {
                 Add to Cart
               </motion.button>
               <motion.button 
-                onClick={() => {
-                  handleAddToCart();
-                  navigate('/cart');
-                }}
-                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors"
+                onClick={handleBuyNow}
+                disabled={isCheckingOut}
+                whileHover={{ scale: isCheckingOut ? 1 : 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                whileTap={{ scale: isCheckingOut ? 1 : 0.98 }}
+                className={`w-full h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-base transition-colors ${isCheckingOut ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                Buy Now
+                {isCheckingOut ? 'Đang xử lý...' : 'Buy Now'}
               </motion.button>
             </div>
 
