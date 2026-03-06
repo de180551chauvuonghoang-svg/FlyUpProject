@@ -9,6 +9,7 @@ generator erd {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Articles {
@@ -626,3 +627,4 @@ model EmailVerifications {
 
   @@index([Email], map: "IX_EmailVerifications_Email")
 }
+

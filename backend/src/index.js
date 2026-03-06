@@ -22,6 +22,7 @@ import coursesRouter from './routers/courses.js';
 import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
+import adminRouter from './routers/admin.js';
 import chatbotRouter from './routers/chatbot.js';
 import quizRouter from './routers/quiz.js';
 import { getCourses, getCategories } from './services/courseService.js';
@@ -40,7 +41,7 @@ if (result.error) {
   }
 } else {
   console.log('DOTENV LOADED VARS:', Object.keys(result.parsed));
-  
+
   // Dynamic import worker after env vars are loaded to ensure Redis connection works
   import('./workers/emailWorker.js').catch(err => console.error('Failed to start email worker:', err));
 }
@@ -48,10 +49,27 @@ if (result.error) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:5173',  // Frontend
+  'http://localhost:5174',  // Admin
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL
+].filter(Boolean);
+
 // Middleware
 app.use(compression());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -70,6 +88,7 @@ app.use('/api/checkout', checkoutRouter);
 app.use('/api/comments', commentRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/chatbot', chatbotRouter);
 app.use('/api/quiz', quizRouter);
 
@@ -81,7 +100,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  
+
   // Handle JSON parse errors
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({
@@ -90,48 +109,50 @@ app.use((err, req, res, next) => {
     });
   }
 
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Something went wrong!',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
   console.log(`� Swagger Docs available at http://localhost:${PORT}/api-docs`);
-  console.log(`�📦 Environment: ${process.env.NODE_ENV || 'development'}`);
-  
+  console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
+
   // Warm up cache
   (async () => {
     try {
       console.log('🔥 Warming up cache...');
-      console.log('🔥 Warming up cache...');
-      // Run sequentially to avoid DB connection timeout
       await getCategories();
       await getCourses({ page: 1, limit: 12 });
       console.log('✅ Cache warmed up successfully!');
     } catch (error) {
       console.warn('⚠️ Cache warmup partial failure (non-critical):', error.message);
     }
-
   })();
 });
 
-const gracefulShutdown = async () => {
-  console.log('🛑 Received kill signal, shutting down gracefully');
+// Graceful shutdown - release port and disconnect Prisma when process exits
+const shutdown = async () => {
+  console.log('\n🛑 Shutting down server...');
   try {
     await import('./lib/prisma.js').then(m => m.default.$disconnect());
     console.log('✅ Prisma disconnected');
-    process.exit(0);
   } catch (err) {
-    console.error('❌ Error during shutdown:', err);
-    process.exit(1);
+    console.error('❌ Error disconnecting Prisma:', err);
   }
+  server.close(() => {
+    console.log('✅ Server closed. Port released.');
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 5000);
 };
 
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 export default app;
+
 
