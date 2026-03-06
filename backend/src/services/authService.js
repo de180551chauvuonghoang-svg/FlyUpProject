@@ -264,6 +264,11 @@ export const refreshSession = async (refreshToken) => {
     throw new Error('Invalid refresh token');
   }
 
+  // Check if user is locked
+  if (!user.IsApproved) {
+    throw new Error('Your account has been locked. Please contact administrator.');
+  }
+
   // Generate new access token
   const newAccessToken = generateAccessToken({
     userId: user.Id,

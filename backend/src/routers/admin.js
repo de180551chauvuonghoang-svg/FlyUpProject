@@ -201,6 +201,7 @@ router.put('/users/:id/lock', async (req, res) => {
             where: { Id: id },
             data: {
                 IsApproved: false,
+                RefreshToken: '', // Clear refresh token to invalidate existing sessions
                 LastModificationTime: new Date()
             },
             select: {
