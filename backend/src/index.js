@@ -24,6 +24,7 @@ import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
 import adminRouter from './routers/admin.js';
 import chatbotRouter from './routers/chatbot.js';
+import quizRouter from './routers/quiz.js';
 import { getCourses, getCategories } from './services/courseService.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './configs/swagger.js';
@@ -89,6 +90,7 @@ app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/chatbot', chatbotRouter);
+app.use('/api/quiz', quizRouter);
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
