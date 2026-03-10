@@ -4,6 +4,12 @@ import { authenticateJWT } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// Get list of assignments for a course
+router.get("/course/:courseId/assignments", quizController.getAssignmentsByCourse);
+
+// Get submission history for user + assignment
+router.get("/assignment/:assignmentId/submissions", quizController.getSubmissionHistory);
+
 // Get quiz questions for a course (public, anyone can view)
 router.get("/:courseId/questions", quizController.getQuizQuestions);
 

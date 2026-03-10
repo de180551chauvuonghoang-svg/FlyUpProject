@@ -7,6 +7,10 @@ import {
   fetchCourseLessons,
   fetchEnrollmentProgress,
 } from "../services/lessonService";
+import { fetchAssignmentsByCourse } from "../services/quizService";
+import QuizPreTestPage from "./QuizPreTestPage";
+import QuizPage from "./QuizPage";
+import QuizResultPage from "./QuizResultPage";
 
 // Mock data for demonstration
 const MOCK_COURSE = {
@@ -77,6 +81,12 @@ export default function CourseLessonPage() {
   const [isInstructorPreview, setIsInstructorPreview] = useState(false);
   const [, setIsVideoPlaying] = useState(false);
 
+  // Quiz overlay state
+  const [activeOverlay, setActiveOverlay] = useState(null); // null | 'pretest' | 'quiz' | 'result'
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [quizQuestionCount, setQuizQuestionCount] = useState(50);
+  const [quizResult, setQuizResult] = useState(null);
+
   // Check if this is instructor preview mode
   // NEVER use instructor preview in CourseLessonPage - it's for enrolled students only
   // Instructors should use the instructor dashboard to preview their courses
@@ -90,7 +100,7 @@ export default function CourseLessonPage() {
           user?.instructor ||
           user?.instructorId ||
           (user?.role || user?.Role || "").trim().toLowerCase() ===
-            "instructor",
+          "instructor",
         lessonId,
         shouldPreview,
         note: "Always false - use instructor dashboard for preview",
@@ -131,6 +141,13 @@ export default function CourseLessonPage() {
     queryKey: ["enrollmentProgress", courseId, user?.id],
     queryFn: () => fetchEnrollmentProgress(user?.id, courseId),
     enabled: !!courseId && !!user?.id && courseId !== "demo",
+  });
+
+  // Fetch assignments for this course
+  const { data: assignments = [] } = useQuery({
+    queryKey: ["courseAssignments", courseId],
+    queryFn: () => fetchAssignmentsByCourse(courseId),
+    enabled: !!courseId && courseId !== "demo",
   });
 
   // Use mock data if in demo mode or if no real data
@@ -457,7 +474,7 @@ export default function CourseLessonPage() {
                 FlyUp
               </h2>
             </Link>
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="size-8 rounded-full bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
               title="Back to Home"
@@ -504,13 +521,12 @@ export default function CourseLessonPage() {
                 {section.items.map((item) => (
                   <button
                     key={item.id}
-                    className={`relative flex items-center gap-3 w-full p-2.5 rounded-lg text-left transition-all ${
-                      item.status === "active"
-                        ? "bg-primary/10 border border-primary/20 shadow-inner"
-                        : item.status === "locked"
-                          ? "cursor-not-allowed opacity-50"
-                          : "hover:bg-white/5"
-                    }`}
+                    className={`relative flex items-center gap-3 w-full p-2.5 rounded-lg text-left transition-all ${item.status === "active"
+                      ? "bg-primary/10 border border-primary/20 shadow-inner"
+                      : item.status === "locked"
+                        ? "cursor-not-allowed opacity-50"
+                        : "hover:bg-white/5"
+                      }`}
                     onClick={() => {
                       if (item.status !== "locked") {
                         setSelectedLessonId(item.id);
@@ -518,13 +534,12 @@ export default function CourseLessonPage() {
                     }}
                   >
                     <div
-                      className={`absolute -left-[19px] top-1/2 -translate-y-1/2 size-2.5 rounded-full ${
-                        item.status === "completed"
-                          ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
-                          : item.status === "active"
-                            ? "bg-primary shadow-[0_0_12px_rgba(168,85,247,1)] ring-2 ring-[#0a0a14] size-3"
-                            : "bg-slate-700"
-                      }`}
+                      className={`absolute -left-[19px] top-1/2 -translate-y-1/2 size-2.5 rounded-full ${item.status === "completed"
+                        ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
+                        : item.status === "active"
+                          ? "bg-primary shadow-[0_0_12px_rgba(168,85,247,1)] ring-2 ring-[#0a0a14] size-3"
+                          : "bg-slate-700"
+                        }`}
                     ></div>
 
                     <span
@@ -535,13 +550,12 @@ export default function CourseLessonPage() {
 
                     <div className="flex-1 flex flex-col">
                       <span
-                        className={`text-sm ${
-                          item.status === "active"
-                            ? "font-medium text-white"
-                            : item.status === "completed"
-                              ? "text-slate-300 line-through decoration-slate-600"
-                              : "text-slate-300 group-hover:text-white"
-                        }`}
+                        className={`text-sm ${item.status === "active"
+                          ? "font-medium text-white"
+                          : item.status === "completed"
+                            ? "text-slate-300 line-through decoration-slate-600"
+                            : "text-slate-300 group-hover:text-white"
+                          }`}
                       >
                         <span className="text-slate-500 text-xs mr-1">
                           {item.lectureNumber}.
@@ -557,6 +571,36 @@ export default function CourseLessonPage() {
               </div>
             </div>
           ))}
+
+          {/* Assignments Section */}
+          {assignments.length > 0 && (
+            <div className="mt-2">
+              <div className="flex items-center gap-2 px-2 py-2 mb-1 text-xs font-semibold uppercase tracking-wider text-violet-400">
+                <span className="material-symbols-outlined text-[16px]">assignment</span>
+                Assignments
+              </div>
+              <div className="flex flex-col gap-1 pl-3 border-l border-violet-500/30 ml-3">
+                {assignments.map((assignment) => (
+                  <button
+                    key={assignment.Id}
+                    className="relative flex items-center gap-3 w-full p-2.5 rounded-lg text-left hover:bg-violet-500/10 transition-all group/asgn"
+                    onClick={() => {
+                      setSelectedAssignment(assignment);
+                      setActiveOverlay('pretest');
+                    }}
+                  >
+                    <div className="absolute -left-[19px] top-1/2 -translate-y-1/2 size-2.5 rounded-full bg-violet-500/50"></div>
+                    <span className="material-symbols-outlined text-[20px] text-violet-400" style={{ fontVariationSettings: "'FILL' 1" }}>quiz</span>
+                    <div className="flex-1 flex flex-col min-w-0">
+                      <span className="text-sm text-slate-300 group-hover/asgn:text-white truncate">{assignment.Name}</span>
+                      <span className="text-[10px] text-slate-500">{assignment.QuestionCount} câu · Pass: {assignment.GradeToPass}/10</span>
+                    </div>
+                    <span className="material-symbols-outlined text-[14px] text-slate-600 group-hover/asgn:text-violet-400 transition-colors">chevron_right</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* User Profile Footer */}
@@ -720,21 +764,19 @@ export default function CourseLessonPage() {
             <div className="flex border-b border-glass-border">
               <button
                 onClick={() => setActiveTab("overview")}
-                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${
-                  activeTab === "overview"
-                    ? "text-primary border-primary"
-                    : "text-slate-400 hover:text-white border-transparent"
-                }`}
+                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${activeTab === "overview"
+                  ? "text-primary border-primary"
+                  : "text-slate-400 hover:text-white border-transparent"
+                  }`}
               >
                 Overview
               </button>
               <button
                 onClick={() => setActiveTab("resources")}
-                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${
-                  activeTab === "resources"
-                    ? "text-primary border-primary"
-                    : "text-slate-400 hover:text-white border-transparent"
-                }`}
+                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${activeTab === "resources"
+                  ? "text-primary border-primary"
+                  : "text-slate-400 hover:text-white border-transparent"
+                  }`}
               >
                 Resources{" "}
                 <span className="bg-slate-800 text-xs px-1.5 rounded-sm">
@@ -743,11 +785,10 @@ export default function CourseLessonPage() {
               </button>
               <button
                 onClick={() => setActiveTab("qa")}
-                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${
-                  activeTab === "qa"
-                    ? "text-primary border-primary"
-                    : "text-slate-400 hover:text-white border-transparent"
-                }`}
+                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${activeTab === "qa"
+                  ? "text-primary border-primary"
+                  : "text-slate-400 hover:text-white border-transparent"
+                  }`}
               >
                 Q&A{" "}
                 <span className="bg-slate-800 text-xs px-1.5 rounded-sm">
@@ -756,11 +797,10 @@ export default function CourseLessonPage() {
               </button>
               <button
                 onClick={() => setActiveTab("notes")}
-                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${
-                  activeTab === "notes"
-                    ? "text-primary border-primary"
-                    : "text-slate-400 hover:text-white border-transparent"
-                }`}
+                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${activeTab === "notes"
+                  ? "text-primary border-primary"
+                  : "text-slate-400 hover:text-white border-transparent"
+                  }`}
               >
                 Notes
               </button>
@@ -853,7 +893,7 @@ export default function CourseLessonPage() {
                   Lecture Resources
                 </h3>
                 {currentLesson?.Materials &&
-                currentLesson.Materials.length > 0 ? (
+                  currentLesson.Materials.length > 0 ? (
                   <div className="space-y-3">
                     {currentLesson.Materials.map((material, index) => {
                       const fileName = material.Url.split("/").pop();
@@ -964,6 +1004,42 @@ export default function CourseLessonPage() {
           </footer>
         </div>
       </main>
+
+      {/* Quiz Overlays */}
+      {activeOverlay === 'pretest' && selectedAssignment && (
+        <QuizPreTestPage
+          assignment={selectedAssignment}
+          userId={user?.Id || user?.id}
+          courseId={courseId}
+          onStart={(questionCount) => {
+            setQuizQuestionCount(questionCount);
+            setActiveOverlay('quiz');
+          }}
+          onBack={() => setActiveOverlay(null)}
+        />
+      )}
+      {activeOverlay === 'quiz' && selectedAssignment && (
+        <QuizPage
+          assignmentId={selectedAssignment.Id}
+          courseId={courseId}
+          userId={user?.Id || user?.id}
+          questionCount={quizQuestionCount}
+          onFinish={(result) => {
+            setQuizResult(result);
+            setActiveOverlay('result');
+          }}
+          onBack={() => setActiveOverlay('pretest')}
+        />
+      )}
+      {activeOverlay === 'result' && quizResult && (
+        <QuizResultPage
+          result={quizResult}
+          assignmentName={selectedAssignment?.Name}
+          onBack={() => setActiveOverlay(null)}
+          onNextLesson={() => setActiveOverlay(null)}
+        />
+      )}
     </div>
   );
 }
+

@@ -1,6 +1,102 @@
 import prisma from "../lib/prisma.js";
 
 /**
+ * Get list of assignments for a course
+ */
+export const getAssignmentsByCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    console.log(`[QuizController] Fetching assignments for course: ${courseId}`);
+
+    const assignments = await prisma.assignments.findMany({
+      where: {
+        Sections: {
+          CourseId: courseId,
+        },
+      },
+      select: {
+        Id: true,
+        Name: true,
+        Duration: true,
+        QuestionCount: true,
+        GradeToPass: true,
+        SectionId: true,
+        Sections: {
+          select: {
+            Title: true,
+          },
+        },
+      },
+      orderBy: {
+        Sections: {
+          Index: 'asc',
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      data: assignments,
+    });
+  } catch (error) {
+    console.error("Get assignments error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch assignments",
+    });
+  }
+};
+
+/**
+ * Get submission history for a user + assignment
+ */
+export const getSubmissionHistory = async (req, res) => {
+  try {
+    const { assignmentId } = req.params;
+    const { userId } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "userId is required" });
+    }
+
+    console.log(`[QuizController] Fetching submissions for assignment: ${assignmentId}, user: ${userId}`);
+
+    const submissions = await prisma.submissions.findMany({
+      where: {
+        AssignmentId: assignmentId,
+        CreatorId: userId,
+      },
+      select: {
+        Id: true,
+        Mark: true,
+        TimeSpentInSec: true,
+        CreationTime: true,
+        Assignments: {
+          select: {
+            GradeToPass: true,
+            QuestionCount: true,
+          },
+        },
+      },
+      orderBy: {
+        CreationTime: 'desc',
+      },
+    });
+
+    res.json({
+      success: true,
+      data: submissions,
+    });
+  } catch (error) {
+    console.error("Get submission history error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch submission history",
+    });
+  }
+};
+
+/**
  * Get MCQ questions for a course
  */
 export const getQuizQuestions = async (req, res) => {
