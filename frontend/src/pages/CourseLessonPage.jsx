@@ -1029,6 +1029,7 @@ export default function CourseLessonPage() {
         <QuizResultPage
           result={quizResult}
           assignmentName={selectedAssignment?.Name}
+          gradeToPass={selectedAssignment?.GradeToPass || 5}
           onBack={() => setActiveOverlay(null)}
           onNextLesson={() => setActiveOverlay(null)}
         />
