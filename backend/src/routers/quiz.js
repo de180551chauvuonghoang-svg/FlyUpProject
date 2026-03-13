@@ -16,4 +16,9 @@ router.get("/:courseId/questions", quizController.getQuizQuestions);
 // Submit quiz answers (requires authentication)
 router.post("/:courseId/submit", authenticateJWT, quizController.submitQuiz);
 
+// CAT routes
+router.post("/cat/start", authenticateJWT, quizController.startCatQuiz);
+router.post("/cat/answer", authenticateJWT, quizController.answerCatQuestion);
+router.post("/cat/finish", authenticateJWT, quizController.finishCatQuiz);
+
 export default router;

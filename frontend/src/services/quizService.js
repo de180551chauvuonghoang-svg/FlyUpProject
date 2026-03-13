@@ -1,6 +1,6 @@
 import { apiCall } from "../config/apiConfig";
 
-const CAT_BASE = "http://127.0.0.1:5001/api/cat";
+const API_BASE = "http://localhost:5000";
 
 /**
  * Fetch all assignments for a course
@@ -20,34 +20,86 @@ export const fetchSubmissionHistory = async (assignmentId, userId) => {
     return data.data || [];
 };
 
-/**
- * CAT: Get next question
- * @param {object} payload - { user_id, course_id, assignment_id, answered_questions, last_response, current_theta }
- */
-export const catNextQuestion = async (payload) => {
-    const response = await fetch(`${CAT_BASE}/next-question`, {
+export const startCatQuiz = async (payload, token) => {
+    const response = await fetch(`${API_BASE}/api/quiz/cat/start`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
     });
-    if (!response.ok) {
-        throw new Error(`CAT Error: ${response.statusText}`);
+
+    const rawText = await response.text();
+    console.log("[startCatQuiz] status =", response.status);
+    console.log("[startCatQuiz] raw response =", rawText);
+
+    let data = {};
+    try {
+        data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+        throw new Error(`startCatQuiz returned non-JSON response. Status=${response.status}. Body=${rawText}`);
     }
-    return response.json();
+
+    if (!response.ok) {
+        throw new Error(data?.error || "Failed to start CAT quiz");
+    }
+
+    return data;
 };
 
-/**
- * CAT: Submit quiz and finalize results
- * @param {object} payload - { user_id, course_id, assignment_id, answered_questions, responses, smoothing_alpha }
- */
-export const catSubmit = async (payload) => {
-    const response = await fetch(`${CAT_BASE}/submit`, {
+export const answerCatQuestion = async (payload, token) => {
+    const response = await fetch(`${API_BASE}/api/quiz/cat/answer`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
     });
-    if (!response.ok) {
-        throw new Error(`CAT Submit Error: ${response.statusText}`);
+
+    const rawText = await response.text();
+    console.log("[answerCatQuestion] status =", response.status);
+    console.log("[answerCatQuestion] raw response =", rawText);
+
+    let data = {};
+    try {
+        data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+        throw new Error(`answerCatQuestion returned non-JSON response. Status=${response.status}. Body=${rawText}`);
     }
-    return response.json();
+
+    if (!response.ok) {
+        throw new Error(data?.error || "Failed to answer CAT question");
+    }
+
+    return data;
+};
+
+export const finishCatQuiz = async (payload, token) => {
+    const response = await fetch(`${API_BASE}/api/quiz/cat/finish`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const rawText = await response.text();
+    console.log("[finishCatQuiz] status =", response.status);
+    console.log("[finishCatQuiz] raw response =", rawText);
+
+    let data = {};
+    try {
+        data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+        throw new Error(`finishCatQuiz returned non-JSON response. Status=${response.status}. Body=${rawText}`);
+    }
+
+    if (!response.ok) {
+        throw new Error(data?.error || "Failed to finish CAT quiz");
+    }
+
+    return data;
 };

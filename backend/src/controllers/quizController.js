@@ -1,4 +1,9 @@
 import prisma from "../lib/prisma.js";
+import {
+  startCatQuizService,
+  answerCatQuestionService,
+  finishCatQuizService,
+} from "../services/catQuizService.js";
 
 /**
  * Get list of assignments for a course
@@ -29,7 +34,7 @@ export const getAssignmentsByCourse = async (req, res) => {
       },
       orderBy: {
         Sections: {
-          Index: 'asc',
+          Index: "asc",
         },
       },
     });
@@ -59,7 +64,9 @@ export const getSubmissionHistory = async (req, res) => {
       return res.status(400).json({ success: false, error: "userId is required" });
     }
 
-    console.log(`[QuizController] Fetching submissions for assignment: ${assignmentId}, user: ${userId}`);
+    console.log(
+      `[QuizController] Fetching submissions for assignment: ${assignmentId}, user: ${userId}`
+    );
 
     const submissions = await prisma.submissions.findMany({
       where: {
@@ -79,7 +86,7 @@ export const getSubmissionHistory = async (req, res) => {
         },
       },
       orderBy: {
-        CreationTime: 'desc',
+        CreationTime: "desc",
       },
     });
 
@@ -106,7 +113,6 @@ export const getQuizQuestions = async (req, res) => {
 
     console.log(`[QuizController] Fetching quiz for course: ${courseId}`);
 
-    // Find all assignments for the course
     const assignments = await prisma.assignments.findMany({
       where: {
         Sections: {
@@ -123,12 +129,11 @@ export const getQuizQuestions = async (req, res) => {
               },
             },
           },
-          take: parseInt(limit),
+          take: parseInt(limit, 10),
         },
       },
     });
 
-    // Flatten all questions from all assignments
     let allQuestions = [];
     assignments.forEach((assignment) => {
       if (assignment.McqQuestions) {
@@ -137,20 +142,19 @@ export const getQuizQuestions = async (req, res) => {
             id: q.Id,
             content: q.Content,
             difficulty: q.Difficulty,
-            choices: q.McqChoices ? q.McqChoices.map((c) => ({
-              id: c.Id,
-              content: c.Content,
-            })) : [],
-          })),
+            choices: q.McqChoices
+              ? q.McqChoices.map((c) => ({
+                id: c.Id,
+                content: c.Content,
+              }))
+              : [],
+          }))
         );
       }
     });
 
-    // Shuffle questions
     allQuestions = allQuestions.sort(() => Math.random() - 0.5);
-
-    // Take only requested limit
-    allQuestions = allQuestions.slice(0, parseInt(limit));
+    allQuestions = allQuestions.slice(0, parseInt(limit, 10));
 
     res.json({
       success: true,
@@ -174,7 +178,7 @@ export const getQuizQuestions = async (req, res) => {
 export const submitQuiz = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { answers } = req.body; // { questionId: choiceId }
+    const { answers } = req.body;
     const userId = req.user?.userId;
 
     if (!answers || Object.keys(answers).length === 0) {
@@ -185,12 +189,11 @@ export const submitQuiz = async (req, res) => {
     }
 
     console.log(
-      `[QuizController] Submit quiz for course: ${courseId}, user: ${userId}`,
+      `[QuizController] Submit quiz for course: ${courseId}, user: ${userId}`
     );
 
     const questionIds = Object.keys(answers);
 
-    // Get all questions with correct answers
     const questions = await prisma.mcqQuestions.findMany({
       where: {
         Id: { in: questionIds },
@@ -200,7 +203,6 @@ export const submitQuiz = async (req, res) => {
       },
     });
 
-    // Calculate score
     let correctCount = 0;
     const results = questions.map((question) => {
       const userChoiceId = answers[question.Id];
@@ -235,6 +237,116 @@ export const submitQuiz = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to submit quiz",
+    });
+  }
+};
+
+/**
+ * Start CAT quiz
+ */
+export const startCatQuiz = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { assignmentId, courseId, questionCount } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const data = await startCatQuizService({
+      userId,
+      courseId,
+      assignmentId,
+      questionCount,
+    });
+
+    return res.json(data);
+  } catch (error) {
+    console.error("startCatQuiz error:", error);
+    return res.status(400).json({
+      error: error.message || "Failed to start CAT quiz",
+    });
+  }
+};
+
+/**
+ * Answer one CAT question and get next question
+ */
+export const answerCatQuestion = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const {
+      assignmentId,
+      courseId,
+      questionCount,
+      currentQuestionId,
+      selectedChoiceId,
+      answeredQuestions,
+      responses,
+      currentTheta,
+    } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const data = await answerCatQuestionService({
+      userId,
+      courseId,
+      assignmentId,
+      questionCount,
+      currentQuestionId,
+      selectedChoiceId,
+      answeredQuestions,
+      responses,
+      currentTheta,
+    });
+
+    return res.json(data);
+  } catch (error) {
+    console.error("answerCatQuestion error:", error);
+    return res.status(400).json({
+      error: error.message || "Failed to answer CAT question",
+    });
+  }
+};
+
+/**
+ * Finish CAT quiz and persist results
+ */
+export const finishCatQuiz = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const {
+      assignmentId,
+      courseId,
+      answeredQuestions,
+      responses,
+      selectedChoiceIds,
+      timeSpentInSec,
+      initialTheta,
+    } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const data = await finishCatQuizService({
+      userId,
+      courseId,
+      assignmentId,
+      answeredQuestions,
+      responses,
+      selectedChoiceIds,
+      timeSpentInSec,
+      initialTheta,
+    });
+
+    return res.json(data);
+  } catch (error) {
+    console.error("finishCatQuiz error:", error);
+    return res.status(400).json({
+      error: error.message || "Failed to finish CAT quiz",
     });
   }
 };

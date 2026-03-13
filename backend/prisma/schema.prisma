@@ -540,6 +540,7 @@ model UserAbilities {
 
   @@index([CourseId], map: "IX_UserAbilities_CourseId")
   @@index([UserId], map: "IX_UserAbilities_UserId")
+  @@unique([UserId, CourseId], map: "UQ_UserAbilities_UserId_CourseId")
 }
 
 model Users {
