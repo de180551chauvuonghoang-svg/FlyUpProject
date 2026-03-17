@@ -8,7 +8,7 @@
  */
 
 import crypto from 'crypto';
-import redisClient from '../lib/redis.js';
+import redisClient from '../lib/cache.js';
 
 const CACHE_TTL = 1800; // 30 minutes (can adjust to 3600 for 60 min)
 const CACHE_PREFIX = 'quiz:';
@@ -296,3 +296,4 @@ export async function checkCacheHealth() {
     return false;
   }
 }
+

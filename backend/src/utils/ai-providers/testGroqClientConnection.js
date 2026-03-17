@@ -1,4 +1,4 @@
-import { generateCompletion, checkGroqHealth } from './groq-client.js';
+import { generateCompletion, checkGroqHealth } from './groqClient.js';
 
 async function testGroqClient() {
   console.log('🧪 Testing Groq Client...\n');
@@ -39,3 +39,4 @@ async function testGroqClient() {
 }
 
 testGroqClient().catch(console.error);
+

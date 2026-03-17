@@ -1,4 +1,4 @@
-import redis from '../lib/redis.js';
+import redis from '../lib/cache.js';
 import prisma from '../lib/prisma.js';
 
 const COURSE_CACHE_KEY = 'chatbot:courses';
@@ -176,3 +176,4 @@ export const getCacheStats = async () => {
     return { cached: false, ttl: -1, expiresIn: 'N/A' };
   }
 };
+

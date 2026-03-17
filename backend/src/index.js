@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import dns from 'node:dns';
 import express from 'express';
 import compression from 'compression';
@@ -22,13 +23,13 @@ import coursesRouter from './routers/courses.js';
 import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
-import chatbotRouter from './routers/chatbot.js';
-import recommendationsRouter from './routers/ai-course-recommendations-router.js';
-import quizGenerationRouter from './routers/ai-quiz-generation-router.js';
+import chatbotRouter from './routers/ai/chatbot.js';
+import recommendationsRouter from './routers/ai/aiCourseRecommendationsRouter.js';
+import quizGenerationRouter from './routers/ai/aiQuizGenerationRouter.js';
 import quizRouter from './routers/quiz.js';
 
 import { getCourses, getCategories } from './services/courseService.js';
-import * as courseCache from './services/course-cache-service.js';
+import * as courseCache from './services/courseCacheService.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './configs/swagger.js';
 
@@ -144,4 +145,5 @@ process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 
 export default app;
+
 

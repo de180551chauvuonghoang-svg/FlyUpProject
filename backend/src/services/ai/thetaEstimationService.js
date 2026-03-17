@@ -7,7 +7,7 @@
  * Phase 7: Hybrid Theta Estimation on Quiz Completion
  */
 
-import { calculate3PLProbability } from './irt-math-utilities.js';
+import { calculate3PLProbability } from './irtMathUtilities.js';
 
 const ITEM_THRESHOLD = 15; // Switch from MAP to MLE at 15 items
 const PRIOR_MEAN = 0; // Normal distribution mean
@@ -45,7 +45,7 @@ export async function updateUserTheta(prisma, {
 
   // Get current ability and item count
   const userAbility = await prisma.userAbilities.findUnique({
-    where: { userId_courseId: { userId, courseId } }
+    where: { UserId_CourseId: { UserId: userId, CourseId: courseId } }
   });
 
   const currentTheta = userAbility?.Theta || 0;
@@ -76,7 +76,7 @@ export async function updateUserTheta(prisma, {
 
   // Update or create UserAbilities record
   await prisma.userAbilities.upsert({
-    where: { userId_courseId: { userId, courseId } },
+    where: { UserId_CourseId: { UserId: userId, CourseId: courseId } },
     update: {
       Theta: newTheta,
       LastUpdate: new Date(),
@@ -213,7 +213,7 @@ async function getTotalItemCount(prisma, userId, courseId) {
   const submissionCount = await prisma.submissions.count({
     where: {
       CreatorId: userId,
-      assignment: {
+      Assignments: {
         Section: {
           CourseId: courseId
         }
@@ -305,3 +305,4 @@ export function estimateThetaEAP(questions, answers, priorMean = 0, priorSD = 1)
 
   return eap;
 }
+

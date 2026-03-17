@@ -1,10 +1,30 @@
 import Groq from 'groq-sdk';
+import { createGroq } from '@ai-sdk/groq';
 
-// Initialize Groq client (singleton pattern)
+// Initialize Groq client (legacy SDK singleton)
 let groqClient = null;
 
+// Initialize Vercel AI SDK Groq provider
+let groqProvider = null;
+
 /**
- * Get or create Groq client instance
+ * Get or create Groq provider instance (Vercel AI SDK)
+ * @returns {Object} Groq provider
+ */
+export function getGroqProvider() {
+  if (!groqProvider) {
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY environment variable is not set');
+    }
+    groqProvider = createGroq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+  }
+  return groqProvider;
+}
+
+/**
+ * Get or create Groq client instance (Legacy SDK)
  * @returns {Groq} Groq SDK client
  */
 export function getGroqClient() {
@@ -18,7 +38,7 @@ export function getGroqClient() {
       timeout: 10000, // 10 second timeout
     });
 
-    console.log('✅ Groq client initialized');
+    console.log('✅ Groq legacy client initialized');
   }
 
   return groqClient;

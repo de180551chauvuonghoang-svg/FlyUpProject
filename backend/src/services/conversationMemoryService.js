@@ -1,5 +1,5 @@
-import redis from '../lib/redis.js';
-import * as summarization from './conversation-summarization-service.js';
+import redis from '../lib/cache.js';
+import * as summarization from './conversationSummarizationService.js';
 
 const CHAT_KEY_PREFIX = 'chat:';
 const SUMMARY_KEY_PREFIX = 'chat:summary:';
@@ -161,3 +161,5 @@ export const getSessionInfo = async (sessionId) => {
     return { messageCount: 0, ttl: -1, expiresIn: 'N/A' };
   }
 };
+
+
