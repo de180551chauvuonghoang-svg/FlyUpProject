@@ -42,3 +42,21 @@ export const createCourseReview = async (courseId, data, token) => {
     
     return res.json();
 };
+
+export const createCourse = async (courseData, token) => {
+    const res = await fetch(`${API_URL}/courses`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(courseData)
+    });
+
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || error.message || 'Failed to create course');
+    }
+
+    return res.json();
+};

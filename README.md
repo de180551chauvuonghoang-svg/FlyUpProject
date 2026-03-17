@@ -1,85 +1,143 @@
-# FlyUp EduTech Platform
+<p align="center">
+  <img src="frontend/public/logo.png" alt="FlyUp Logo" width="80" />
+</p>
 
-FlyUp is a modern, comprehensive educational technology platform designed to provide a seamless learning experience for students and powerful management tools for instructors.
+<h1 align="center">🚀 FlyUp – Online Learning Platform</h1>
 
-## Key Features
-- **Comprehensive Course Management:** Browse, search, and access detailed course content.
-- **AI-Powered Learning:** Integrated chatbot assistant using Groq and Google AI for real-time help.
-- **Secure Checkout:** Robust cart and payment system with transaction verification.
-- **Learning Tracking:** Monitor progress through sections and lectures.
-- **User Engagement:** Review and rating systems, wishlist, and interactive community features.
-- **Performance Optimized:** Redis caching and background job processing with BullMQ.
+<p align="center">
+  <b>Modern Online Learning Platform</b> built with React, Express, Prisma & Supabase.
+  <br />
+  <i>Nền tảng học trực tuyến hiện đại được xây dựng bằng React, Express, Prisma & Supabase.</i>
+</p>
 
-## Tech Stack
-- **Frontend:** React 19, Vite, Tailwind CSS, DaisyUI, Framer Motion, TanStack Query.
-- **Backend:** Node.js (ES Modules), Express.js, Prisma ORM.
-- **Database:** PostgreSQL (Supabase).
-- **Caching & Queue:** Redis, BullMQ.
-- **AI Integration:** Groq SDK (Llama 3), Google Generative AI.
-- **Authentication:** JWT, Supabase Auth (Google, GitHub OAuth).
+<p align="center">
+  <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react" />
+  <img src="https://img.shields.io/badge/Bundler-Vite%207-646CFF?logo=vite" />
+  <img src="https://img.shields.io/badge/Styling-TailwindCSS%204-38B2AC?logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/Backend-Express%204-000000?logo=express" />
+  <img src="https://img.shields.io/badge/ORM-Prisma%207-2D3748?logo=prisma" />
+  <img src="https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase" />
+</p>
 
-## Quick Start
+---
 
-### Prerequisites
-- Node.js (v18 or higher)
-- PostgreSQL (or Supabase account)
-- Redis instance
+## 📖 Introduction / Giới thiệu
 
-### Installation
+**FlyUp** is an EduTech platform that enables:
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/de180551chauvuonghoang-svg/FlyUpProject.git
-   cd FlyUpProject
-   ```
+- 🎓 **Learners** – Browse, search, and buy courses; track progress; manage wishlist.
+- 👨‍🏫 **Instructors** – Create, manage, and publish courses with lectures, sections, and quizzes.
+- 💳 **Payment** – Integrated VNPay QR via Casso webhook, support for coupons.
+- 🤖 **AI Chatbot** – Built-in AI assistant using Groq API.
+- 🔐 **Authentication** – Email/password login, Google OAuth, GitHub OAuth.
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   cd backend && npm install
-   cd ../frontend && npm install
-   ```
+---
 
-3. **Environment Setup:**
-   Create `.env` files in both `backend/` and `frontend/` directories based on the templates in the `docs/deployment-guide.md`.
+## 🏗️ System Architecture / Kiến trúc hệ thống
 
-4. **Database Setup:**
-   ```bash
-   cd backend
-   npx prisma generate
-   npx prisma migrate dev
-   ```
+```
+FlyUpProject/
+├── backend/                 # Express.js API Server
+│   ├── src/
+│   │   ├── controllers/     # Business logic
+│   │   ├── routers/         # API routes
+│   │   ├── services/        # Service layer
+│   │   ├── middlewares/      # Auth, validation
+│   │   ├── configs/         # Swagger, payment config
+│   │   └── index.js         # Entry point
+│   ├── prisma/              # Prisma schema & migrations
+│   └── package.json
+│
+├── frontend/                # React SPA
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   ├── pages/           # Page-level components
+│   │   ├── contexts/        # React Context (Auth, Cart)
+│   │   ├── hooks/           # Custom hooks
+│   │   ├── services/        # API service functions
+│   │   └── App.jsx          # Root component
+│   └── package.json
+│
+├── others/                  # Docs, diagrams, mockups
+├── package.json             # Root scripts (concurrently)
+└── README.md
+```
 
-### Running the Application
+---
 
-From the root directory:
+## 🛠️ Tech Stack / Công nghệ sử dụng
+
+| Layer        | Technology                                     |
+| ------------ | ---------------------------------------------- |
+| **Frontend** | React 19, Vite 7, TailwindCSS 4, Framer Motion |
+| **Backend**  | Node.js, Express 4, Prisma 7, Swagger          |
+| **Database** | PostgreSQL (Supabase)                          |
+| **Auth**     | JWT, Google OAuth, GitHub OAuth, bcrypt        |
+| **Payment**  | VNPay QR (Casso webhook)                       |
+| **AI**       | Groq API (Chatbot)                             |
+| **Email**    | Nodemailer + Gmail API                         |
+| **DevOps**   | GitHub Actions CI/CD                           |
+
+---
+
+## ⚡ Quick Start / Hướng dẫn chạy dự án
+
+### 📋 Prerequisites / Yêu cầu hệ thống
+
+- **Node.js** >= 18.x
+- **npm** >= 9.x
+- **Git**
+
+### 1️⃣ Clone repository
+
+```bash
+git clone https://github.com/de180551chauvuonghoang-svg/FlyUpProject.git
+cd FlyUpProject
+```
+
+### 2️⃣ Install dependencies
+
+```bash
+# Install root dependencies
+npm install
+
+# Install Backend dependencies
+cd backend && npm install && cd ..
+
+# Install Frontend dependencies
+cd frontend && npm install && cd ..
+```
+
+### 3️⃣ Environment Variables / Cấu hình môi trường
+
+Create `backend/.env` (refer to `docs/deployment-guide.md` for templates).
+Create `frontend/.env`:
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+```
+
+### 4️⃣ Run the Project
+
 ```bash
 npm run dev
 ```
-This will start both the backend (default: port 3000) and frontend (default: port 5173) concurrently.
-
-## Project Structure Overview
-```text
-flyupproject/
-├── backend/            # Express.js server & Prisma logic
-│   ├── prisma/         # DB Schema & Migrations
-│   └── src/            # API implementation
-├── frontend/           # React 19 & Vite application
-│   └── src/            # UI components & state management
-├── docs/               # Technical documentation (English)
-└── plans/              # Implementation plans & reports
-```
-
-## Detailed Documentation
-For more in-depth information, please refer to the following files in the `docs/` directory:
-
-- [Project Overview & PDR](./docs/project-overview-pdr.md)
-- [Codebase Summary](./docs/codebase-summary.md)
-- [System Architecture](./docs/system-architecture.md)
-- [Code Standards](./docs/code-standards.md)
-- [Deployment Guide](./docs/deployment-guide.md)
-- [Design Guidelines](./docs/design-guidelines.md)
-- [Project Roadmap](./docs/project-roadmap.md)
 
 ---
-*License: ISC*
+
+## 📁 Key Features / Tính năng chính
+
+### 👤 Learners
+- Course browsing, Cart, Wishlist, Learning progress, Transaction history.
+
+### 👨‍🏫 Instructors
+- Course management dashboard, Content upload, Analytics.
+
+### 💳 Payment & AI
+- VNPay QR, Coupons, Casso webhook, AI Chatbot assistant.
+
+---
+
+## 👥 Team
+- Team FlyUp — SWP391 — FPT University
+

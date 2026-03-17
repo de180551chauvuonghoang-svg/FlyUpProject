@@ -1,2 +1,16 @@
 plans
 repomix-output.xml
+node_modules/
+.env
+.env.local
+.env.*.local
+dist/
+build/
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+client_secret_*.json
+

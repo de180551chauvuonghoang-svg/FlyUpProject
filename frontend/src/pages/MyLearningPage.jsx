@@ -208,7 +208,7 @@ const MyLearningPage = () => {
                                         </div>
                                         <div className="mt-auto pt-2">
                                             <button 
-                                                onClick={() => navigate(`/courses/${enrollment.course?.Id}`)}
+                                                onClick={() => navigate(`/learning/${enrollment.course?.Id}`)}
                                                 className="w-full py-2.5 rounded-full bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(110,60,236,0.4)] hover:shadow-[0_0_20px_rgba(110,60,236,0.6)] flex items-center justify-center gap-2 group-hover/btn:gap-3"
                                             >
                                                 <span className="material-symbols-outlined text-lg">play_circle</span>

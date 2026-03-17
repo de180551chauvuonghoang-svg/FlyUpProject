@@ -4,6 +4,17 @@ import { authenticateJWT } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// Instructor-specific routes (must be BEFORE /:id to avoid conflicts)
+router.get('/instructor/stats', authenticateJWT, courseController.getInstructorStats);
+router.get('/instructor/courses', authenticateJWT, courseController.getInstructorCourses);
+
+// Course CRUD routes
+router.post('/', authenticateJWT, courseController.createCourse);
+router.put('/:id/publish', authenticateJWT, courseController.publishCourse);
+router.put('/:id/unpublish', authenticateJWT, courseController.unpublishCourse);
+router.put('/:id', authenticateJWT, courseController.updateCourse);
+router.delete('/:id', authenticateJWT, courseController.deleteCourse);
+
 /**
  * @swagger
  * tags:

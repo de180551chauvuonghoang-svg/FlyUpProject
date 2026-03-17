@@ -23,7 +23,6 @@ export const CartProvider = ({ children }) => {
     }, [cart]);
 
     // Fetch user enrollments to check for duplicates
-    // eslint-disable-next-line no-unused-vars
     const { data: enrollmentData } = useQuery({
         queryKey: ['userEnrollments', user?.id],
         queryFn: () => fetchUserEnrollments(user.id),
@@ -35,80 +34,52 @@ export const CartProvider = ({ children }) => {
 
     const addToCart = (course) => {
         if (!user) {
-            toast.error('Please login to add to cart', {
+            toast.error('Vui lòng đăng nhập để mua khóa học.', {
                 icon: '🔒',
-                style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
             });
             return;
         }
 
         // Check if already enrolled
         if (enrolledCourseIds.has(course.id || course.Id)) { // Handle both id cases just in case
-             toast.error('Course already registered, please choose another course', {
-                icon: '🚫',
+             toast('Bạn đã sở hữu khóa học này!', {
+                icon: 'ℹ️',
                 style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
+                    background: '#ca8a04', // Yellow 600
                     color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
+                    border: '1px solid #eab308' // Yellow 500
+                }
             });
             return;
         }
 
         if (cart.find((item) => item.id === course.id)) {
-            toast.error('Course already in cart!', {
-                icon: '🛒',
+            toast('Khóa học này đã có trong giỏ hàng.', {
+                icon: 'ℹ️',
                 style: {
-                    borderRadius: '10px',
-                    background: '#1A1333',
+                    background: '#ca8a04', // Yellow 600
                     color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                },
+                    border: '1px solid #eab308' // Yellow 500
+                }
             });
             return;
         }
 
         setCart((prevCart) => [...prevCart, course]);
 
-        toast.success('Added to cart!', {
-            icon: '🚀',
-            style: {
-                borderRadius: '10px',
-                background: '#1A1333',
-                color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
-            },
+        toast.success('Đã thêm vào giỏ hàng!', {
+            icon: '🛍️'
         });
     };
 
     const removeFromCart = (courseId) => {
         setCart((prevCart) => prevCart.filter((item) => item.id !== courseId));
-        toast.success('Removed from cart', {
-            style: {
-                borderRadius: '10px',
-                background: '#1A1333',
-                color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
-            },
-        });
+        toast.success('Đã xóa khỏi giỏ hàng');
     };
 
     const clearCart = () => {
         setCart([]);
-        toast.success('Cart cleared', {
-            style: {
-                borderRadius: '10px',
-                background: '#1A1333',
-                color: '#fff',
-                border: '1px solid rgba(255,255,255,0.1)',
-            },
-        });
+        toast.success('Đã làm sạch giỏ hàng');
     };
 
     const cartCount = cart.length;

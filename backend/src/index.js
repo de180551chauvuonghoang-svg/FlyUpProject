@@ -25,6 +25,8 @@ import transactionRouter from './routers/transactions.js';
 import chatbotRouter from './routers/chatbot.js';
 import recommendationsRouter from './routers/ai-course-recommendations-router.js';
 import quizGenerationRouter from './routers/ai-quiz-generation-router.js';
+import quizRouter from './routers/quiz.js';
+
 import { getCourses, getCategories } from './services/courseService.js';
 import * as courseCache from './services/course-cache-service.js';
 import swaggerUi from 'swagger-ui-express';
@@ -75,6 +77,8 @@ app.use('/api/transactions', transactionRouter);
 app.use('/api/chatbot', chatbotRouter);
 app.use('/api/recommendations', recommendationsRouter);
 app.use('/api/ai/quiz', quizGenerationRouter);
+app.use('/api/quiz', quizRouter);
+
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
