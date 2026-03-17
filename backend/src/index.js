@@ -27,6 +27,7 @@ import chatbotRouter from './routers/ai/chatbot.js';
 import recommendationsRouter from './routers/ai/aiCourseRecommendationsRouter.js';
 import quizGenerationRouter from './routers/ai/aiQuizGenerationRouter.js';
 import quizRouter from './routers/quiz.js';
+import aiAgentRouter from './routers/ai/aiAgentRouter.js';
 
 import { getCourses, getCategories } from './services/courseService.js';
 import * as courseCache from './services/courseCacheService.js';
@@ -79,6 +80,7 @@ app.use('/api/chatbot', chatbotRouter);
 app.use('/api/recommendations', recommendationsRouter);
 app.use('/api/ai/quiz', quizGenerationRouter);
 app.use('/api/quiz', quizRouter);
+app.use('/api/ai/agent', aiAgentRouter);
 
 
 // Swagger Documentation
@@ -147,3 +149,6 @@ process.on('SIGINT', gracefulShutdown);
 export default app;
 
 
+
+// Restart trigger 1773771940714
+// Restart trigger 1773772052219

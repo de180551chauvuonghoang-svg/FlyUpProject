@@ -161,7 +161,7 @@ async function buildQuestionPool(prisma, courseId, scope, userId) {
       Assignments: {
         select: {
           SectionId: true,
-          Section: { select: { Title: true, Index: true } }
+          Sections: { select: { Title: true, Index: true } }
         }
       }
     }

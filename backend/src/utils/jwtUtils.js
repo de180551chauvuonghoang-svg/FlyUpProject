@@ -17,16 +17,16 @@ const getSecrets = () => ({
 export const generateAccessToken = (payload) => {
   const { userId, email, role } = payload;
   const { JWT_SECRET, JWT_ACCESS_EXPIRY } = getSecrets();
-  
+
   return jwt.sign(
-    { 
-      userId, 
-      email, 
+    {
+      userId,
+      email,
       role,
       type: 'access'
     },
     JWT_SECRET,
-    { 
+    {
       expiresIn: JWT_ACCESS_EXPIRY,
       issuer: 'flyup-edutech',
       audience: 'flyup-users'
@@ -42,15 +42,15 @@ export const generateAccessToken = (payload) => {
 export const generateRefreshToken = (payload) => {
   const { userId, email } = payload;
   const { JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRY } = getSecrets();
-  
+
   return jwt.sign(
-    { 
-      userId, 
+    {
+      userId,
       email,
       type: 'refresh'
     },
     JWT_REFRESH_SECRET,
-    { 
+    {
       expiresIn: JWT_REFRESH_EXPIRY,
       issuer: 'flyup-edutech',
       audience: 'flyup-users'
@@ -71,11 +71,11 @@ export const verifyAccessToken = (token) => {
       issuer: 'flyup-edutech',
       audience: 'flyup-users'
     });
-    
+
     if (decoded.type !== 'access') {
       throw new Error('Invalid token type');
     }
-    
+
     return decoded;
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -101,11 +101,11 @@ export const verifyRefreshToken = (token) => {
       issuer: 'flyup-edutech',
       audience: 'flyup-users'
     });
-    
+
     if (decoded.type !== 'refresh') {
       throw new Error('Invalid token type');
     }
-    
+
     return decoded;
   } catch (error) {
     if (error.name === 'TokenExpiredError') {

@@ -33,9 +33,9 @@ export async function identifyWeakSections(prisma, userId, courseId, options = {
       CreatorId_CourseId: { CreatorId: userId, CourseId: courseId }
     },
     include: {
-      course: {
+      Courses: {
         include: {
-          sections: {
+          Sections: {
             orderBy: { Index: 'asc' }
           }
         }
@@ -52,7 +52,7 @@ export async function identifyWeakSections(prisma, userId, courseId, options = {
 
   const weakSections = [];
 
-  for (const section of enrollment.course.sections) {
+  for (const section of enrollment.Courses.Sections) {
     const progress = sectionProgress[section.Id] || 0;
 
     // Check completion rate
@@ -159,9 +159,9 @@ export async function getSectionPerformanceAnalytics(prisma, userId, courseId) {
       CreatorId_CourseId: { CreatorId: userId, CourseId: courseId }
     },
     include: {
-      course: {
+      Courses: {
         include: {
-          sections: {
+          Sections: {
             orderBy: { Index: 'asc' }
           }
         }
@@ -177,7 +177,7 @@ export async function getSectionPerformanceAnalytics(prisma, userId, courseId) {
 
   const analytics = [];
 
-  for (const section of enrollment.course.sections) {
+  for (const section of enrollment.Courses.Sections) {
     const progress = sectionProgress[section.Id] || 0;
     const avgScore = await getAvgAssignmentScore(prisma, userId, section.Id);
     const submissionCount = await getSubmissionCount(prisma, userId, section.Id);
