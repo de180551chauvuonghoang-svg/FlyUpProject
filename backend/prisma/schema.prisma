@@ -2,10 +2,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "../ERD.svg"
-}
+// generator erd {
+//   provider = "prisma-erd-generator"
+//   output   = "../ERD.svg"
+// }
 
 datasource db {
   provider = "postgresql"
@@ -538,6 +538,7 @@ model UserAbilities {
   Courses    Courses   @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Courses")
   Users      Users     @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Users")
 
+  @@unique([UserId, CourseId], map: "UQ_UserAbilities_UserId_CourseId")
   @@index([CourseId], map: "IX_UserAbilities_CourseId")
   @@index([UserId], map: "IX_UserAbilities_UserId")
 }
