@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import Groq from "groq-sdk";
 import {
   startCatQuizService,
   answerCatQuestionService,
@@ -348,5 +349,51 @@ export const finishCatQuiz = async (req, res) => {
     return res.status(400).json({
       error: error.message || "Failed to finish CAT quiz",
     });
+  }
+};
+
+/**
+ * POST /api/quiz/cat/explain
+ * Dùng AI (Groq) để giải thích tại sao đáp án đúng/sai
+ */
+export const explainQuizAnswer = async (req, res) => {
+  try {
+    const { questionContent, choices, selectedChoiceContent, isCorrect } = req.body;
+
+    if (!questionContent || !selectedChoiceContent) {
+      return res.status(400).json({ error: "Thiếu thông tin câu hỏi hoặc đáp án" });
+    }
+
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ error: "AI service chưa được cấu hình" });
+    }
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const choicesStr = (choices ?? []).map((c) => `- ${c.Content || c.content || ''}`).join("\n");
+    const resultLabel = isCorrect ? "ĐÚNG (chính xác)" : "SAI (chưa chính xác)";
+
+    const prompt = `Bạn là trợ lý giáo dục "FlyUp". Hãy giải thích ngắn gọn (tối đa 100 từ) tại sao lựa chọn sau là ${resultLabel} cho câu hỏi Java sau:
+
+Câu hỏi: "${questionContent}"
+
+Các lựa chọn:
+${choicesStr}
+
+Người học đã chọn: "${selectedChoiceContent}" → Kết quả: ${resultLabel}
+
+Giải thích súc tích, khích lệ, bằng tiếng Việt:`;
+
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "llama3-8b-8192",
+      temperature: 0.4,
+      max_tokens: 300,
+    });
+
+    const explanation = completion.choices[0]?.message?.content?.trim() || "Không thể tạo lời giải thích.";
+    return res.json({ explanation });
+  } catch (err) {
+    console.error("explainQuizAnswer error:", err);
+    return res.status(500).json({ error: "Lỗi khi gọi AI giải thích" });
   }
 };

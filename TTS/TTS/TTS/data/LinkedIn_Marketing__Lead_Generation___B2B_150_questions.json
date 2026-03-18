@@ -1,0 +1,2252 @@
+[
+    {
+        "id": 1,
+        "question": "Which of the following is the PRIMARY goal of LinkedIn marketing for B2B companies?",
+        "options": [
+            "A. Increasing website traffic",
+            "B. Generating leads and building relationships",
+            "C. Selling products directly",
+            "D. Posting funny memes"
+        ],
+        "answer": "B. Generating leads and building relationships",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.2,
+        "param_c": 0.2
+    },
+    {
+        "id": 2,
+        "question": "What type of content generally performs well on LinkedIn for B2B lead generation?",
+        "options": [
+            "A. Personal vacation photos",
+            "B. Industry insights and thought leadership articles",
+            "C. Cat videos",
+            "D. Recipes"
+        ],
+        "answer": "B. Industry insights and thought leadership articles",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.5,
+        "param_c": 0.18
+    },
+    {
+        "id": 3,
+        "question": "Which LinkedIn feature allows you to directly message people you are not connected to, within limits?",
+        "options": [
+            "A. Groups",
+            "B. Connections",
+            "C. InMail",
+            "D. Newsfeed"
+        ],
+        "answer": "C. InMail",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -0.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 4,
+        "question": "What is a LinkedIn Company Page primarily used for?",
+        "options": [
+            "A. Personal networking",
+            "B. Showcasing your company and its expertise",
+            "C. Posting job applications only",
+            "D. Sharing personal opinions"
+        ],
+        "answer": "B. Showcasing your company and its expertise",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -2.0,
+        "param_c": 0.15
+    },
+    {
+        "id": 5,
+        "question": "Which of these is a good practice for optimizing your LinkedIn profile for B2B lead generation?",
+        "options": [
+            "A. Using a blurry photo",
+            "B. Having a vague job title",
+            "C. Using relevant keywords in your profile summary",
+            "D. Listing irrelevant skills"
+        ],
+        "answer": "C. Using relevant keywords in your profile summary",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.6,
+        "param_c": 0.25
+    },
+    {
+        "id": 6,
+        "question": "What is the benefit of joining LinkedIn Groups related to your industry?",
+        "options": [
+            "A. To sell products directly",
+            "B. To connect with potential clients and partners",
+            "C. To post spam messages",
+            "D. To avoid networking"
+        ],
+        "answer": "B. To connect with potential clients and partners",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -1.0,
+        "param_c": 0.17
+    },
+    {
+        "id": 7,
+        "question": "Which LinkedIn feature allows you to create targeted advertising campaigns?",
+        "options": [
+            "A. LinkedIn Stories",
+            "B. LinkedIn Articles",
+            "C. LinkedIn Campaign Manager",
+            "D. LinkedIn Polls"
+        ],
+        "answer": "C. LinkedIn Campaign Manager",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.8,
+        "param_c": 0.21
+    },
+    {
+        "id": 8,
+        "question": "What does B2B stand for?",
+        "options": [
+            "A. Business to Business",
+            "B. Big to Big",
+            "C. Buy to Buy",
+            "D. Best to Best"
+        ],
+        "answer": "A. Business to Business",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -2.5,
+        "param_c": 0.19
+    },
+    {
+        "id": 9,
+        "question": "Why is LinkedIn considered a valuable platform for B2B marketing?",
+        "options": [
+            "A. It's only for personal use",
+            "B. It's a professional networking platform with a large business audience",
+            "C. It's primarily for sharing memes",
+            "D. It's not useful for marketing"
+        ],
+        "answer": "B. It's a professional networking platform with a large business audience",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -0.9,
+        "param_c": 0.23
+    },
+    {
+        "id": 10,
+        "question": "What is a 'lead magnet' in the context of LinkedIn lead generation?",
+        "options": [
+            "A. A physical magnet",
+            "B. A free resource offered in exchange for contact information",
+            "C. A type of LinkedIn post",
+            "D. A sales pitch"
+        ],
+        "answer": "B. A free resource offered in exchange for contact information",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -0.5,
+        "param_c": 0.16
+    },
+    {
+        "id": 11,
+        "question": "Which of the following is the PRIMARY goal of LinkedIn marketing for B2B?",
+        "options": [
+            "A. Increasing website traffic",
+            "B. Generating leads and sales",
+            "C. Building brand awareness",
+            "D. Improving employee morale"
+        ],
+        "answer": "B. Generating leads and sales",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.2,
+        "param_c": 0.2
+    },
+    {
+        "id": 12,
+        "question": "What type of content generally performs well on LinkedIn for B2B audiences?",
+        "options": [
+            "A. Humorous memes",
+            "B. Industry insights and thought leadership",
+            "C. Personal vacation photos",
+            "D. Daily weather updates"
+        ],
+        "answer": "B. Industry insights and thought leadership",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.0,
+        "param_c": 0.18
+    },
+    {
+        "id": 13,
+        "question": "Which LinkedIn feature allows you to directly message people who aren't in your immediate network?",
+        "options": [
+            "A. LinkedIn Groups",
+            "B. LinkedIn Stories",
+            "C. LinkedIn InMail",
+            "D. LinkedIn Events"
+        ],
+        "answer": "C. LinkedIn InMail",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -0.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 14,
+        "question": "What is a key benefit of using LinkedIn Company Pages for B2B marketing?",
+        "options": [
+            "A. To sell products directly to consumers",
+            "B. To showcase your company's expertise and attract talent",
+            "C. To share personal opinions",
+            "D. To promote irrelevant content"
+        ],
+        "answer": "B. To showcase your company's expertise and attract talent",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -1.5,
+        "param_c": 0.15
+    },
+    {
+        "id": 15,
+        "question": "Which of these is a good practice for optimizing your LinkedIn profile for lead generation?",
+        "options": [
+            "A. Using vague job titles",
+            "B. Including a professional headshot",
+            "C. Listing irrelevant skills",
+            "D. Keeping your profile private"
+        ],
+        "answer": "B. Including a professional headshot",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -0.6,
+        "param_c": 0.25
+    },
+    {
+        "id": 16,
+        "question": "What is the purpose of LinkedIn Groups in B2B marketing?",
+        "options": [
+            "A. To sell products directly",
+            "B. To connect with industry peers and participate in discussions",
+            "C. To post irrelevant content",
+            "D. To avoid networking"
+        ],
+        "answer": "B. To connect with industry peers and participate in discussions",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -1.8,
+        "param_c": 0.19
+    },
+    {
+        "id": 17,
+        "question": "Which of the following metrics can help you measure the success of your LinkedIn marketing efforts?",
+        "options": [
+            "A. Number of cat videos watched",
+            "B. Engagement rate (likes, comments, shares)",
+            "C. Number of spam emails sent",
+            "D. Number of times you checked your email"
+        ],
+        "answer": "B. Engagement rate (likes, comments, shares)",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -0.9,
+        "param_c": 0.21
+    },
+    {
+        "id": 18,
+        "question": "What does B2B stand for?",
+        "options": [
+            "A. Business to Buyer",
+            "B. Business to Business",
+            "C. Buyer to Buyer",
+            "D. Big to Big"
+        ],
+        "answer": "B. Business to Business",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -2.0,
+        "param_c": 0.17
+    },
+    {
+        "id": 19,
+        "question": "Why is targeting important in LinkedIn advertising for B2B?",
+        "options": [
+            "A. To show ads to everyone",
+            "B. To reach the most relevant professionals and decision-makers",
+            "C. To waste your advertising budget",
+            "D. To avoid conversions"
+        ],
+        "answer": "B. To reach the most relevant professionals and decision-makers",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.3,
+        "param_c": 0.23
+    },
+    {
+        "id": 20,
+        "question": "What is a 'lead magnet' in the context of LinkedIn lead generation?",
+        "options": [
+            "A. A physical magnet",
+            "B. A valuable resource offered in exchange for contact information",
+            "C. A type of fishing lure",
+            "D. A negative review"
+        ],
+        "answer": "B. A valuable resource offered in exchange for contact information",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -1.1,
+        "param_c": 0.16
+    },
+    {
+        "id": 21,
+        "question": "Which of the following is the PRIMARY goal of B2B marketing on LinkedIn?",
+        "options": [
+            "A. Increasing brand awareness",
+            "B. Selling directly to consumers",
+            "C. Generating leads and building relationships",
+            "D. Posting funny memes"
+        ],
+        "answer": "C. Generating leads and building relationships",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.2,
+        "param_c": 0.2
+    },
+    {
+        "id": 22,
+        "question": "What is a LinkedIn Company Page primarily used for?",
+        "options": [
+            "A. Personal networking",
+            "B. Showcasing company information and updates",
+            "C. Posting personal opinions",
+            "D. Playing online games"
+        ],
+        "answer": "B. Showcasing company information and updates",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.5,
+        "param_c": 0.18
+    },
+    {
+        "id": 23,
+        "question": "Which LinkedIn feature allows you to directly message other members, even if you're not connected?",
+        "options": [
+            "A. Posts",
+            "B. Articles",
+            "C. InMail",
+            "D. Comments"
+        ],
+        "answer": "C. InMail",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -0.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 24,
+        "question": "What type of content generally performs well on LinkedIn for B2B audiences?",
+        "options": [
+            "A. Personal vacation photos",
+            "B. Industry insights and thought leadership articles",
+            "C. Cat videos",
+            "D. Political rants"
+        ],
+        "answer": "B. Industry insights and thought leadership articles",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -1.8,
+        "param_c": 0.15
+    },
+    {
+        "id": 25,
+        "question": "What is a LinkedIn Group?",
+        "options": [
+            "A. A collection of personal profiles",
+            "B. A place for professionals with shared interests to connect and discuss topics",
+            "C. A feature for sending mass emails",
+            "D. A way to hide your profile from others"
+        ],
+        "answer": "B. A place for professionals with shared interests to connect and discuss topics",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -1.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 26,
+        "question": "Which metric is MOST important for measuring the success of a LinkedIn lead generation campaign?",
+        "options": [
+            "A. Number of likes on a post",
+            "B. Number of comments on a post",
+            "C. Number of qualified leads generated",
+            "D. Number of employees in your company"
+        ],
+        "answer": "C. Number of qualified leads generated",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -2.0,
+        "param_c": 0.19
+    },
+    {
+        "id": 27,
+        "question": "What is the recommended approach for engaging with comments on your LinkedIn posts?",
+        "options": [
+            "A. Ignore them",
+            "B. Respond promptly and thoughtfully",
+            "C. Delete negative comments immediately",
+            "D. Only respond to comments from your boss"
+        ],
+        "answer": "B. Respond promptly and thoughtfully",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -0.9,
+        "param_c": 0.21
+    },
+    {
+        "id": 28,
+        "question": "What is the purpose of LinkedIn Sales Navigator?",
+        "options": [
+            "A. To design websites",
+            "B. To find and connect with potential customers",
+            "C. To play games",
+            "D. To manage your personal finances"
+        ],
+        "answer": "B. To find and connect with potential customers",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -0.6,
+        "param_c": 0.17
+    },
+    {
+        "id": 29,
+        "question": "When sharing articles on LinkedIn, what is a good practice to increase engagement?",
+        "options": [
+            "A. Just share the link without any context",
+            "B. Add a personal comment or summary of the article",
+            "C. Share as many articles as possible in a short time",
+            "D. Share only articles from your own website"
+        ],
+        "answer": "B. Add a personal comment or summary of the article",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -2.2,
+        "param_c": 0.23
+    },
+    {
+        "id": 30,
+        "question": "Which of these is a key element of a strong LinkedIn profile for B2B lead generation?",
+        "options": [
+            "A. A blurry profile picture",
+            "B. A detailed summary highlighting your expertise and value proposition",
+            "C. Listing only your job title",
+            "D. Having no connections"
+        ],
+        "answer": "B. A detailed summary highlighting your expertise and value proposition",
+        "difficulty": "Easy",
+        "param_a": 0.75,
+        "param_b": -1.3,
+        "param_c": 0.16
+    },
+    {
+        "id": 31,
+        "question": "What is the primary focus of LinkedIn as a social media platform?",
+        "options": [
+            "A. Sharing personal photos and updates",
+            "B. Professional networking and career development",
+            "C. Posting funny videos and memes",
+            "D. Discussing current events and politics"
+        ],
+        "answer": "B. Professional networking and career development",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 32,
+        "question": "Which of the following is a key element of a successful LinkedIn profile for lead generation?",
+        "options": [
+            "A. Using a blurry profile picture",
+            "B. Having a vague job title",
+            "C. Clearly stating your expertise and value proposition",
+            "D. Listing only your past employers without details"
+        ],
+        "answer": "C. Clearly stating your expertise and value proposition",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 33,
+        "question": "What type of content generally performs well on LinkedIn for B2B marketing?",
+        "options": [
+            "A. Short, humorous videos",
+            "B. In-depth articles and industry insights",
+            "C. Personal opinions on unrelated topics",
+            "D. Reposting content without adding value"
+        ],
+        "answer": "B. In-depth articles and industry insights",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -0.9,
+        "param_c": 0.22
+    },
+    {
+        "id": 34,
+        "question": "What is a LinkedIn Group primarily used for?",
+        "options": [
+            "A. Sharing personal updates with friends",
+            "B. Connecting with professionals in a specific industry or with shared interests",
+            "C. Posting job applications",
+            "D. Running contests and giveaways"
+        ],
+        "answer": "B. Connecting with professionals in a specific industry or with shared interests",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -2.0,
+        "param_c": 0.15
+    },
+    {
+        "id": 35,
+        "question": "Which of these is a common LinkedIn advertising objective?",
+        "options": [
+            "A. Increasing website traffic",
+            "B. Selling physical products directly",
+            "C. Sharing vacation photos",
+            "D. Promoting personal hobbies"
+        ],
+        "answer": "A. Increasing website traffic",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.8,
+        "param_c": 0.24
+    },
+    {
+        "id": 36,
+        "question": "What is the purpose of LinkedIn Sales Navigator?",
+        "options": [
+            "A. To manage personal finances",
+            "B. To find and connect with potential leads and customers",
+            "C. To design marketing materials",
+            "D. To track employee performance"
+        ],
+        "answer": "B. To find and connect with potential leads and customers",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -2.3,
+        "param_c": 0.17
+    },
+    {
+        "id": 37,
+        "question": "What does 'B2B' stand for in the context of LinkedIn marketing?",
+        "options": [
+            "A. Business to Beginner",
+            "B. Business to Business",
+            "C. Brand to Brand",
+            "D. Buyer to Buyer"
+        ],
+        "answer": "B. Business to Business",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -0.6,
+        "param_c": 0.21
+    },
+    {
+        "id": 38,
+        "question": "What is a 'connection' on LinkedIn?",
+        "options": [
+            "A. A type of advertisement",
+            "B. A mutual professional relationship",
+            "C. A group of related posts",
+            "D. A LinkedIn event"
+        ],
+        "answer": "B. A mutual professional relationship",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -1.7,
+        "param_c": 0.19
+    },
+    {
+        "id": 39,
+        "question": "Which of the following is a good practice for engaging with content on LinkedIn?",
+        "options": [
+            "A. Leaving generic comments like 'Great post!' on every article",
+            "B. Sharing valuable insights and participating in discussions",
+            "C. Only liking posts from your close friends",
+            "D. Ignoring posts that don't directly relate to your job"
+        ],
+        "answer": "B. Sharing valuable insights and participating in discussions",
+        "difficulty": "Easy",
+        "param_a": 0.75,
+        "param_b": -1.1,
+        "param_c": 0.23
+    },
+    {
+        "id": 40,
+        "question": "What is the benefit of using LinkedIn for B2B lead generation?",
+        "options": [
+            "A. It's free and requires no effort",
+            "B. It allows you to target specific industries and job titles",
+            "C. It guarantees immediate sales",
+            "D. It's only effective for large corporations"
+        ],
+        "answer": "B. It allows you to target specific industries and job titles",
+        "difficulty": "Easy",
+        "param_a": 1.05,
+        "param_b": -1.9,
+        "param_c": 0.16
+    },
+    {
+        "id": 41,
+        "question": "Which of the following is a primary benefit of using LinkedIn for B2B marketing?",
+        "options": [
+            "A. Reaching a broad consumer audience",
+            "B. Targeting specific professional demographics",
+            "C. Sharing personal updates with friends",
+            "D. Promoting viral video content"
+        ],
+        "answer": "B. Targeting specific professional demographics",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 42,
+        "question": "What is a LinkedIn Company Page primarily used for?",
+        "options": [
+            "A. Sharing personal opinions",
+            "B. Showcasing company information and updates",
+            "C. Hosting online games",
+            "D. Selling products directly to consumers"
+        ],
+        "answer": "B. Showcasing company information and updates",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 43,
+        "question": "Which LinkedIn feature allows you to directly message other professionals, even if you're not connected?",
+        "options": [
+            "A. LinkedIn Stories",
+            "B. LinkedIn Articles",
+            "C. LinkedIn InMail",
+            "D. LinkedIn Polls"
+        ],
+        "answer": "C. LinkedIn InMail",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -0.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 44,
+        "question": "What is a key element of a successful LinkedIn profile for lead generation?",
+        "options": [
+            "A. Using informal language",
+            "B. Having a professional headshot and clear summary",
+            "C. Sharing irrelevant personal information",
+            "D. Avoiding keywords related to your industry"
+        ],
+        "answer": "B. Having a professional headshot and clear summary",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -2.0,
+        "param_c": 0.15
+    },
+    {
+        "id": 45,
+        "question": "Which type of content is generally considered most effective for B2B marketing on LinkedIn?",
+        "options": [
+            "A. Humorous memes",
+            "B. Industry insights and thought leadership articles",
+            "C. Personal vacation photos",
+            "D. Cat videos"
+        ],
+        "answer": "B. Industry insights and thought leadership articles",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -1.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 46,
+        "question": "What does 'B2B' stand for?",
+        "options": [
+            "A. Business to Buyer",
+            "B. Business to Business",
+            "C. Buyer to Business",
+            "D. Brand to Brand"
+        ],
+        "answer": "B. Business to Business",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -2.5,
+        "param_c": 0.17
+    },
+    {
+        "id": 47,
+        "question": "What is the purpose of joining LinkedIn Groups related to your industry?",
+        "options": [
+            "A. To avoid networking",
+            "B. To share personal opinions unrelated to business",
+            "C. To connect with like-minded professionals and potential clients",
+            "D. To primarily sell products directly"
+        ],
+        "answer": "C. To connect with like-minded professionals and potential clients",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -0.6,
+        "param_c": 0.23
+    },
+    {
+        "id": 48,
+        "question": "Which of the following is a good practice for engaging with content on LinkedIn?",
+        "options": [
+            "A. Posting irrelevant comments",
+            "B. Liking and sharing content that aligns with your brand",
+            "C. Ignoring posts from competitors",
+            "D. Only engaging with your own content"
+        ],
+        "answer": "B. Liking and sharing content that aligns with your brand",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -1.8,
+        "param_c": 0.19
+    },
+    {
+        "id": 49,
+        "question": "What is a key benefit of using LinkedIn Sales Navigator?",
+        "options": [
+            "A. Free access to all LinkedIn features",
+            "B. Advanced search filters and lead recommendations",
+            "C. Ability to play online games",
+            "D. Posting anonymous updates"
+        ],
+        "answer": "B. Advanced search filters and lead recommendations",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.3,
+        "param_c": 0.21
+    },
+    {
+        "id": 50,
+        "question": "What is the first step in creating a LinkedIn marketing strategy?",
+        "options": [
+            "A. Immediately posting content",
+            "B. Defining your target audience and business goals",
+            "C. Ignoring your competitors",
+            "D. Buying fake followers"
+        ],
+        "answer": "B. Defining your target audience and business goals",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -0.9,
+        "param_c": 0.16
+    },
+    {
+        "id": 51,
+        "question": "Which LinkedIn feature is MOST effective for nurturing leads who have downloaded a whitepaper from your company page?",
+        "options": [
+            "A) Sending direct connection requests immediately.",
+            "B) Creating a targeted ad campaign showcasing a case study related to the whitepaper's topic.",
+            "C) Posting a generic company update about your services.",
+            "D) Ignoring them and focusing on new leads."
+        ],
+        "answer": "B) Creating a targeted ad campaign showcasing a case study related to the whitepaper's topic.",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": 0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 52,
+        "question": "What is the primary benefit of using LinkedIn Sales Navigator for B2B lead generation compared to a standard LinkedIn account?",
+        "options": [
+            "A) It allows you to send unlimited InMail messages.",
+            "B) It provides advanced search filters and lead recommendations based on your target criteria.",
+            "C) It automatically connects you with all LinkedIn members.",
+            "D) It guarantees a higher lead conversion rate."
+        ],
+        "answer": "B) It provides advanced search filters and lead recommendations based on your target criteria.",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 53,
+        "question": "Which type of content generally performs BEST on LinkedIn for B2B audiences?",
+        "options": [
+            "A) Humorous memes and viral videos.",
+            "B) Industry insights, thought leadership articles, and case studies.",
+            "C) Personal updates about your weekend activities.",
+            "D) Aggressive sales pitches and product demos."
+        ],
+        "answer": "B) Industry insights, thought leadership articles, and case studies.",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": -0.1,
+        "param_c": 0.18
+    },
+    {
+        "id": 54,
+        "question": "What is a 'Custom Audience' in LinkedIn Campaign Manager used for?",
+        "options": [
+            "A) To create personalized profile backgrounds for your employees.",
+            "B) To target ads to a specific group of LinkedIn members based on criteria like website visitors or email lists.",
+            "C) To customize the look and feel of your LinkedIn company page.",
+            "D) To automatically generate content for your LinkedIn posts."
+        ],
+        "answer": "B) To target ads to a specific group of LinkedIn members based on criteria like website visitors or email lists.",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.1,
+        "param_c": 0.1
+    },
+    {
+        "id": 55,
+        "question": "Which metric is MOST important to track when measuring the success of a LinkedIn lead generation campaign?",
+        "options": [
+            "A) Number of likes on your posts.",
+            "B) Number of followers on your company page.",
+            "C) Cost per lead and lead conversion rate.",
+            "D) Number of employees listed on your company page."
+        ],
+        "answer": "C) Cost per lead and lead conversion rate.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.3,
+        "param_c": 0.17
+    },
+    {
+        "id": 56,
+        "question": "What is the purpose of joining relevant LinkedIn groups for B2B marketing?",
+        "options": [
+            "A) To spam the group with promotional messages.",
+            "B) To build relationships with potential customers, share valuable insights, and establish thought leadership.",
+            "C) To steal content ideas from other members.",
+            "D) To inflate your LinkedIn profile's number of connections."
+        ],
+        "answer": "B) To build relationships with potential customers, share valuable insights, and establish thought leadership.",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 57,
+        "question": "Which of the following is a BEST practice for optimizing your LinkedIn company page for lead generation?",
+        "options": [
+            "A) Using generic keywords and avoiding industry-specific jargon.",
+            "B) Clearly defining your target audience and showcasing your value proposition.",
+            "C) Focusing solely on product features and neglecting customer benefits.",
+            "D) Using a low-resolution logo and outdated company information."
+        ],
+        "answer": "B) Clearly defining your target audience and showcasing your value proposition.",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.4,
+        "param_c": 0.19
+    },
+    {
+        "id": 58,
+        "question": "What is the role of 'Sponsored Content' on LinkedIn?",
+        "options": [
+            "A) Content that is automatically generated by LinkedIn.",
+            "B) Content that is paid for to reach a wider audience than your organic reach.",
+            "C) Content that is created by LinkedIn influencers.",
+            "D) Content that is only visible to your direct connections."
+        ],
+        "answer": "B) Content that is paid for to reach a wider audience than your organic reach.",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": -0.2,
+        "param_c": 0.11
+    },
+    {
+        "id": 59,
+        "question": "How can you effectively use LinkedIn's 'Lead Gen Forms' in your marketing strategy?",
+        "options": [
+            "A) To collect personal information without consent.",
+            "B) To pre-populate forms with LinkedIn profile data, making it easier for users to submit their information.",
+            "C) To automatically send spam emails to all LinkedIn members.",
+            "D) To hide your contact information from potential leads."
+        ],
+        "answer": "B) To pre-populate forms with LinkedIn profile data, making it easier for users to submit their information.",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": -0.5,
+        "param_c": 0.14
+    },
+    {
+        "id": 60,
+        "question": "What is the BEST approach to initiating a conversation with a potential B2B lead on LinkedIn?",
+        "options": [
+            "A) Sending a generic sales pitch immediately.",
+            "B) Researching their profile and company, and then sending a personalized message referencing their interests or challenges.",
+            "C) Adding them to your network without any introduction.",
+            "D) Ignoring their profile and focusing on quantity over quality."
+        ],
+        "answer": "B) Researching their profile and company, and then sending a personalized message referencing their interests or challenges.",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.0,
+        "param_c": 0.16
+    },
+    {
+        "id": 61,
+        "question": "Which LinkedIn feature is MOST effective for nurturing leads who have downloaded a whitepaper from your company page?",
+        "options": [
+            "A. Sending a connection request with a generic message.",
+            "B. Directly messaging them with a sales pitch.",
+            "C. Adding them to a targeted LinkedIn Group and engaging in discussions.",
+            "D. Ignoring them and hoping they contact you."
+        ],
+        "answer": "C. Adding them to a targeted LinkedIn Group and engaging in discussions.",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": 0.3,
+        "param_c": 0.15
+    },
+    {
+        "id": 62,
+        "question": "What is the primary benefit of using LinkedIn Sales Navigator for B2B lead generation compared to a standard LinkedIn account?",
+        "options": [
+            "A. It allows you to send unlimited connection requests.",
+            "B. It provides advanced search filters and lead recommendations based on your target audience.",
+            "C. It automatically generates leads for you.",
+            "D. It makes your profile appear higher in search results."
+        ],
+        "answer": "B. It provides advanced search filters and lead recommendations based on your target audience.",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 63,
+        "question": "Which type of content is generally MOST effective for driving engagement and generating leads on LinkedIn for a B2B software company?",
+        "options": [
+            "A. Humorous memes and viral videos.",
+            "B. Highly technical whitepapers and case studies showcasing ROI.",
+            "C. Personal anecdotes about the CEO's weekend.",
+            "D. Reposts of articles from unrelated industries."
+        ],
+        "answer": "B. Highly technical whitepapers and case studies showcasing ROI.",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.5,
+        "param_c": 0.12
+    },
+    {
+        "id": 64,
+        "question": "What is a recommended best practice for optimizing your LinkedIn company page for search?",
+        "options": [
+            "A. Using as many keywords as possible, even if they are irrelevant.",
+            "B. Regularly updating your page with relevant content and using industry-specific keywords in your 'About Us' section.",
+            "C. Buying fake followers to increase your page's visibility.",
+            "D. Ignoring the 'About Us' section and focusing solely on posting updates."
+        ],
+        "answer": "B. Regularly updating your page with relevant content and using industry-specific keywords in your 'About Us' section.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": -0.1,
+        "param_c": 0.19
+    },
+    {
+        "id": 65,
+        "question": "Which metric is MOST important for measuring the success of a LinkedIn lead generation campaign?",
+        "options": [
+            "A. Number of likes on your posts.",
+            "B. Number of comments on your posts.",
+            "C. Cost per lead and lead conversion rate.",
+            "D. Number of followers on your company page."
+        ],
+        "answer": "C. Cost per lead and lead conversion rate.",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": 0.1,
+        "param_c": 0.11
+    },
+    {
+        "id": 66,
+        "question": "What is the BEST way to leverage LinkedIn Groups for B2B lead generation?",
+        "options": [
+            "A. Spamming the group with promotional messages.",
+            "B. Actively participating in discussions, sharing valuable insights, and positioning yourself as a thought leader.",
+            "C. Ignoring the group and focusing on direct messaging members.",
+            "D. Only posting links to your company's website without any context."
+        ],
+        "answer": "B. Actively participating in discussions, sharing valuable insights, and positioning yourself as a thought leader.",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.2,
+        "param_c": 0.17
+    },
+    {
+        "id": 67,
+        "question": "When running LinkedIn ad campaigns for lead generation, which targeting option allows you to upload a list of email addresses to match with LinkedIn profiles?",
+        "options": [
+            "A. Interest-based targeting.",
+            "B. Demographic targeting.",
+            "C. Matched Audience targeting.",
+            "D. Behavioral targeting."
+        ],
+        "answer": "C. Matched Audience targeting.",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": -0.4,
+        "param_c": 0.14
+    },
+    {
+        "id": 68,
+        "question": "What is the recommended character limit for a LinkedIn post to maximize visibility and engagement?",
+        "options": [
+            "A. No limit - write as much as you want.",
+            "B. 3000 characters.",
+            "C. 1300 characters.",
+            "D. 200 characters."
+        ],
+        "answer": "C. 1300 characters.",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.0,
+        "param_c": 0.16
+    },
+    {
+        "id": 69,
+        "question": "How can you effectively use LinkedIn Live for B2B lead generation?",
+        "options": [
+            "A. By only talking about your company's products.",
+            "B. By hosting webinars, Q&A sessions, and interviews with industry experts.",
+            "C. By showing random behind-the-scenes footage.",
+            "D. By ignoring audience comments and questions."
+        ],
+        "answer": "B. By hosting webinars, Q&A sessions, and interviews with industry experts.",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 70,
+        "question": "Which of the following is NOT a key element of a successful LinkedIn B2B marketing strategy?",
+        "options": [
+            "A. Consistent content creation and sharing.",
+            "B. Engaging with your audience and building relationships.",
+            "C. Focusing solely on self-promotion and ignoring industry trends.",
+            "D. Tracking your results and making adjustments as needed."
+        ],
+        "answer": "C. Focusing solely on self-promotion and ignoring industry trends.",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": -0.3,
+        "param_c": 0.2
+    },
+    {
+        "id": 71,
+        "question": "Which of the following is the MOST effective way to target potential B2B leads on LinkedIn?",
+        "options": [
+            "A. Posting generic company updates daily.",
+            "B. Sending connection requests with personalized messages based on their profile.",
+            "C. Running a contest to give away company swag.",
+            "D. Liking and commenting on every post in relevant groups."
+        ],
+        "answer": "B. Sending connection requests with personalized messages based on their profile.",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 72,
+        "question": "What is the primary benefit of using LinkedIn Sales Navigator for B2B lead generation?",
+        "options": [
+            "A. It allows you to send unlimited InMail messages to anyone on LinkedIn.",
+            "B. It provides advanced search filters and lead recommendations based on your target audience.",
+            "C. It automatically generates leads without any manual effort.",
+            "D. It allows you to see who has viewed your profile."
+        ],
+        "answer": "B. It provides advanced search filters and lead recommendations based on your target audience.",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": 0.1,
+        "param_c": 0.18
+    },
+    {
+        "id": 73,
+        "question": "When creating content for LinkedIn, what is a key consideration for attracting B2B prospects?",
+        "options": [
+            "A. Focusing solely on product features and benefits.",
+            "B. Addressing industry pain points and offering valuable insights.",
+            "C. Posting humorous content unrelated to your industry.",
+            "D. Using overly technical jargon to demonstrate expertise."
+        ],
+        "answer": "B. Addressing industry pain points and offering valuable insights.",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": -0.4,
+        "param_c": 0.12
+    },
+    {
+        "id": 74,
+        "question": "Which LinkedIn ad format is BEST suited for generating leads directly through a form submission?",
+        "options": [
+            "A. Sponsored Content",
+            "B. Text Ads",
+            "C. Message Ads",
+            "D. Lead Gen Forms"
+        ],
+        "answer": "D. Lead Gen Forms",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.3,
+        "param_c": 0.19
+    },
+    {
+        "id": 75,
+        "question": "What is the MOST important metric to track when measuring the success of a LinkedIn B2B marketing campaign?",
+        "options": [
+            "A. Number of likes and shares.",
+            "B. Website traffic generated from LinkedIn.",
+            "C. Number of followers gained.",
+            "D. Qualified leads generated and their conversion rate."
+        ],
+        "answer": "D. Qualified leads generated and their conversion rate.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.5,
+        "param_c": 0.16
+    },
+    {
+        "id": 76,
+        "question": "How can you effectively leverage LinkedIn groups for B2B lead generation?",
+        "options": [
+            "A. Spamming the group with promotional content.",
+            "B. Participating in relevant discussions and sharing valuable expertise.",
+            "C. Ignoring group rules and regulations.",
+            "D. Only posting links to your company website."
+        ],
+        "answer": "B. Participating in relevant discussions and sharing valuable expertise.",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": -0.1,
+        "param_c": 0.11
+    },
+    {
+        "id": 77,
+        "question": "What is the role of employee advocacy in LinkedIn B2B marketing?",
+        "options": [
+            "A. It's not important; only company posts matter.",
+            "B. It can significantly expand reach and build trust by leveraging employees' networks.",
+            "C. It's only useful for internal communications.",
+            "D. It distracts from the company's official messaging."
+        ],
+        "answer": "B. It can significantly expand reach and build trust by leveraging employees' networks.",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.7,
+        "param_c": 0.14
+    },
+    {
+        "id": 78,
+        "question": "Which of the following is a BEST practice for optimizing your LinkedIn company page for B2B lead generation?",
+        "options": [
+            "A. Using generic keywords in your 'About Us' section.",
+            "B. Regularly updating your page with relevant content and a clear call to action.",
+            "C. Ignoring comments and messages from followers.",
+            "D. Using low-quality images and videos."
+        ],
+        "answer": "B. Regularly updating your page with relevant content and a clear call to action.",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.3,
+        "param_c": 0.17
+    },
+    {
+        "id": 79,
+        "question": "What is the purpose of using LinkedIn Matched Audiences for B2B advertising?",
+        "options": [
+            "A. To target users based on their hobbies and interests.",
+            "B. To retarget website visitors and upload customer lists for more precise targeting.",
+            "C. To show ads to everyone on LinkedIn.",
+            "D. To create lookalike audiences based on competitor's followers."
+        ],
+        "answer": "B. To retarget website visitors and upload customer lists for more precise targeting.",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.9,
+        "param_c": 0.2
+    },
+    {
+        "id": 80,
+        "question": "When nurturing B2B leads generated from LinkedIn, what is a crucial element to include in your follow-up strategy?",
+        "options": [
+            "A. Immediately sending a hard sales pitch.",
+            "B. Providing valuable content and building a relationship over time.",
+            "C. Ignoring leads who don't respond immediately.",
+            "D. Only contacting leads through InMail messages."
+        ],
+        "answer": "B. Providing valuable content and building a relationship over time.",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": -0.5,
+        "param_c": 0.13
+    },
+    {
+        "id": 81,
+        "question": "Which LinkedIn feature is MOST effective for nurturing leads who have downloaded a whitepaper?",
+        "options": [
+            "LinkedIn Polls",
+            "LinkedIn Articles",
+            "LinkedIn Message Ads (Sponsored InMail)",
+            "LinkedIn Events"
+        ],
+        "answer": "LinkedIn Message Ads (Sponsored InMail)",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": 0.3,
+        "param_c": 0.15
+    },
+    {
+        "id": 82,
+        "question": "What is a key difference between a LinkedIn Company Page and a LinkedIn Showcase Page?",
+        "options": [
+            "Showcase Pages are designed to highlight a specific brand initiative or product line, while Company Pages represent the entire organization.",
+            "Company Pages are only for large corporations, while Showcase Pages are for small businesses.",
+            "Showcase Pages require a paid subscription, while Company Pages are free.",
+            "Company Pages allow for employee advocacy features, while Showcase Pages do not."
+        ],
+        "answer": "Showcase Pages are designed to highlight a specific brand initiative or product line, while Company Pages represent the entire organization.",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.2,
+        "param_c": 0.12
+    },
+    {
+        "id": 83,
+        "question": "Which LinkedIn ad targeting option allows you to upload a list of email addresses to match with LinkedIn members?",
+        "options": [
+            "Interest Targeting",
+            "Matched Audience Targeting",
+            "Lookalike Audience Targeting",
+            "Demographic Targeting"
+        ],
+        "answer": "Matched Audience Targeting",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.1,
+        "param_c": 0.18
+    },
+    {
+        "id": 84,
+        "question": "What is the primary benefit of joining relevant LinkedIn Groups for B2B lead generation?",
+        "options": [
+            "Directly pitching your product or service to group members.",
+            "Building relationships with industry peers and potential customers through valuable contributions.",
+            "Gaining access to exclusive job postings.",
+            "Increasing your personal LinkedIn profile views."
+        ],
+        "answer": "Building relationships with industry peers and potential customers through valuable contributions.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": -0.1,
+        "param_c": 0.14
+    },
+    {
+        "id": 85,
+        "question": "Which metric is MOST important for measuring the success of a LinkedIn content marketing strategy focused on lead generation?",
+        "options": [
+            "Number of Likes",
+            "Number of Shares",
+            "Number of Comments",
+            "Number of Leads Generated"
+        ],
+        "answer": "Number of Leads Generated",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.4,
+        "param_c": 0.11
+    },
+    {
+        "id": 86,
+        "question": "What is the BEST practice for optimizing your LinkedIn profile for B2B lead generation?",
+        "options": [
+            "Using keywords relevant to your target audience and industry in your headline and summary.",
+            "Listing every job you've ever had, regardless of relevance.",
+            "Using a blurry or unprofessional profile picture.",
+            "Connecting with as many people as possible, even if they are not in your target market."
+        ],
+        "answer": "Using keywords relevant to your target audience and industry in your headline and summary.",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.4,
+        "param_c": 0.19
+    },
+    {
+        "id": 87,
+        "question": "Which LinkedIn Sales Navigator feature helps you identify potential leads based on their engagement with your company's content?",
+        "options": [
+            "Advanced Search Filters",
+            "Lead Recommendations",
+            "Account Alerts",
+            "TeamLink Extend"
+        ],
+        "answer": "Account Alerts",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.6,
+        "param_c": 0.16
+    },
+    {
+        "id": 88,
+        "question": "What is the MOST effective way to use LinkedIn Articles for B2B thought leadership?",
+        "options": [
+            "Re-posting articles from other websites without attribution.",
+            "Sharing personal opinions and unrelated anecdotes.",
+            "Providing valuable insights, data, and solutions to industry challenges.",
+            "Focusing solely on promoting your company's products and services."
+        ],
+        "answer": "Providing valuable insights, data, and solutions to industry challenges.",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": -0.3,
+        "param_c": 0.13
+    },
+    {
+        "id": 89,
+        "question": "Which LinkedIn ad format is BEST suited for generating leads directly within the platform using a pre-filled form?",
+        "options": [
+            "Sponsored Content",
+            "Text Ads",
+            "Dynamic Ads",
+            "Lead Gen Forms"
+        ],
+        "answer": "Lead Gen Forms",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.2,
+        "param_c": 0.17
+    },
+    {
+        "id": 90,
+        "question": "What is the significance of 'Social Selling Index' (SSI) on LinkedIn?",
+        "options": [
+            "A measure of your LinkedIn advertising spend.",
+            "A score that reflects how effectively you're establishing your professional brand, finding the right people, engaging with insights, and building relationships.",
+            "The number of connections you have on LinkedIn.",
+            "An indicator of your LinkedIn profile completeness."
+        ],
+        "answer": "A score that reflects how effectively you're establishing your professional brand, finding the right people, engaging with insights, and building relationships.",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.0,
+        "param_c": 0.2
+    },
+    {
+        "id": 91,
+        "question": "Which LinkedIn feature is MOST effective for nurturing leads who have downloaded a whitepaper from your company page?",
+        "options": [
+            "A. Running a Sponsored Content campaign targeting that specific audience.",
+            "B. Sending individual connection requests to each lead.",
+            "C. Creating a LinkedIn Group specifically for whitepaper readers and fostering discussions.",
+            "D. Ignoring them and focusing on new leads."
+        ],
+        "answer": "A. Running a Sponsored Content campaign targeting that specific audience.",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 92,
+        "question": "What is the primary benefit of using LinkedIn Sales Navigator for B2B lead generation compared to a standard LinkedIn account?",
+        "options": [
+            "A. It allows you to send unlimited connection requests.",
+            "B. It provides advanced search filters and lead recommendations based on specific criteria.",
+            "C. It automatically generates leads for you.",
+            "D. It guarantees a higher conversion rate for sales."
+        ],
+        "answer": "B. It provides advanced search filters and lead recommendations based on specific criteria.",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": 0.1,
+        "param_c": 0.12
+    },
+    {
+        "id": 93,
+        "question": "Which type of content generally performs BEST in terms of engagement on LinkedIn for B2B audiences?",
+        "options": [
+            "A. Humorous memes and GIFs.",
+            "B. Industry insights, thought leadership articles, and data-driven reports.",
+            "C. Personal updates about your weekend.",
+            "D. Promotional posts solely focused on your product's features."
+        ],
+        "answer": "B. Industry insights, thought leadership articles, and data-driven reports.",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": -0.3,
+        "param_c": 0.18
+    },
+    {
+        "id": 94,
+        "question": "What is the MOST important aspect of optimizing your LinkedIn profile for lead generation?",
+        "options": [
+            "A. Using as many keywords as possible, even if they are irrelevant.",
+            "B. Having a professional headshot and a compelling summary that clearly articulates your value proposition.",
+            "C. Listing every skill you have, regardless of relevance.",
+            "D. Having the most connections possible, even if they are not relevant to your industry."
+        ],
+        "answer": "B. Having a professional headshot and a compelling summary that clearly articulates your value proposition.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.2,
+        "param_c": 0.14
+    },
+    {
+        "id": 95,
+        "question": "Which of the following is a key benefit of using LinkedIn Company Pages for B2B marketing?",
+        "options": [
+            "A. It allows you to directly sell products to consumers.",
+            "B. It provides a platform to showcase your brand, share company updates, and engage with potential customers and employees.",
+            "C. It automatically generates revenue for your company.",
+            "D. It is primarily for internal communication within the company."
+        ],
+        "answer": "B. It provides a platform to showcase your brand, share company updates, and engage with potential customers and employees.",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": -0.1,
+        "param_c": 0.16
+    },
+    {
+        "id": 96,
+        "question": "What is the BEST practice for engaging with comments on your LinkedIn posts?",
+        "options": [
+            "A. Ignore all comments to avoid arguments.",
+            "B. Respond promptly and thoughtfully to comments, even negative ones, to foster conversation and build relationships.",
+            "C. Delete any negative comments immediately.",
+            "D. Only respond to comments from people you already know."
+        ],
+        "answer": "B. Respond promptly and thoughtfully to comments, even negative ones, to foster conversation and build relationships.",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.3,
+        "param_c": 0.19
+    },
+    {
+        "id": 97,
+        "question": "How can you effectively use LinkedIn Groups for lead generation?",
+        "options": [
+            "A. By spamming the group with promotional messages.",
+            "B. By participating in relevant discussions, sharing valuable insights, and positioning yourself as a thought leader.",
+            "C. By only lurking and observing the conversations.",
+            "D. By ignoring the group rules and promoting your products aggressively."
+        ],
+        "answer": "B. By participating in relevant discussions, sharing valuable insights, and positioning yourself as a thought leader.",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": 0.0,
+        "param_c": 0.11
+    },
+    {
+        "id": 98,
+        "question": "Which LinkedIn ad targeting option allows you to reach individuals based on their current job title?",
+        "options": [
+            "A. Interest-based targeting.",
+            "B. Demographic targeting.",
+            "C. Job title targeting.",
+            "D. Behavioral targeting."
+        ],
+        "answer": "C. Job title targeting.",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": -0.4,
+        "param_c": 0.17
+    },
+    {
+        "id": 99,
+        "question": "What is a 'warm' lead on LinkedIn, in the context of B2B sales?",
+        "options": [
+            "A. Someone who has never heard of your company.",
+            "B. Someone who has engaged with your content, visited your website, or expressed interest in your products/services.",
+            "C. Someone who has blocked you on LinkedIn.",
+            "D. Someone who works for a competitor."
+        ],
+        "answer": "B. Someone who has engaged with your content, visited your website, or expressed interest in your products/services.",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": 0.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 100,
+        "question": "Which metric is MOST important for measuring the success of a LinkedIn lead generation campaign?",
+        "options": [
+            "A. Number of likes on your posts.",
+            "B. Number of followers on your company page.",
+            "C. Cost per lead (CPL) and conversion rate.",
+            "D. Number of impressions on your ads."
+        ],
+        "answer": "C. Cost per lead (CPL) and conversion rate.",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.5,
+        "param_c": 0.1
+    },
+    {
+        "id": 101,
+        "question": "Which LinkedIn advertising objective is MOST directly aligned with generating high-quality MQLs (Marketing Qualified Leads) for a complex B2B software solution with a long sales cycle?",
+        "options": [
+            "Lead Generation (using LinkedIn's Lead Gen Forms)",
+            "Website Conversions (driving traffic to a demo request page)",
+            "Brand Awareness (maximizing reach and impressions)",
+            "Video Views (increasing engagement with product explainer videos)"
+        ],
+        "answer": "Website Conversions (driving traffic to a demo request page)",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 2.1,
+        "param_c": 0.08
+    },
+    {
+        "id": 102,
+        "question": "A B2B company selling cybersecurity solutions is experiencing low conversion rates from LinkedIn Lead Gen Forms. Which of the following strategies would be MOST effective in improving the quality of leads generated?",
+        "options": [
+            "Reducing the number of fields in the form to minimize friction.",
+            "Implementing pre-fill data using LinkedIn's Matched Audiences feature with a CRM integration to target existing customers.",
+            "Adding a mandatory phone number field to ensure higher-quality contact information.",
+            "Increasing the ad spend to generate a larger volume of leads."
+        ],
+        "answer": "Implementing pre-fill data using LinkedIn's Matched Audiences feature with a CRM integration to target existing customers.",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.9,
+        "param_c": 0.12
+    },
+    {
+        "id": 103,
+        "question": "When developing a LinkedIn content strategy for a B2B SaaS company, which approach is MOST likely to establish thought leadership and attract senior-level decision-makers?",
+        "options": [
+            "Sharing daily updates about company news and product features.",
+            "Publishing long-form articles on LinkedIn Pulse that address industry trends, challenges, and solutions, backed by original research.",
+            "Reposting articles from other industry publications without adding original commentary.",
+            "Running polls and quizzes to increase engagement and generate quick feedback."
+        ],
+        "answer": "Publishing long-form articles on LinkedIn Pulse that address industry trends, challenges, and solutions, backed by original research.",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 2.3,
+        "param_c": 0.05
+    },
+    {
+        "id": 104,
+        "question": "A B2B company wants to leverage LinkedIn Sales Navigator to identify and engage with potential clients. Which Sales Navigator feature is MOST effective for discovering new leads based on specific company attributes and industry trends?",
+        "options": [
+            "Lead Builder advanced search filters (e.g., keywords, company size, industry, function)",
+            "Account Alerts for tracking company news and updates.",
+            "TeamLink to leverage connections within your network.",
+            "Saved Searches to monitor specific individuals for job changes."
+        ],
+        "answer": "Lead Builder advanced search filters (e.g., keywords, company size, industry, function)",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.5,
+        "param_c": 0.1
+    },
+    {
+        "id": 105,
+        "question": "Which of the following is the MOST effective way to measure the ROI of a LinkedIn marketing campaign focused on generating B2B leads?",
+        "options": [
+            "Tracking the number of likes, comments, and shares on LinkedIn posts.",
+            "Monitoring website traffic from LinkedIn and analyzing conversion rates using analytics tools.",
+            "Calculating the total cost of the campaign and dividing it by the number of leads generated.",
+            "Conducting a brand awareness survey to assess changes in brand perception."
+        ],
+        "answer": "Monitoring website traffic from LinkedIn and analyzing conversion rates using analytics tools.",
+        "difficulty": "Hard",
+        "param_a": 2.4,
+        "param_b": 1.2,
+        "param_c": 0.03
+    },
+    {
+        "id": 106,
+        "question": "A B2B company selling enterprise software is targeting C-level executives on LinkedIn. Which ad format and targeting strategy would be MOST effective in reaching this audience?",
+        "options": [
+            "Single Image Ads with broad demographic targeting.",
+            "Carousel Ads showcasing multiple product features with interest-based targeting.",
+            "Message Ads (Sponsored InMail) personalized to each recipient, targeting specific job titles and company sizes.",
+            "Text Ads with a limited budget, targeting industry keywords."
+        ],
+        "answer": "Message Ads (Sponsored InMail) personalized to each recipient, targeting specific job titles and company sizes.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.0,
+        "param_c": 0.07
+    },
+    {
+        "id": 107,
+        "question": "What is the primary benefit of using LinkedIn Matched Audiences for B2B lead generation compared to standard LinkedIn targeting options?",
+        "options": [
+            "Matched Audiences allow you to target a broader audience based on demographics and interests.",
+            "Matched Audiences enable you to target specific individuals and companies based on your existing CRM data or website visitors.",
+            "Matched Audiences are less expensive than standard LinkedIn targeting options.",
+            "Matched Audiences provide more detailed analytics and reporting."
+        ],
+        "answer": "Matched Audiences enable you to target specific individuals and companies based on your existing CRM data or website visitors.",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.7,
+        "param_c": 0.11
+    },
+    {
+        "id": 108,
+        "question": "Which of the following is the MOST critical element for building a strong personal brand on LinkedIn that supports B2B lead generation?",
+        "options": [
+            "Posting frequently about personal hobbies and interests.",
+            "Consistently sharing valuable insights, expertise, and industry knowledge related to your professional field.",
+            "Connecting with as many people as possible, regardless of their relevance to your industry.",
+            "Using a generic profile picture and headline to appeal to a wider audience."
+        ],
+        "answer": "Consistently sharing valuable insights, expertise, and industry knowledge related to your professional field.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.4,
+        "param_c": 0.06
+    },
+    {
+        "id": 109,
+        "question": "A B2B company is launching a new product. Which LinkedIn strategy would be MOST effective for generating initial buzz and driving early adoption among target customers?",
+        "options": [
+            "Running a contest or giveaway to increase brand awareness.",
+            "Creating a dedicated LinkedIn Group for early adopters to share feedback and engage with the product team.",
+            "Posting a series of generic product announcements on the company page.",
+            "Ignoring LinkedIn and focusing on other social media platforms."
+        ],
+        "answer": "Creating a dedicated LinkedIn Group for early adopters to share feedback and engage with the product team.",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.3,
+        "param_c": 0.09
+    },
+    {
+        "id": 110,
+        "question": "What is the MOST significant advantage of using LinkedIn's 'Conversation Ads' (a type of Message Ad) compared to traditional email marketing for B2B outreach?",
+        "options": [
+            "Conversation Ads are cheaper than email marketing.",
+            "Conversation Ads allow for interactive, personalized conversations with potential leads directly within the LinkedIn platform.",
+            "Conversation Ads have a higher open rate than email marketing because they bypass spam filters.",
+            "Conversation Ads can be sent to a larger audience than email marketing."
+        ],
+        "answer": "Conversation Ads allow for interactive, personalized conversations with potential leads directly within the LinkedIn platform.",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 1.6,
+        "param_c": 0.14
+    },
+    {
+        "id": 111,
+        "question": "Which advanced LinkedIn Sales Navigator feature allows users to receive real-time notifications based on specific trigger events related to their saved leads and accounts, enabling timely and personalized outreach?",
+        "options": [
+            "Lead Recommendations",
+            "Account Alerts",
+            "TeamLink Extend",
+            "Advanced Search Filters"
+        ],
+        "answer": "Account Alerts",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 2.1,
+        "param_c": 0.05
+    },
+    {
+        "id": 112,
+        "question": "A B2B company wants to leverage LinkedIn for account-based marketing (ABM). Which of the following strategies is MOST effective for identifying and engaging key decision-makers within target accounts using LinkedIn's advertising platform?",
+        "options": [
+            "Run broad demographic-based campaigns targeting all LinkedIn members in the relevant industry.",
+            "Utilize Matched Audiences to upload a list of target accounts and target ads specifically to employees within those companies.",
+            "Focus solely on LinkedIn InMail campaigns to reach out to individual decision-makers directly.",
+            "Create generic content and share it across all LinkedIn groups related to the industry."
+        ],
+        "answer": "Utilize Matched Audiences to upload a list of target accounts and target ads specifically to employees within those companies.",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 113,
+        "question": "When evaluating the ROI of a LinkedIn lead generation campaign, which metric provides the MOST comprehensive view of the campaign's effectiveness beyond simply the number of leads generated?",
+        "options": [
+            "Cost Per Lead (CPL)",
+            "Lead Conversion Rate to Sales Qualified Leads (SQLs)",
+            "Click-Through Rate (CTR)",
+            "Impressions"
+        ],
+        "answer": "Lead Conversion Rate to Sales Qualified Leads (SQLs)",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.5,
+        "param_c": 0.08
+    },
+    {
+        "id": 114,
+        "question": "Which LinkedIn content format is best suited for showcasing a complex B2B solution with multiple features and benefits, allowing for interactive exploration and deeper engagement?",
+        "options": [
+            "LinkedIn Article",
+            "LinkedIn Video",
+            "LinkedIn Carousel Post",
+            "LinkedIn Poll"
+        ],
+        "answer": "LinkedIn Carousel Post",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.2,
+        "param_c": 0.02
+    },
+    {
+        "id": 115,
+        "question": "A B2B company is struggling to generate high-quality leads from their LinkedIn Company Page. Which of the following strategies is MOST likely to improve lead quality and conversion rates?",
+        "options": [
+            "Increasing the frequency of posting generic content.",
+            "Running contests and giveaways to attract more followers.",
+            "Creating gated content (e.g., white papers, ebooks) and promoting it with targeted ads and lead gen forms.",
+            "Focusing solely on building brand awareness without any direct lead generation efforts."
+        ],
+        "answer": "Creating gated content (e.g., white papers, ebooks) and promoting it with targeted ads and lead gen forms.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 116,
+        "question": "What is the primary benefit of using LinkedIn's 'Lead Gen Forms' in conjunction with sponsored content campaigns, compared to directing users to an external landing page?",
+        "options": [
+            "Increased brand visibility",
+            "Higher click-through rates",
+            "Simplified lead capture process with pre-filled information, leading to higher conversion rates",
+            "Lower advertising costs"
+        ],
+        "answer": "Simplified lead capture process with pre-filled information, leading to higher conversion rates",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 1.0,
+        "param_c": 0.07
+    },
+    {
+        "id": 117,
+        "question": "Which LinkedIn Sales Navigator feature allows sales professionals to identify and prioritize leads based on their likelihood to engage with your company's content and sales outreach?",
+        "options": [
+            "Advanced Search Filters",
+            "Lead Recommendations",
+            "TeamLink Extend",
+            "Sales Spotlights"
+        ],
+        "answer": "Lead Recommendations",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.7,
+        "param_c": 0.03
+    },
+    {
+        "id": 118,
+        "question": "When measuring the success of a LinkedIn thought leadership campaign, which metric best indicates the level of influence and credibility established within the target audience?",
+        "options": [
+            "Number of followers gained",
+            "Total likes and comments on posts",
+            "Share of Voice (SOV) within relevant industry conversations and mentions by key influencers",
+            "Website traffic generated from LinkedIn"
+        ],
+        "answer": "Share of Voice (SOV) within relevant industry conversations and mentions by key influencers",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.0,
+        "param_c": 0.15
+    },
+    {
+        "id": 119,
+        "question": "A B2B SaaS company wants to use LinkedIn to nurture leads who downloaded a white paper but haven't yet requested a demo. Which LinkedIn advertising feature would be MOST effective for re-engaging these leads with targeted content and offers?",
+        "options": [
+            "Lead Gen Forms",
+            "Website Retargeting",
+            "Matched Audiences using email lists",
+            "Sponsored Content targeting job titles"
+        ],
+        "answer": "Website Retargeting",
+        "difficulty": "Hard",
+        "param_a": 2.5,
+        "param_b": 1.3,
+        "param_c": 0.09
+    },
+    {
+        "id": 120,
+        "question": "What is the primary advantage of utilizing LinkedIn's 'Conversation Ads' format over traditional sponsored content for B2B lead generation?",
+        "options": [
+            "Lower cost per click",
+            "Increased brand awareness",
+            "Personalized, interactive experience that guides prospects through a customized conversation flow",
+            "Higher reach and impressions"
+        ],
+        "answer": "Personalized, interactive experience that guides prospects through a customized conversation flow",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 2.4,
+        "param_c": 0.01
+    },
+    {
+        "id": 121,
+        "question": "Which LinkedIn advertising objective is MOST effective for directly capturing leads within the platform without directing users to an external landing page, while also maximizing lead quality?",
+        "options": [
+            "Website Conversions",
+            "Lead Generation",
+            "Brand Awareness",
+            "Website Visits"
+        ],
+        "answer": "Lead Generation",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 1.6,
+        "param_c": 0.05
+    },
+    {
+        "id": 122,
+        "question": "A B2B company selling complex software solutions is struggling to generate high-quality leads on LinkedIn. Which content strategy is MOST likely to improve lead quality and conversion rates?",
+        "options": [
+            "Posting daily motivational quotes to increase engagement.",
+            "Sharing industry news articles without added commentary.",
+            "Creating in-depth case studies and whitepapers showcasing successful client implementations and ROI.",
+            "Running contests and giveaways to attract a wider audience."
+        ],
+        "answer": "Creating in-depth case studies and whitepapers showcasing successful client implementations and ROI.",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 2.1,
+        "param_c": 0.1
+    },
+    {
+        "id": 123,
+        "question": "You are tasked with optimizing a LinkedIn Sales Navigator campaign targeting C-level executives in the financial services industry. Which filtering criteria would be MOST effective in identifying highly relevant prospects?",
+        "options": [
+            "Filtering by job title and company size only.",
+            "Filtering by keywords related to their company's products and services.",
+            "Filtering by job title, industry, years of experience, and shared connections.",
+            "Filtering by group memberships and recent LinkedIn activity."
+        ],
+        "answer": "Filtering by job title, industry, years of experience, and shared connections.",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.9,
+        "param_c": 0.08
+    },
+    {
+        "id": 124,
+        "question": "When analyzing LinkedIn campaign performance, which metric provides the MOST direct insight into the cost-effectiveness of generating qualified leads?",
+        "options": [
+            "Click-Through Rate (CTR)",
+            "Cost Per Click (CPC)",
+            "Cost Per Lead (CPL)",
+            "Impression Share"
+        ],
+        "answer": "Cost Per Lead (CPL)",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.4,
+        "param_c": 0.03
+    },
+    {
+        "id": 125,
+        "question": "A B2B company wants to leverage LinkedIn to build thought leadership and attract potential investors. Which content format would be MOST suitable for achieving this objective?",
+        "options": [
+            "Short-form status updates with promotional links.",
+            "Behind-the-scenes company culture videos.",
+            "Long-form articles published on LinkedIn Pulse discussing industry trends and insights.",
+            "Reposting articles from other industry publications."
+        ],
+        "answer": "Long-form articles published on LinkedIn Pulse discussing industry trends and insights.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 126,
+        "question": "Which LinkedIn feature allows you to directly engage with potential leads by sending personalized messages without requiring a connection request, but with limited usage?",
+        "options": [
+            "InMail",
+            "Connection Request",
+            "Sponsored Content",
+            "LinkedIn Groups"
+        ],
+        "answer": "InMail",
+        "difficulty": "Hard",
+        "param_a": 2.4,
+        "param_b": 1.2,
+        "param_c": 0.07
+    },
+    {
+        "id": 127,
+        "question": "What is the MOST significant advantage of using Matched Audiences on LinkedIn for B2B lead generation compared to relying solely on LinkedIn's demographic targeting?",
+        "options": [
+            "Matched Audiences are cheaper to target.",
+            "Matched Audiences guarantee higher click-through rates.",
+            "Matched Audiences allow you to target specific companies and individuals based on your existing customer data.",
+            "Matched Audiences provide more detailed demographic information."
+        ],
+        "answer": "Matched Audiences allow you to target specific companies and individuals based on your existing customer data.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.7,
+        "param_c": 0.09
+    },
+    {
+        "id": 128,
+        "question": "You're running a LinkedIn ad campaign and notice a high click-through rate (CTR) but a low conversion rate on your landing page. What is the MOST likely reason for this discrepancy?",
+        "options": [
+            "Your LinkedIn ad targeting is too broad.",
+            "Your landing page content is not aligned with the ad's messaging and value proposition.",
+            "Your bidding strategy is not aggressive enough.",
+            "Your ad creative is not visually appealing."
+        ],
+        "answer": "Your landing page content is not aligned with the ad's messaging and value proposition.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.0,
+        "param_c": 0.04
+    },
+    {
+        "id": 129,
+        "question": "A B2B SaaS company wants to use LinkedIn to nurture leads who downloaded a free ebook but haven't yet requested a demo. Which strategy would be MOST effective?",
+        "options": [
+            "Sending generic InMail messages to all ebook downloaders.",
+            "Adding all ebook downloaders to a LinkedIn group and posting promotional content.",
+            "Creating a retargeting campaign with ads showcasing customer testimonials and product demos.",
+            "Ignoring the leads and focusing on generating new leads."
+        ],
+        "answer": "Creating a retargeting campaign with ads showcasing customer testimonials and product demos.",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.5,
+        "param_c": 0.11
+    },
+    {
+        "id": 130,
+        "question": "Which of the following is the MOST effective way to measure the ROI of your LinkedIn marketing efforts in terms of B2B lead generation?",
+        "options": [
+            "Tracking website traffic from LinkedIn.",
+            "Measuring the number of followers gained on your company page.",
+            "Attributing closed deals and revenue generated to leads sourced from LinkedIn campaigns.",
+            "Monitoring the number of likes and comments on your posts."
+        ],
+        "answer": "Attributing closed deals and revenue generated to leads sourced from LinkedIn campaigns.",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 2.4,
+        "param_c": 0.06
+    },
+    {
+        "id": 131,
+        "question": "Which LinkedIn Sales Navigator feature allows you to receive real-time notifications when key prospects change jobs, indicating a potential sales opportunity?",
+        "options": [
+            "Lead Builder",
+            "Account Alerts",
+            "Advanced Search Filters",
+            "TeamLink Extend"
+        ],
+        "answer": "Account Alerts",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 1.5,
+        "param_c": 0.05
+    },
+    {
+        "id": 132,
+        "question": "In a B2B LinkedIn marketing strategy, what is the primary advantage of using 'Matched Audiences' with website retargeting compared to standard LinkedIn advertising?",
+        "options": [
+            "Lower cost per click",
+            "Higher click-through rates due to increased relevance",
+            "Ability to target individuals based on their job title only",
+            "Guaranteed lead generation"
+        ],
+        "answer": "Higher click-through rates due to increased relevance",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.2,
+        "param_c": 0.1
+    },
+    {
+        "id": 133,
+        "question": "Which of the following is the MOST effective strategy for nurturing leads generated from a LinkedIn lead generation form campaign, focusing on long-term relationship building?",
+        "options": [
+            "Immediately sending a hard-selling product pitch",
+            "Adding them directly to a generic email marketing list",
+            "Providing valuable, personalized content based on their expressed interests and pain points",
+            "Ignoring them until they directly contact you"
+        ],
+        "answer": "Providing valuable, personalized content based on their expressed interests and pain points",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.8,
+        "param_c": 0.08
+    },
+    {
+        "id": 134,
+        "question": "When analyzing LinkedIn analytics for a B2B company page, which metric is MOST indicative of the quality and engagement level of your content?",
+        "options": [
+            "Total number of followers",
+            "Number of impressions on a post",
+            "Engagement rate (likes, comments, shares) per post",
+            "Number of job postings viewed"
+        ],
+        "answer": "Engagement rate (likes, comments, shares) per post",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.3,
+        "param_c": 0.02
+    },
+    {
+        "id": 135,
+        "question": "What is the primary benefit of utilizing LinkedIn's 'Conversation Ads' format compared to traditional sponsored content for B2B lead generation?",
+        "options": [
+            "Lower cost per lead",
+            "Ability to target a broader audience",
+            "More interactive and personalized lead nurturing experience",
+            "Higher brand awareness"
+        ],
+        "answer": "More interactive and personalized lead nurturing experience",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.0,
+        "param_c": 0.12
+    },
+    {
+        "id": 136,
+        "question": "Which of the following is the LEAST effective strategy for building thought leadership on LinkedIn within a highly competitive B2B industry?",
+        "options": [
+            "Consistently sharing original, insightful articles and posts",
+            "Engaging in relevant industry discussions and groups",
+            "Sharing generic, promotional content about your company's products",
+            "Participating in LinkedIn Live sessions and webinars"
+        ],
+        "answer": "Sharing generic, promotional content about your company's products",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 1.1,
+        "param_c": 0.07
+    },
+    {
+        "id": 137,
+        "question": "In the context of LinkedIn B2B marketing, what is 'Social Selling Index' (SSI) and how does it contribute to lead generation?",
+        "options": [
+            "A measure of your company's overall brand awareness on LinkedIn; it directly generates leads.",
+            "A metric that reflects an individual's effectiveness at establishing their professional brand, finding the right people, engaging with insights, and building relationships; higher SSI correlates with better sales outcomes.",
+            "A LinkedIn advertising cost optimization tool; it lowers the cost per lead.",
+            "A measure of how often your company's content is shared; it indirectly generates leads."
+        ],
+        "answer": "A metric that reflects an individual's effectiveness at establishing their professional brand, finding the right people, engaging with insights, and building relationships; higher SSI correlates with better sales outcomes.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.6,
+        "param_c": 0.03
+    },
+    {
+        "id": 138,
+        "question": "What is a key difference between using LinkedIn Company Page updates and LinkedIn articles for B2B content marketing?",
+        "options": [
+            "Company Page updates are better for long-form content, while articles are for short, quick announcements.",
+            "Company Page updates are ideal for sharing news and engaging in conversations, while articles are better for establishing thought leadership and providing in-depth analysis.",
+            "Company Page updates are only visible to followers, while articles are visible to the entire LinkedIn network.",
+            "There is no difference; both serve the same purpose."
+        ],
+        "answer": "Company Page updates are ideal for sharing news and engaging in conversations, while articles are better for establishing thought leadership and providing in-depth analysis.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.2,
+        "param_c": 0.09
+    },
+    {
+        "id": 139,
+        "question": "When using LinkedIn Sales Navigator to identify potential leads, which advanced search filter is MOST effective for targeting decision-makers within a specific company?",
+        "options": [
+            "Geography",
+            "Industry",
+            "Function and Seniority Level",
+            "Keywords"
+        ],
+        "answer": "Function and Seniority Level",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.4,
+        "param_c": 0.06
+    },
+    {
+        "id": 140,
+        "question": "What is the primary advantage of using LinkedIn's 'Lead Gen Forms' integrated with a CRM system compared to manually collecting lead information?",
+        "options": [
+            "Lower advertising costs",
+            "Increased brand visibility",
+            "Automated lead data transfer and improved lead management",
+            "Higher click-through rates on ads"
+        ],
+        "answer": "Automated lead data transfer and improved lead management",
+        "difficulty": "Hard",
+        "param_a": 1.4,
+        "param_b": 2.4,
+        "param_c": 0.11
+    },
+    {
+        "id": 141,
+        "question": "Which LinkedIn Sales Navigator feature allows you to receive real-time alerts when key prospects change jobs, providing a crucial window for outreach?",
+        "options": [
+            "Lead Builder",
+            "Account Alerts",
+            "TeamLink Extend",
+            "Advanced Search Filters"
+        ],
+        "answer": "Account Alerts",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 1.6,
+        "param_c": 0.08
+    },
+    {
+        "id": 142,
+        "question": "A B2B company aims to generate highly qualified leads through LinkedIn. Which content strategy is MOST likely to yield the best results, considering LinkedIn's algorithm and user behavior?",
+        "options": [
+            "Daily posting of short, promotional updates about product features.",
+            "Sharing curated articles from industry publications with minimal commentary.",
+            "Creating long-form, in-depth articles addressing specific pain points of the target audience and offering actionable solutions.",
+            "Running frequent contests and giveaways to increase follower count."
+        ],
+        "answer": "Creating long-form, in-depth articles addressing specific pain points of the target audience and offering actionable solutions.",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.9,
+        "param_c": 0.12
+    },
+    {
+        "id": 143,
+        "question": "When using LinkedIn's Matched Audiences for retargeting, which data source generally provides the highest match rate for B2B campaigns targeting specific companies?",
+        "options": [
+            "Email lists of individual contacts.",
+            "Website visitor data based on IP addresses.",
+            "Account lists uploaded as CSV files.",
+            "Mobile advertising IDs (MAIDs)."
+        ],
+        "answer": "Account lists uploaded as CSV files.",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 2.2,
+        "param_c": 0.05
+    },
+    {
+        "id": 144,
+        "question": "You're running a LinkedIn ad campaign with the objective of generating leads using LinkedIn's Lead Gen Forms. Which targeting option would allow you to MOST effectively target decision-makers within specific departments of target companies?",
+        "options": [
+            "Interest-based targeting.",
+            "Job title targeting combined with Company Size targeting.",
+            "Skills-based targeting.",
+            "Group membership targeting."
+        ],
+        "answer": "Job title targeting combined with Company Size targeting.",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 1.4,
+        "param_c": 0.09
+    },
+    {
+        "id": 145,
+        "question": "What is the primary benefit of using LinkedIn's 'Website Demographics' feature for B2B marketers?",
+        "options": [
+            "To identify the exact individuals visiting your website.",
+            "To understand the job titles, industries, and company sizes of LinkedIn members visiting your website.",
+            "To track the number of leads generated from LinkedIn ads.",
+            "To optimize your website's SEO for LinkedIn search."
+        ],
+        "answer": "To understand the job titles, industries, and company sizes of LinkedIn members visiting your website.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.7,
+        "param_c": 0.07
+    },
+    {
+        "id": 146,
+        "question": "Which of the following is the MOST effective strategy for nurturing leads generated through LinkedIn, assuming a long sales cycle and high-value product?",
+        "options": [
+            "Immediately sending a sales pitch to every lead.",
+            "Adding all leads to a generic email newsletter.",
+            "Developing a personalized content sequence based on the lead's initial interaction and industry, addressing their specific needs and pain points.",
+            "Inviting all leads to connect on LinkedIn and then ignoring them."
+        ],
+        "answer": "Developing a personalized content sequence based on the lead's initial interaction and industry, addressing their specific needs and pain points.",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 2.1,
+        "param_c": 0.1
+    },
+    {
+        "id": 147,
+        "question": "A B2B company wants to improve its organic reach on LinkedIn. Besides posting valuable content, what is the MOST effective way to leverage LinkedIn's algorithm to increase visibility?",
+        "options": [
+            "Using a large number of hashtags in every post.",
+            "Encouraging employees to engage with company posts immediately after they are published.",
+            "Posting content only during peak hours.",
+            "Buying LinkedIn followers."
+        ],
+        "answer": "Encouraging employees to engage with company posts immediately after they are published.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 1.8,
+        "param_c": 0.11
+    },
+    {
+        "id": 148,
+        "question": "When analyzing the performance of a LinkedIn ad campaign, which metric provides the MOST direct insight into the quality of leads generated through Lead Gen Forms?",
+        "options": [
+            "Click-through rate (CTR).",
+            "Cost per lead (CPL).",
+            "Conversion rate from lead to opportunity.",
+            "Impression share."
+        ],
+        "answer": "Conversion rate from lead to opportunity.",
+        "difficulty": "Hard",
+        "param_a": 2.4,
+        "param_b": 1.3,
+        "param_c": 0.06
+    },
+    {
+        "id": 149,
+        "question": "You are tasked with creating a thought leadership campaign on LinkedIn for a cybersecurity company. Which approach is MOST likely to establish credibility and attract a B2B audience?",
+        "options": [
+            "Sharing generic articles about cybersecurity trends from other sources.",
+            "Publishing short, promotional posts about the company's products.",
+            "Creating in-depth articles, webinars, and whitepapers showcasing the company's expertise in solving specific cybersecurity challenges faced by businesses.",
+            "Running contests and giveaways related to cybersecurity."
+        ],
+        "answer": "Creating in-depth articles, webinars, and whitepapers showcasing the company's expertise in solving specific cybersecurity challenges faced by businesses.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.0,
+        "param_c": 0.13
+    },
+    {
+        "id": 150,
+        "question": "A B2B company is using LinkedIn groups to engage with potential customers. Which strategy is MOST effective for building relationships and generating leads within these groups?",
+        "options": [
+            "Spamming the group with promotional messages about the company's products.",
+            "Actively participating in discussions, answering questions, and sharing valuable insights related to the group's topic.",
+            "Silently observing the group without contributing.",
+            "Creating a new group with the same topic as an existing, active group."
+        ],
+        "answer": "Actively participating in discussions, answering questions, and sharing valuable insights related to the group's topic.",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 2.3,
+        "param_c": 0.14
+    }
+]
