@@ -22,36 +22,48 @@ import InstructorCourseCurriculumPage from './pages/InstructorCourseCurriculumPa
 import InstructorCourseReviewPage from './pages/InstructorCourseReviewPage';
 import InstructorUploadPage from './pages/InstructorUploadPage';
 import InstructorEditCoursePage from './pages/InstructorEditCoursePage';
-import CourseLessonPage from './pages/CourseLessonPage';function App() {
+// NEW: question bank module
+import QuestionBankListPage from './pages/QuestionBankListPage';
+import InstructorRoute from './components/Auth/InstructorRoute';
+//finish for question bank module
+import CourseLessonPage from './pages/CourseLessonPage'; function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <Router>
           <Toaster position="top-center" reverseOrder={false} />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/courses" element={<CoursesPage />} />
-          <Route path="/courses/:courseId" element={<CourseDetailsPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout/:checkoutId" element={<CheckoutPage />} />
-          <Route path="/my-learning" element={<MyLearningPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-          <Route path="/instructor/create-course" element={<InstructorCourseBasicsPage />} />
-          <Route path="/instructor/create-course/curriculum" element={<InstructorCourseCurriculumPage />} />
-          <Route path="/instructor/create-course/review" element={<InstructorCourseReviewPage />} />
-          <Route path="/instructor/upload" element={<InstructorUploadPage />} />
-          <Route path="/edit-course/:id" element={<InstructorEditCoursePage />} />
-          <Route path="/learning/:courseId" element={<CourseLessonPage />} />
-          <Route path="/learning/:courseId/lesson/:lessonId" element={<CourseLessonPage />} />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/courses/:courseId" element={<CourseDetailsPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout/:checkoutId" element={<CheckoutPage />} />
+            <Route path="/my-learning" element={<MyLearningPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
+            <Route path="/instructor/create-course" element={<InstructorCourseBasicsPage />} />
+            <Route path="/instructor/create-course/curriculum" element={<InstructorCourseCurriculumPage />} />
+            <Route path="/instructor/create-course/review" element={<InstructorCourseReviewPage />} />
+            <Route path="/instructor/upload" element={<InstructorUploadPage />} />
+            <Route path="/edit-course/:id" element={<InstructorEditCoursePage />} />
+            <Route path="/learning/:courseId" element={<CourseLessonPage />} />
+            <Route path="/learning/:courseId/lesson/:lessonId" element={<CourseLessonPage />} />
+            <Route
+              path="/instructor/question-banks"
+              element={
+                <InstructorRoute>
+                  <QuestionBankListPage />
+                </InstructorRoute>
+              }
+            />
 
-        </Routes>
-        <ChatbotWidget />
+          </Routes>
+          <ChatbotWidget />
         </Router>
       </CartProvider>
     </AuthProvider>
