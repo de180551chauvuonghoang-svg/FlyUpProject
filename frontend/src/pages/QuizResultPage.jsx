@@ -54,6 +54,7 @@ const QuizResultPage = ({
             }, accessToken);
             setAiExplanations(prev => ({ ...prev, [idx]: res.explanation }));
         } catch (err) {
+            console.error(err);
             setAiExplanations(prev => ({ ...prev, [idx]: '⚠️ Không thể tải giải thích AI lúc này.' }));
         } finally {
             setLoadingAI(prev => ({ ...prev, [idx]: false }));
