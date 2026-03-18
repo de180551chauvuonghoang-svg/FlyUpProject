@@ -145,7 +145,7 @@ const QuizPage = ({ assignmentId, courseId, userId, questionCount, onFinish, onB
             const updatedAnsweredQuestions = answerData.answeredQuestions ?? [];
             const updatedResponses = answerData.responses ?? [];
             const updatedTheta = answerData.tempTheta ?? currentTheta;
-            const updatedQuestionHistory = [...questionHistory, historyEntry];
+            const updatedQuestionHistory = [...questionHistory, { ...historyEntry, isCorrect: answerData.isCorrect ?? false }];
             const updatedSelectedChoiceIds = [...selectedChoiceIds, selectedId];
 
             setAnsweredQuestions(updatedAnsweredQuestions);

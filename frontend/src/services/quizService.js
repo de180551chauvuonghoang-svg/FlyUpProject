@@ -103,3 +103,23 @@ export const finishCatQuiz = async (payload, token) => {
 
     return data;
 };
+
+/**
+ * Call AI to explain why the selected answer is correct or incorrect
+ */
+export const getAIExplanation = async (payload, token) => {
+    const response = await fetch(`${API_BASE}/api/quiz/cat/explain`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data?.error || "Failed to get AI explanation");
+    }
+    return data;
+};

@@ -1,0 +1,2252 @@
+[
+    {
+        "id": 1,
+        "question": "Which keyword is used to declare a constant variable in Java?",
+        "options": [
+            "A) static",
+            "B) const",
+            "C) final",
+            "D) immutable"
+        ],
+        "answer": "C) final",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.2,
+        "param_c": 0.2
+    },
+    {
+        "id": 2,
+        "question": "What is the entry point of a Java program?",
+        "options": [
+            "A) start()",
+            "B) main()",
+            "C) begin()",
+            "D) run()"
+        ],
+        "answer": "B) main()",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.5,
+        "param_c": 0.18
+    },
+    {
+        "id": 3,
+        "question": "Which of the following is a primitive data type in Java?",
+        "options": [
+            "A) String",
+            "B) Integer",
+            "C) boolean",
+            "D) Object"
+        ],
+        "answer": "C) boolean",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -0.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 4,
+        "question": "What does JVM stand for?",
+        "options": [
+            "A) Java Virtual Machine",
+            "B) Java Visual Machine",
+            "C) Java Vector Machine",
+            "D) Java Verified Machine"
+        ],
+        "answer": "A) Java Virtual Machine",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -2.0,
+        "param_c": 0.15
+    },
+    {
+        "id": 5,
+        "question": "Which operator is used for assignment in Java?",
+        "options": [
+            "A) ==",
+            "B) +",
+            "C) =",
+            "D) ->"
+        ],
+        "answer": "C) =",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -1.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 6,
+        "question": "What is the purpose of the 'new' keyword in Java?",
+        "options": [
+            "A) To declare a variable",
+            "B) To create a new class",
+            "C) To allocate memory for an object",
+            "D) To import a package"
+        ],
+        "answer": "C) To allocate memory for an object",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.9,
+        "param_c": 0.19
+    },
+    {
+        "id": 7,
+        "question": "Which of the following is NOT an access modifier in Java?",
+        "options": [
+            "A) public",
+            "B) private",
+            "C) protected",
+            "D) internal"
+        ],
+        "answer": "D) internal",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -0.6,
+        "param_c": 0.21
+    },
+    {
+        "id": 8,
+        "question": "What is the purpose of a constructor in Java?",
+        "options": [
+            "A) To destroy an object",
+            "B) To initialize an object",
+            "C) To define a method",
+            "D) To declare a class"
+        ],
+        "answer": "B) To initialize an object",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.8,
+        "param_c": 0.17
+    },
+    {
+        "id": 9,
+        "question": "Which loop executes at least once, regardless of the condition?",
+        "options": [
+            "A) for loop",
+            "B) while loop",
+            "C) do-while loop",
+            "D) if-else loop"
+        ],
+        "answer": "C) do-while loop",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -0.75,
+        "param_c": 0.23
+    },
+    {
+        "id": 10,
+        "question": "What is the extension of a Java source code file?",
+        "options": [
+            "A) .class",
+            "B) .java",
+            "C) .exe",
+            "D) .jar"
+        ],
+        "answer": "B) .java",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -2.3,
+        "param_c": 0.16
+    },
+    {
+        "id": 11,
+        "question": "Which keyword is used to define a constant variable in Java?",
+        "options": [
+            "A. static",
+            "B. final",
+            "C. const",
+            "D. immutable"
+        ],
+        "answer": "B. final",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 12,
+        "question": "What is the entry point of a Java program?",
+        "options": [
+            "A. start()",
+            "B. main()",
+            "C. begin()",
+            "D. run()"
+        ],
+        "answer": "B. main()",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.5,
+        "param_c": 0.22
+    },
+    {
+        "id": 13,
+        "question": "Which of the following is a primitive data type in Java?",
+        "options": [
+            "A. String",
+            "B. Integer",
+            "C. boolean",
+            "D. Object"
+        ],
+        "answer": "C. boolean",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -0.8,
+        "param_c": 0.15
+    },
+    {
+        "id": 14,
+        "question": "Which operator is used for assignment in Java?",
+        "options": [
+            "A. ==",
+            "B. +=",
+            "C. =",
+            "D. ->"
+        ],
+        "answer": "C. =",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -1.0,
+        "param_c": 0.2
+    },
+    {
+        "id": 15,
+        "question": "What does JVM stand for?",
+        "options": [
+            "A. Java Virtual Machine",
+            "B. Java Visual Machine",
+            "C. Java Vector Machine",
+            "D. Java Variable Machine"
+        ],
+        "answer": "A. Java Virtual Machine",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -2.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 16,
+        "question": "Which keyword is used to create an object in Java?",
+        "options": [
+            "A. class",
+            "B. object",
+            "C. new",
+            "D. instance"
+        ],
+        "answer": "C. new",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.9,
+        "param_c": 0.17
+    },
+    {
+        "id": 17,
+        "question": "What is the purpose of the `System.out.println()` statement?",
+        "options": [
+            "A. To read input from the user",
+            "B. To print output to the console",
+            "C. To define a new variable",
+            "D. To create a new class"
+        ],
+        "answer": "B. To print output to the console",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -1.8,
+        "param_c": 0.23
+    },
+    {
+        "id": 18,
+        "question": "Which of the following is a valid comment in Java?",
+        "options": [
+            "A. // This is a comment",
+            "B. /* This is a comment */",
+            "C. Both A and B",
+            "D. <!-- This is a comment -->"
+        ],
+        "answer": "C. Both A and B",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -0.6,
+        "param_c": 0.19
+    },
+    {
+        "id": 19,
+        "question": "What is the term for combining data and methods into a single unit?",
+        "options": [
+            "A. Inheritance",
+            "B. Polymorphism",
+            "C. Encapsulation",
+            "D. Abstraction"
+        ],
+        "answer": "C. Encapsulation",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -2.2,
+        "param_c": 0.21
+    },
+    {
+        "id": 20,
+        "question": "Which access modifier makes a member accessible only within its own class?",
+        "options": [
+            "A. public",
+            "B. protected",
+            "C. private",
+            "D. default"
+        ],
+        "answer": "C. private",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -1.3,
+        "param_c": 0.16
+    },
+    {
+        "id": 21,
+        "question": "Which keyword is used to declare a constant variable in Java?",
+        "options": [
+            "A) static",
+            "B) const",
+            "C) final",
+            "D) immutable"
+        ],
+        "answer": "C) final",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.2,
+        "param_c": 0.2
+    },
+    {
+        "id": 22,
+        "question": "What is the purpose of the 'main' method in a Java program?",
+        "options": [
+            "A) To define the class name",
+            "B) To initialize variables",
+            "C) To start the program execution",
+            "D) To import packages"
+        ],
+        "answer": "C) To start the program execution",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.5,
+        "param_c": 0.18
+    },
+    {
+        "id": 23,
+        "question": "Which data type is used to store whole numbers in Java?",
+        "options": [
+            "A) float",
+            "B) string",
+            "C) int",
+            "D) boolean"
+        ],
+        "answer": "C) int",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -0.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 24,
+        "question": "What does the 'new' keyword do in Java?",
+        "options": [
+            "A) Declares a variable",
+            "B) Creates a new object",
+            "C) Defines a method",
+            "D) Imports a library"
+        ],
+        "answer": "B) Creates a new object",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -1.0,
+        "param_c": 0.16
+    },
+    {
+        "id": 25,
+        "question": "Which of the following is a valid comment in Java?",
+        "options": [
+            "A) // This is a comment",
+            "B) * This is a comment *",
+            "C) <!-- This is a comment -->",
+            "D) ' This is a comment"
+        ],
+        "answer": "A) // This is a comment",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -2.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 26,
+        "question": "What is the purpose of the 'System.out.println()' statement?",
+        "options": [
+            "A) To read input from the user",
+            "B) To print output to the console",
+            "C) To declare a variable",
+            "D) To define a method"
+        ],
+        "answer": "B) To print output to the console",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.9,
+        "param_c": 0.19
+    },
+    {
+        "id": 27,
+        "question": "Which of the following is an example of a String literal in Java?",
+        "options": [
+            "A) 123",
+            "B) true",
+            "C) 'A'",
+            "D) \"Hello World\""
+        ],
+        "answer": "D) \"Hello World\"",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -0.6,
+        "param_c": 0.23
+    },
+    {
+        "id": 28,
+        "question": "What is a class in Java?",
+        "options": [
+            "A) A variable type",
+            "B) A collection of methods",
+            "C) A blueprint for creating objects",
+            "D) A type of loop"
+        ],
+        "answer": "C) A blueprint for creating objects",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -1.8,
+        "param_c": 0.17
+    },
+    {
+        "id": 29,
+        "question": "Which operator is used for assignment in Java?",
+        "options": [
+            "A) ==",
+            "B) +",
+            "C) =",
+            "D) :="
+        ],
+        "answer": "C) =",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -2.2,
+        "param_c": 0.21
+    },
+    {
+        "id": 30,
+        "question": "What is the value of 'x' after the following code executes: `int x = 5 + 3 * 2;`?",
+        "options": [
+            "A) 16",
+            "B) 11",
+            "C) 13",
+            "D) 8"
+        ],
+        "answer": "B) 11",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -0.75,
+        "param_c": 0.15
+    },
+    {
+        "id": 31,
+        "question": "Which keyword is used to declare a constant in Java?",
+        "options": [
+            "A. const",
+            "B. static",
+            "C. final",
+            "D. constant"
+        ],
+        "answer": "C. final",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.2,
+        "param_c": 0.2
+    },
+    {
+        "id": 32,
+        "question": "What is the entry point of a Java program?",
+        "options": [
+            "A. start()",
+            "B. main()",
+            "C. begin()",
+            "D. run()"
+        ],
+        "answer": "B. main()",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.5,
+        "param_c": 0.18
+    },
+    {
+        "id": 33,
+        "question": "Which of the following is a primitive data type in Java?",
+        "options": [
+            "A. String",
+            "B. Object",
+            "C. Integer",
+            "D. int"
+        ],
+        "answer": "D. int",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -0.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 34,
+        "question": "What does JVM stand for?",
+        "options": [
+            "A. Java Virtual Machine",
+            "B. Java Visual Machine",
+            "C. Java Vector Machine",
+            "D. Java Valid Machine"
+        ],
+        "answer": "A. Java Virtual Machine",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -2.0,
+        "param_c": 0.15
+    },
+    {
+        "id": 35,
+        "question": "Which operator is used for assignment in Java?",
+        "options": [
+            "A. ==",
+            "B. +=",
+            "C. =",
+            "D. ->"
+        ],
+        "answer": "C. =",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -1.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 36,
+        "question": "Which keyword is used to create an object in Java?",
+        "options": [
+            "A. class",
+            "B. struct",
+            "C. new",
+            "D. object"
+        ],
+        "answer": "C. new",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.9,
+        "param_c": 0.19
+    },
+    {
+        "id": 37,
+        "question": "What is the purpose of the 'import' statement in Java?",
+        "options": [
+            "A. To define a new class",
+            "B. To include external libraries",
+            "C. To declare a variable",
+            "D. To create a new object"
+        ],
+        "answer": "B. To include external libraries",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -1.7,
+        "param_c": 0.21
+    },
+    {
+        "id": 38,
+        "question": "Which of the following is NOT an access modifier in Java?",
+        "options": [
+            "A. public",
+            "B. private",
+            "C. protected",
+            "D. internal"
+        ],
+        "answer": "D. internal",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -0.6,
+        "param_c": 0.17
+    },
+    {
+        "id": 39,
+        "question": "What is the extension of a Java source code file?",
+        "options": [
+            "A. .class",
+            "B. .java",
+            "C. .exe",
+            "D. .jar"
+        ],
+        "answer": "B. .java",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -2.3,
+        "param_c": 0.23
+    },
+    {
+        "id": 40,
+        "question": "Which loop executes at least once?",
+        "options": [
+            "A. for loop",
+            "B. while loop",
+            "C. do-while loop",
+            "D. if-else"
+        ],
+        "answer": "C. do-while loop",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.1,
+        "param_c": 0.16
+    },
+    {
+        "id": 41,
+        "question": "Which keyword is used to define a class in Java?",
+        "options": [
+            "A) struct",
+            "B) class",
+            "C) object",
+            "D) program"
+        ],
+        "answer": "B) class",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 42,
+        "question": "What is the entry point of a Java program?",
+        "options": [
+            "A) start()",
+            "B) main()",
+            "C) begin()",
+            "D) run()"
+        ],
+        "answer": "B) main()",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.8,
+        "param_c": 0.18
+    },
+    {
+        "id": 43,
+        "question": "Which of the following is a primitive data type in Java?",
+        "options": [
+            "A) String",
+            "B) Object",
+            "C) int",
+            "D) Array"
+        ],
+        "answer": "C) int",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -2.0,
+        "param_c": 0.22
+    },
+    {
+        "id": 44,
+        "question": "What does JVM stand for?",
+        "options": [
+            "A) Java Virtual Machine",
+            "B) Java Visual Machine",
+            "C) Java Verified Machine",
+            "D) Java Variable Machine"
+        ],
+        "answer": "A) Java Virtual Machine",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -1.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 45,
+        "question": "Which operator is used for assignment in Java?",
+        "options": [
+            "A) ==",
+            "B) +",
+            "C) =",
+            "D) ->"
+        ],
+        "answer": "C) =",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -2.3,
+        "param_c": 0.23
+    },
+    {
+        "id": 46,
+        "question": "What is the purpose of the `System.out.println()` method?",
+        "options": [
+            "A) To read input from the user",
+            "B) To print output to the console",
+            "C) To define a new variable",
+            "D) To create a new class"
+        ],
+        "answer": "B) To print output to the console",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.9,
+        "param_c": 0.17
+    },
+    {
+        "id": 47,
+        "question": "Which keyword is used to create an object of a class?",
+        "options": [
+            "A) define",
+            "B) create",
+            "C) new",
+            "D) instance"
+        ],
+        "answer": "C) new",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.6,
+        "param_c": 0.19
+    },
+    {
+        "id": 48,
+        "question": "What is a package in Java?",
+        "options": [
+            "A) A collection of classes",
+            "B) A single class file",
+            "C) A type of variable",
+            "D) A method definition"
+        ],
+        "answer": "A) A collection of classes",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -2.5,
+        "param_c": 0.25
+    },
+    {
+        "id": 49,
+        "question": "Which of the following is a valid comment in Java?",
+        "options": [
+            "A) // This is a comment",
+            "B) <!-- This is a comment -->",
+            "C) * This is a comment *",
+            "D) ' This is a comment"
+        ],
+        "answer": "A) // This is a comment",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -0.7,
+        "param_c": 0.21
+    },
+    {
+        "id": 50,
+        "question": "What is the purpose of the `javac` command?",
+        "options": [
+            "A) To run a Java program",
+            "B) To compile a Java program",
+            "C) To edit a Java program",
+            "D) To debug a Java program"
+        ],
+        "answer": "B) To compile a Java program",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.1,
+        "param_c": 0.16
+    },
+    {
+        "id": 51,
+        "question": "Which of the following is NOT a primitive data type in Java?",
+        "options": [
+            "int",
+            "boolean",
+            "String",
+            "float"
+        ],
+        "answer": "String",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 52,
+        "question": "What is the purpose of the 'static' keyword in Java?",
+        "options": [
+            "To create a constant variable",
+            "To define a method that cannot be overridden",
+            "To associate a variable or method with the class rather than an instance of the class",
+            "To declare a variable that is only accessible within the current method"
+        ],
+        "answer": "To associate a variable or method with the class rather than an instance of the class",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 53,
+        "question": "Which of the following is the correct way to create an instance of a class named 'MyClass'?",
+        "options": [
+            "MyClass = new MyClass();",
+            "new MyClass MyClass();",
+            "MyClass myObj = new MyClass();",
+            "MyClass.new()"
+        ],
+        "answer": "MyClass myObj = new MyClass();",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.4,
+        "param_c": 0.18
+    },
+    {
+        "id": 54,
+        "question": "What is the difference between '==' and '.equals()' in Java when comparing objects?",
+        "options": [
+            "'==' compares the values of the objects, while '.equals()' compares the memory addresses.",
+            "'==' compares the memory addresses, while '.equals()' compares the values of the objects.",
+            "Both compare the memory addresses.",
+            "Both compare the values of the objects."
+        ],
+        "answer": "'==' compares the memory addresses, while '.equals()' compares the values of the objects.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.1,
+        "param_c": 0.11
+    },
+    {
+        "id": 55,
+        "question": "Which of the following is a valid way to handle exceptions in Java?",
+        "options": [
+            "try { } catch (Exception e) { }",
+            "if (error) { throw Exception(); }",
+            "handle Exception { }",
+            "exception (Exception e) { }"
+        ],
+        "answer": "try { } catch (Exception e) { }",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": -0.1,
+        "param_c": 0.16
+    },
+    {
+        "id": 56,
+        "question": "What is the purpose of the 'super' keyword in Java?",
+        "options": [
+            "To call a method from the parent class",
+            "To create a new instance of the current class",
+            "To access a static variable",
+            "To define a constant variable"
+        ],
+        "answer": "To call a method from the parent class",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 57,
+        "question": "Which of the following is an example of inheritance in Java?",
+        "options": [
+            "Creating an interface",
+            "Implementing a method",
+            "Extending a class",
+            "Defining a variable"
+        ],
+        "answer": "Extending a class",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.3,
+        "param_c": 0.19
+    },
+    {
+        "id": 58,
+        "question": "What is the purpose of the 'final' keyword when applied to a variable?",
+        "options": [
+            "It makes the variable accessible from anywhere.",
+            "It prevents the variable from being modified after initialization.",
+            "It makes the variable static.",
+            "It makes the variable volatile."
+        ],
+        "answer": "It prevents the variable from being modified after initialization.",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.0,
+        "param_c": 0.14
+    },
+    {
+        "id": 59,
+        "question": "Which data structure follows the Last-In, First-Out (LIFO) principle?",
+        "options": [
+            "Queue",
+            "Linked List",
+            "Stack",
+            "Tree"
+        ],
+        "answer": "Stack",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": 0.2,
+        "param_c": 0.17
+    },
+    {
+        "id": 60,
+        "question": "What is the purpose of the `toString()` method in Java?",
+        "options": [
+            "To convert a string to an integer",
+            "To convert an object to a string representation",
+            "To compare two objects",
+            "To format a date"
+        ],
+        "answer": "To convert an object to a string representation",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": -0.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 61,
+        "question": "Which of the following is NOT a primitive data type in Java?",
+        "options": [
+            "int",
+            "boolean",
+            "String",
+            "float"
+        ],
+        "answer": "String",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 62,
+        "question": "What is the purpose of the 'static' keyword in Java?",
+        "options": [
+            "To create an object of a class",
+            "To make a variable constant",
+            "To associate a variable or method with the class itself, rather than an instance of the class",
+            "To prevent inheritance"
+        ],
+        "answer": "To associate a variable or method with the class itself, rather than an instance of the class",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 63,
+        "question": "Which of the following is the correct way to implement an interface in Java?",
+        "options": [
+            "extends InterfaceName",
+            "implements InterfaceName",
+            "inherits InterfaceName",
+            "uses InterfaceName"
+        ],
+        "answer": "implements InterfaceName",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.1,
+        "param_c": 0.18
+    },
+    {
+        "id": 64,
+        "question": "What is the difference between '==' and '.equals()' in Java when comparing objects?",
+        "options": [
+            "'==' compares the values, '.equals()' compares the references",
+            "'==' compares the references, '.equals()' compares the values",
+            "Both compare the values",
+            "Both compare the references"
+        ],
+        "answer": "'==' compares the references, '.equals()' compares the values",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.5,
+        "param_c": 0.11
+    },
+    {
+        "id": 65,
+        "question": "Which keyword is used to handle exceptions in Java?",
+        "options": [
+            "error",
+            "exception",
+            "try",
+            "throwable"
+        ],
+        "answer": "try",
+        "difficulty": "Medium",
+        "param_a": 0.85,
+        "param_b": -0.4,
+        "param_c": 0.19
+    },
+    {
+        "id": 66,
+        "question": "What is the purpose of the 'super' keyword in Java?",
+        "options": [
+            "To call a method of the superclass",
+            "To create a new instance of the superclass",
+            "To define a static variable",
+            "To declare an abstract method"
+        ],
+        "answer": "To call a method of the superclass",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.1,
+        "param_c": 0.14
+    },
+    {
+        "id": 67,
+        "question": "Which of the following is a valid way to create an ArrayList of Strings in Java?",
+        "options": [
+            "ArrayList<String> list = new List<String>();",
+            "ArrayList list = new ArrayList(String);",
+            "ArrayList<String> list = new ArrayList<String>();",
+            "String[] list = new ArrayList<String>();"
+        ],
+        "answer": "ArrayList<String> list = new ArrayList<String>();",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": 0.8,
+        "param_c": 0.16
+    },
+    {
+        "id": 68,
+        "question": "What is the primary purpose of the Java Virtual Machine (JVM)?",
+        "options": [
+            "To compile Java code into machine code",
+            "To execute Java bytecode",
+            "To manage memory allocation",
+            "All of the above"
+        ],
+        "answer": "To execute Java bytecode",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.0,
+        "param_c": 0.13
+    },
+    {
+        "id": 69,
+        "question": "Which of the following access modifiers provides the most restrictive access?",
+        "options": [
+            "public",
+            "private",
+            "protected",
+            "default (package-private)"
+        ],
+        "answer": "private",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": -0.3,
+        "param_c": 0.17
+    },
+    {
+        "id": 70,
+        "question": "What is the purpose of garbage collection in Java?",
+        "options": [
+            "To optimize code execution",
+            "To automatically manage memory by reclaiming unused objects",
+            "To prevent security vulnerabilities",
+            "To improve code readability"
+        ],
+        "answer": "To automatically manage memory by reclaiming unused objects",
+        "difficulty": "Medium",
+        "param_a": 0.95,
+        "param_b": 0.6,
+        "param_c": 0.2
+    },
+    {
+        "id": 71,
+        "question": "Which of the following is NOT a characteristic of Java?",
+        "options": [
+            "A. Object-oriented",
+            "B. Platform-dependent",
+            "C. Robust",
+            "D. Secure"
+        ],
+        "answer": "B. Platform-dependent",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 72,
+        "question": "Which keyword is used to prevent a method from being overridden in a subclass?",
+        "options": [
+            "A. static",
+            "B. final",
+            "C. abstract",
+            "D. synchronized"
+        ],
+        "answer": "B. final",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": 0.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 73,
+        "question": "What is the purpose of the `try-catch` block in Java?",
+        "options": [
+            "A. To define a loop",
+            "B. To handle exceptions",
+            "C. To declare variables",
+            "D. To create objects"
+        ],
+        "answer": "B. To handle exceptions",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": -0.1,
+        "param_c": 0.18
+    },
+    {
+        "id": 74,
+        "question": "Which of the following data structures is NOT part of the Java Collections Framework?",
+        "options": [
+            "A. ArrayList",
+            "B. LinkedList",
+            "C. Array",
+            "D. HashSet"
+        ],
+        "answer": "C. Array",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.5,
+        "param_c": 0.11
+    },
+    {
+        "id": 75,
+        "question": "What is the role of the `static` keyword in Java?",
+        "options": [
+            "A. To create an instance of a class",
+            "B. To define a constant variable",
+            "C. To make a variable or method belong to the class rather than an instance",
+            "D. To prevent inheritance"
+        ],
+        "answer": "C. To make a variable or method belong to the class rather than an instance",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.1,
+        "param_c": 0.16
+    },
+    {
+        "id": 76,
+        "question": "Which interface is used to implement custom sorting in Java?",
+        "options": [
+            "A. Serializable",
+            "B. Cloneable",
+            "C. Comparable",
+            "D. Runnable"
+        ],
+        "answer": "C. Comparable",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.7,
+        "param_c": 0.19
+    },
+    {
+        "id": 77,
+        "question": "What is the purpose of the `super` keyword in Java?",
+        "options": [
+            "A. To call a method in the current class",
+            "B. To call a method in the superclass",
+            "C. To create a new object",
+            "D. To define a static variable"
+        ],
+        "answer": "B. To call a method in the superclass",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.4,
+        "param_c": 0.14
+    },
+    {
+        "id": 78,
+        "question": "Which of the following is a checked exception in Java?",
+        "options": [
+            "A. NullPointerException",
+            "B. ArrayIndexOutOfBoundsException",
+            "C. IOException",
+            "D. ArithmeticException"
+        ],
+        "answer": "C. IOException",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.9,
+        "param_c": 0.13
+    },
+    {
+        "id": 79,
+        "question": "What is the difference between `==` and `.equals()` in Java?",
+        "options": [
+            "A. `==` compares object references, `.equals()` compares object values",
+            "B. `==` compares object values, `.equals()` compares object references",
+            "C. They are interchangeable",
+            "D. `==` is for integers, `.equals()` is for strings"
+        ],
+        "answer": "A. `==` compares object references, `.equals()` compares object values",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": -0.3,
+        "param_c": 0.17
+    },
+    {
+        "id": 80,
+        "question": "Which of the following is the correct way to create a thread in Java?",
+        "options": [
+            "A. By extending the `Thread` class",
+            "B. By implementing the `Runnable` interface",
+            "C. Both A and B",
+            "D. By extending the `Object` class"
+        ],
+        "answer": "C. Both A and B",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.0,
+        "param_c": 0.2
+    },
+    {
+        "id": 81,
+        "question": "Which of the following data structures is best suited for implementing a Last-In-First-Out (LIFO) behavior?",
+        "options": [
+            "A. Queue",
+            "B. ArrayList",
+            "C. Stack",
+            "D. LinkedList"
+        ],
+        "answer": "C. Stack",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 82,
+        "question": "What is the primary purpose of the 'finally' block in a try-catch-finally statement?",
+        "options": [
+            "A. To handle exceptions that were not caught by the 'catch' block.",
+            "B. To execute code only if an exception occurs.",
+            "C. To execute code regardless of whether an exception occurs or not.",
+            "D. To define the exception type to be caught."
+        ],
+        "answer": "C. To execute code regardless of whether an exception occurs or not.",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 83,
+        "question": "Which keyword is used to prevent a method from being overridden in a subclass?",
+        "options": [
+            "A. static",
+            "B. abstract",
+            "C. final",
+            "D. private"
+        ],
+        "answer": "C. final",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.4,
+        "param_c": 0.18
+    },
+    {
+        "id": 84,
+        "question": "What is the purpose of the 'transient' keyword in Java?",
+        "options": [
+            "A. To indicate that a variable should not be serialized.",
+            "B. To declare a constant variable.",
+            "C. To define a method that can be accessed from any class.",
+            "D. To create a variable that is only accessible within the class."
+        ],
+        "answer": "A. To indicate that a variable should not be serialized.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.1,
+        "param_c": 0.11
+    },
+    {
+        "id": 85,
+        "question": "Which of the following is NOT a valid access modifier in Java?",
+        "options": [
+            "A. public",
+            "B. private",
+            "C. protected",
+            "D. friend"
+        ],
+        "answer": "D. friend",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": -0.1,
+        "param_c": 0.17
+    },
+    {
+        "id": 86,
+        "question": "What is the difference between '==' and '.equals()' in Java when comparing objects?",
+        "options": [
+            "A. '==' compares the values of the objects, while '.equals()' compares the memory addresses.",
+            "B. '==' compares the memory addresses, while '.equals()' compares the values of the objects.",
+            "C. They both perform the same function.",
+            "D. '==' can be used for objects, while '.equals()' can only be used for primitive data types."
+        ],
+        "answer": "B. '==' compares the memory addresses, while '.equals()' compares the values of the objects.",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.5,
+        "param_c": 0.19
+    },
+    {
+        "id": 87,
+        "question": "Which interface is the root interface in the Collection hierarchy?",
+        "options": [
+            "A. List",
+            "B. Set",
+            "C. Collection",
+            "D. Map"
+        ],
+        "answer": "C. Collection",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.3,
+        "param_c": 0.14
+    },
+    {
+        "id": 88,
+        "question": "What is the purpose of the 'instanceof' operator in Java?",
+        "options": [
+            "A. To check if a variable is initialized.",
+            "B. To check if an object is an instance of a particular class or interface.",
+            "C. To create a new instance of a class.",
+            "D. To check if two objects are equal."
+        ],
+        "answer": "B. To check if an object is an instance of a particular class or interface.",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.2,
+        "param_c": 0.16
+    },
+    {
+        "id": 89,
+        "question": "Which of the following is a checked exception in Java?",
+        "options": [
+            "A. NullPointerException",
+            "B. ArrayIndexOutOfBoundsException",
+            "C. IOException",
+            "D. ArithmeticException"
+        ],
+        "answer": "C. IOException",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": -0.5,
+        "param_c": 0.13
+    },
+    {
+        "id": 90,
+        "question": "What is the purpose of the 'super' keyword in Java?",
+        "options": [
+            "A. To call a method from the parent class.",
+            "B. To create a new instance of a class.",
+            "C. To define a static variable.",
+            "D. To declare an abstract method."
+        ],
+        "answer": "A. To call a method from the parent class.",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.0,
+        "param_c": 0.2
+    },
+    {
+        "id": 91,
+        "question": "Which of the following is NOT a valid access modifier in Java?",
+        "options": [
+            "A. public",
+            "B. private",
+            "C. protected",
+            "D. internal"
+        ],
+        "answer": "D. internal",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 92,
+        "question": "What is the primary purpose of the 'finally' block in a try-catch-finally statement?",
+        "options": [
+            "A. To handle exceptions that were not caught by the 'catch' block.",
+            "B. To execute code only if an exception occurs.",
+            "C. To execute code regardless of whether an exception occurs or not.",
+            "D. To define the type of exception that can be caught."
+        ],
+        "answer": "C. To execute code regardless of whether an exception occurs or not.",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.3,
+        "param_c": 0.18
+    },
+    {
+        "id": 93,
+        "question": "Which of the following data structures follows the LIFO (Last-In, First-Out) principle?",
+        "options": [
+            "A. Queue",
+            "B. Stack",
+            "C. Linked List",
+            "D. Tree"
+        ],
+        "answer": "B. Stack",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.1,
+        "param_c": 0.12
+    },
+    {
+        "id": 94,
+        "question": "What is the purpose of the 'static' keyword in Java?",
+        "options": [
+            "A. To prevent a variable from being modified.",
+            "B. To indicate that a variable or method belongs to the class itself, rather than to an instance of the class.",
+            "C. To create a constant variable.",
+            "D. To define a method that can only be accessed within the same package."
+        ],
+        "answer": "B. To indicate that a variable or method belongs to the class itself, rather than to an instance of the class.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.5,
+        "param_c": 0.17
+    },
+    {
+        "id": 95,
+        "question": "Which of the following is the correct way to create an instance of a class named 'MyClass'?",
+        "options": [
+            "A. MyClass.new();",
+            "B. new MyClass;",
+            "C. MyClass obj = new MyClass();",
+            "D. MyClass = new MyClass();"
+        ],
+        "answer": "C. MyClass obj = new MyClass();",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.1,
+        "param_c": 0.19
+    },
+    {
+        "id": 96,
+        "question": "What is the purpose of the 'super' keyword in Java?",
+        "options": [
+            "A. To call a method of the current class.",
+            "B. To refer to the superclass (parent class) of the current class.",
+            "C. To create a new instance of the current class.",
+            "D. To define a static method."
+        ],
+        "answer": "B. To refer to the superclass (parent class) of the current class.",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.0,
+        "param_c": 0.11
+    },
+    {
+        "id": 97,
+        "question": "Which interface is used to implement custom sorting logic in Java?",
+        "options": [
+            "A. Runnable",
+            "B. Serializable",
+            "C. Comparable",
+            "D. Iterable"
+        ],
+        "answer": "C. Comparable",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.3,
+        "param_c": 0.14
+    },
+    {
+        "id": 98,
+        "question": "What is the difference between '==' and '.equals()' when comparing objects in Java?",
+        "options": [
+            "A. '==' compares the values of the objects, while '.equals()' compares the memory addresses.",
+            "B. '==' compares the memory addresses of the objects, while '.equals()' compares the values of the objects.",
+            "C. There is no difference; they both do the same thing.",
+            "D. '==' is used for comparing primitive data types, while '.equals()' is used for comparing objects."
+        ],
+        "answer": "B. '==' compares the memory addresses of the objects, while '.equals()' compares the values of the objects.",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.7,
+        "param_c": 0.16
+    },
+    {
+        "id": 99,
+        "question": "Which of the following is an example of method overloading?",
+        "options": [
+            "A. Defining two methods with the same name and the same parameters in the same class.",
+            "B. Defining two methods with different names but the same parameters in the same class.",
+            "C. Defining two methods with the same name but different parameters in the same class.",
+            "D. Defining a method in a subclass that has the same name and parameters as a method in the superclass."
+        ],
+        "answer": "C. Defining two methods with the same name but different parameters in the same class.",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": -0.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 100,
+        "question": "Which class is the root of the Java class hierarchy?",
+        "options": [
+            "A. String",
+            "B. System",
+            "C. Object",
+            "D. Class"
+        ],
+        "answer": "C. Object",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.9,
+        "param_c": 0.2
+    },
+    {
+        "id": 101,
+        "question": "Consider a scenario where you need to implement a thread-safe, high-performance cache in Java. Which concurrent data structure and technique would be most appropriate to minimize contention and maximize throughput?",
+        "options": [
+            "A) `ConcurrentHashMap` with global locking.",
+            "B) `Collections.synchronizedMap(new HashMap<>())` with synchronized blocks.",
+            "C) `ConcurrentSkipListMap` with fine-grained locking and non-blocking algorithms.",
+            "D) `Hashtable` with implicit synchronization."
+        ],
+        "answer": "C) `ConcurrentSkipListMap` with fine-grained locking and non-blocking algorithms.",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 2.1,
+        "param_c": 0.05
+    },
+    {
+        "id": 102,
+        "question": "You are designing a system that requires asynchronous processing of tasks with guaranteed delivery and ordering. Which of the following approaches using Java's concurrency utilities would be the most robust and scalable?",
+        "options": [
+            "A) Using a single-threaded `ExecutorService` with a `LinkedBlockingQueue`.",
+            "B) Using a `ThreadPoolExecutor` with a fixed number of threads and a `PriorityBlockingQueue`.",
+            "C) Using a `ForkJoinPool` to decompose tasks into smaller subtasks.",
+            "D) Using a distributed message queue system (e.g., Kafka, RabbitMQ) and consuming messages using multiple threads."
+        ],
+        "answer": "D) Using a distributed message queue system (e.g., Kafka, RabbitMQ) and consuming messages using multiple threads.",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.9,
+        "param_c": 0.1
+    },
+    {
+        "id": 103,
+        "question": "Given the following code snippet: `List<String> list = Arrays.asList(\"a\", \"b\", \"c\"); list.stream().peek(System.out::println).map(String::toUpperCase).peek(System.out::println).collect(Collectors.toList());` How many times will the `peek` operation be executed in total?",
+        "options": [
+            "A) 3",
+            "B) 6",
+            "C) 0",
+            "D) 9"
+        ],
+        "answer": "B) 6",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.5,
+        "param_c": 0.08
+    },
+    {
+        "id": 104,
+        "question": "Which of the following statements best describes the difference between Checked and Unchecked exceptions in Java, and what is the recommended approach for handling them in a large-scale application?",
+        "options": [
+            "A) Checked exceptions are subclasses of `RuntimeException` and must be caught or declared to be thrown, while unchecked exceptions are subclasses of `Exception` and do not need to be explicitly handled. Handle all exceptions at the point of origin.",
+            "B) Unchecked exceptions are subclasses of `RuntimeException` and do not need to be explicitly handled, while checked exceptions are subclasses of `Exception` and must be caught or declared to be thrown. Handle checked exceptions at the point of origin and unchecked exceptions at a higher level.",
+            "C) Checked exceptions are subclasses of `Error` and must be caught or declared to be thrown, while unchecked exceptions are subclasses of `Exception` and do not need to be explicitly handled. Handle all exceptions at a central error handling component.",
+            "D) Unchecked exceptions are subclasses of `Error` and do not need to be explicitly handled, while checked exceptions are subclasses of `Exception` and must be caught or declared to be thrown. Handle unchecked exceptions at the point of origin and checked exceptions at a higher level."
+        ],
+        "answer": "B) Unchecked exceptions are subclasses of `RuntimeException` and do not need to be explicitly handled, while checked exceptions are subclasses of `Exception` and must be caught or declared to be thrown. Handle checked exceptions at the point of origin and unchecked exceptions at a higher level.",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.7,
+        "param_c": 0.12
+    },
+    {
+        "id": 105,
+        "question": "In the context of Java memory management, what is the primary purpose of the Garbage Collector (GC) and how does it impact application performance in a high-throughput environment?",
+        "options": [
+            "A) The GC automatically allocates memory for objects and improves performance by eliminating manual memory management. It can cause pauses that impact throughput.",
+            "B) The GC automatically reclaims memory occupied by objects that are no longer reachable, preventing memory leaks. It can cause pauses that impact throughput.",
+            "C) The GC compacts memory to reduce fragmentation and improves CPU cache utilization. It has no impact on throughput.",
+            "D) The GC defragments the hard drive, improving overall system performance. It is essential for optimal Java application execution."
+        ],
+        "answer": "B) The GC automatically reclaims memory occupied by objects that are no longer reachable, preventing memory leaks. It can cause pauses that impact throughput.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 1.3,
+        "param_c": 0.07
+    },
+    {
+        "id": 106,
+        "question": "You are designing a REST API using Spring Boot. You need to implement a custom exception handler that returns a specific JSON response with an error code and a user-friendly message when a `ResourceNotFoundException` is thrown. How would you achieve this most effectively?",
+        "options": [
+            "A) Use `@ExceptionHandler` annotation on a method within the controller that throws the exception.",
+            "B) Create a global exception handler class annotated with `@ControllerAdvice` and use `@ExceptionHandler` to handle the `ResourceNotFoundException`.",
+            "C) Implement the `HandlerExceptionResolver` interface and configure it in the Spring application context.",
+            "D) Use a try-catch block within each controller method that might throw the `ResourceNotFoundException`."
+        ],
+        "answer": "B) Create a global exception handler class annotated with `@ControllerAdvice` and use `@ExceptionHandler` to handle the `ResourceNotFoundException`.",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 2.3,
+        "param_c": 0.14
+    },
+    {
+        "id": 107,
+        "question": "Consider the following Java code: `public class Example { public static void main(String[] args) { String s1 = \"abc\"; String s2 = new String(\"abc\"); System.out.println(s1 == s2); System.out.println(s1.equals(s2)); } }` What will be the output of this code?",
+        "options": [
+            "A) true true",
+            "B) true false",
+            "C) false true",
+            "D) false false"
+        ],
+        "answer": "C) false true",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.1,
+        "param_c": 0.09
+    },
+    {
+        "id": 108,
+        "question": "Which of the following is the most accurate description of the Liskov Substitution Principle (LSP) and its importance in object-oriented design?",
+        "options": [
+            "A) LSP states that subclasses should not add new methods or properties to the base class.",
+            "B) LSP states that subclasses should be able to replace their base classes without altering the correctness of the program.",
+            "C) LSP states that subclasses should always override all methods of the base class.",
+            "D) LSP states that subclasses should have a weaker precondition than the base class."
+        ],
+        "answer": "B) LSP states that subclasses should be able to replace their base classes without altering the correctness of the program.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.0,
+        "param_c": 0.06
+    },
+    {
+        "id": 109,
+        "question": "You are implementing a custom class loader in Java. What are the key considerations and potential pitfalls to avoid when overriding the `loadClass()` method?",
+        "options": [
+            "A) Always delegate to the parent class loader first to avoid class duplication and ensure proper class resolution. Ignoring the parent class loader is acceptable in isolated environments.",
+            "B) Always load classes from the network before attempting to load them from the local file system. Ensure that the class format is validated before loading.",
+            "C) Handle `ClassNotFoundException` and `NoClassDefFoundError` appropriately to prevent application crashes. Never delegate to the parent class loader.",
+            "D) Ensure that the class loader is thread-safe and handles concurrent class loading requests correctly. Always delegate to the parent class loader first to avoid class duplication and ensure proper class resolution."
+        ],
+        "answer": "D) Ensure that the class loader is thread-safe and handles concurrent class loading requests correctly. Always delegate to the parent class loader first to avoid class duplication and ensure proper class resolution.",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.6,
+        "param_c": 0.11
+    },
+    {
+        "id": 110,
+        "question": "In the context of Java reflection, what are the security implications of using `setAccessible(true)` on a private field and how can you mitigate these risks?",
+        "options": [
+            "A) `setAccessible(true)` has no security implications as it only affects the visibility within the current class. Mitigation is not necessary.",
+            "B) `setAccessible(true)` allows bypassing access restrictions and potentially modifying the internal state of objects, leading to unexpected behavior or security vulnerabilities. Mitigation involves carefully controlling access to the reflective code and validating input data.",
+            "C) `setAccessible(true)` only allows reading the value of a private field but not modifying it. Mitigation involves limiting the use of reflection to read-only operations.",
+            "D) `setAccessible(true)` automatically grants full access to all fields and methods of the class. Mitigation is impossible."
+        ],
+        "answer": "B) `setAccessible(true)` allows bypassing access restrictions and potentially modifying the internal state of objects, leading to unexpected behavior or security vulnerabilities. Mitigation involves carefully controlling access to the reflective code and validating input data.",
+        "difficulty": "Hard",
+        "param_a": 1.4,
+        "param_b": 2.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 111,
+        "question": "Consider a scenario where you have a multi-threaded application using `ExecutorService`. You submit 100 tasks, but you want to ensure that the application shuts down gracefully even if some tasks throw exceptions. Which approach provides the most robust exception handling and shutdown sequence?",
+        "options": [
+            "Use `executorService.shutdownNow()` immediately after submitting all tasks. Catch exceptions within each task's `run()` method.",
+            "Use `executorService.shutdown()` followed by `executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)`. Catch exceptions within each task's `run()` method and handle them within the main thread after termination.",
+            "Use `executorService.shutdown()` followed by `executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)`. Wrap each task submission with a `Future` and check `future.get()` for exceptions. Handle exceptions within the main thread.",
+            "Use `executorService.shutdown()` and rely on the JVM to handle any unhandled exceptions thrown by the tasks."
+        ],
+        "answer": "Use `executorService.shutdown()` followed by `executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)`. Wrap each task submission with a `Future` and check `future.get()` for exceptions. Handle exceptions within the main thread.",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 2.0,
+        "param_c": 0.05
+    },
+    {
+        "id": 112,
+        "question": "You're designing a highly concurrent data structure in Java. You need to ensure that multiple threads can read and write to different parts of the data structure without blocking each other, while maintaining overall data consistency. Which concurrency construct would be most suitable?",
+        "options": [
+            "Using `synchronized` blocks around all read and write operations.",
+            "Using a single `ReentrantLock` to protect the entire data structure.",
+            "Using `ReadWriteLock` with fine-grained locking on different parts of the data structure.",
+            "Using `AtomicReference` for all data elements."
+        ],
+        "answer": "Using `ReadWriteLock` with fine-grained locking on different parts of the data structure.",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 113,
+        "question": "Consider a scenario where you are using Java's NIO (Non-blocking I/O) for a high-performance network server. You have a `Selector` registered with multiple `SocketChannel`s. What is the most efficient way to handle a large number of connected clients while minimizing CPU usage?",
+        "options": [
+            "Use a single thread to handle all events from the `Selector`.",
+            "Create a new thread for each `SocketChannel` that becomes readable.",
+            "Use a thread pool to handle read events from the `Selector`, distributing the load across multiple threads.",
+            "Use busy-waiting on the `Selector` to immediately process any new events."
+        ],
+        "answer": "Use a thread pool to handle read events from the `Selector`, distributing the load across multiple threads.",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 2.2,
+        "param_c": 0.08
+    },
+    {
+        "id": 114,
+        "question": "In the context of Java memory management, under what specific circumstances would a `java.lang.OutOfMemoryError: Metaspace` error typically occur?",
+        "options": [
+            "When the heap size is insufficient to allocate new objects.",
+            "When the stack size is exceeded due to deep recursion.",
+            "When the Metaspace, used for storing class metadata, is exhausted due to excessive class loading or dynamic code generation.",
+            "When the native memory is exhausted due to excessive native calls."
+        ],
+        "answer": "When the Metaspace, used for storing class metadata, is exhausted due to excessive class loading or dynamic code generation.",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 1.5,
+        "param_c": 0.12
+    },
+    {
+        "id": 115,
+        "question": "You are designing a custom class loader in Java. What is the most important consideration to prevent class loading conflicts and ensure proper class isolation?",
+        "options": [
+            "Always loading classes from the system class path first.",
+            "Delegating class loading to the parent class loader before attempting to load the class yourself.",
+            "Overriding the `loadClass()` method to always load classes from the same location.",
+            "Ignoring the parent class loader and always loading classes from your custom location."
+        ],
+        "answer": "Delegating class loading to the parent class loader before attempting to load the class yourself.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.3,
+        "param_c": 0.07
+    },
+    {
+        "id": 116,
+        "question": "Consider a scenario where you are using Java's reflection API. You want to create a new instance of a class that has a private constructor. Which approach is the correct way to achieve this?",
+        "options": [
+            "Use `Class.newInstance()` directly, as it bypasses access restrictions.",
+            "Use `Constructor.newInstance()` after setting the constructor's accessibility to `true` using `setAccessible(true)`.",
+            "Use `Class.forName()` to load the class and then directly access the private constructor.",
+            "It is not possible to create an instance of a class with a private constructor using reflection."
+        ],
+        "answer": "Use `Constructor.newInstance()` after setting the constructor's accessibility to `true` using `setAccessible(true)`.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.4,
+        "param_c": 0.09
+    },
+    {
+        "id": 117,
+        "question": "You are using Java's Stream API to process a large collection of objects. You need to perform a complex transformation on each object and then filter the results. Which approach provides the best performance and memory efficiency?",
+        "options": [
+            "Use multiple `map()` and `filter()` operations chained together.",
+            "Use a single `map()` operation that performs both the transformation and filtering within the same function.",
+            "Use a `forEach()` loop to iterate over the collection and perform the transformation and filtering manually.",
+            "Use a `collect()` operation to create a new collection and then iterate over it to perform the transformation and filtering."
+        ],
+        "answer": "Use multiple `map()` and `filter()` operations chained together.",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.1,
+        "param_c": 0.11
+    },
+    {
+        "id": 118,
+        "question": "Which of the following statements best describes the behavior of the `volatile` keyword in Java when applied to a variable?",
+        "options": [
+            "It ensures that the variable is stored in the CPU cache and is not visible to other threads.",
+            "It guarantees atomicity for all operations performed on the variable.",
+            "It ensures that all threads see the most up-to-date value of the variable, by forcing it to be read from and written to main memory.",
+            "It prevents the variable from being garbage collected."
+        ],
+        "answer": "It ensures that all threads see the most up-to-date value of the variable, by forcing it to be read from and written to main memory.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 1.6,
+        "param_c": 0.13
+    },
+    {
+        "id": 119,
+        "question": "You are implementing a custom serialization mechanism in Java. What is the most important consideration to ensure compatibility between different versions of your class?",
+        "options": [
+            "Always use the default serialization mechanism provided by Java.",
+            "Explicitly define a `serialVersionUID` and carefully manage changes to the class structure.",
+            "Avoid using serialization altogether and use a different data format.",
+            "Always serialize all fields, including transient fields."
+        ],
+        "answer": "Explicitly define a `serialVersionUID` and carefully manage changes to the class structure.",
+        "difficulty": "Hard",
+        "param_a": 2.4,
+        "param_b": 1.9,
+        "param_c": 0.06
+    },
+    {
+        "id": 120,
+        "question": "You are using Java's `CompletableFuture` to compose asynchronous operations. You need to handle exceptions that might occur in any of the stages of the pipeline. Which approach provides the most flexible and robust exception handling?",
+        "options": [
+            "Use `exceptionally()` to handle exceptions at each stage of the pipeline.",
+            "Use `join()` to wait for the completion of the `CompletableFuture` and catch any exceptions thrown by the pipeline.",
+            "Use `handle()` to handle both successful results and exceptions at each stage of the pipeline.",
+            "Rely on the JVM to handle any unhandled exceptions thrown by the pipeline."
+        ],
+        "answer": "Use `handle()` to handle both successful results and exceptions at each stage of the pipeline.",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 1.4,
+        "param_c": 0.14
+    },
+    {
+        "id": 121,
+        "question": "Consider a scenario where you need to implement a custom thread pool executor in Java that prioritizes tasks based on their submission time. Which of the following approaches would be the most efficient and thread-safe way to achieve this, considering potential starvation issues?",
+        "options": [
+            "Using a `PriorityBlockingQueue` with a custom `Comparator` based on submission time, wrapped in a `ThreadPoolExecutor`.",
+            "Using a standard `ThreadPoolExecutor` with a fixed number of threads and relying on the JVM's default thread scheduling to prioritize tasks.",
+            "Implementing a custom `Runnable` wrapper that assigns a priority to each task and using `Thread.currentThread().setPriority()` within the `run()` method.",
+            "Using a `ConcurrentLinkedQueue` to store tasks and manually managing thread creation and execution, polling tasks from the queue based on submission time."
+        ],
+        "answer": "Using a `PriorityBlockingQueue` with a custom `Comparator` based on submission time, wrapped in a `ThreadPoolExecutor`.",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 2.1,
+        "param_c": 0.05
+    },
+    {
+        "id": 122,
+        "question": "You are designing a highly concurrent caching system in Java. To minimize contention and maximize throughput, which concurrency control mechanism would be most suitable for managing access to the cache data, assuming read operations are significantly more frequent than write operations?",
+        "options": [
+            "Using a `synchronized` block around all cache access operations.",
+            "Using a `ReentrantLock` with fair ordering to ensure all threads eventually get access to the cache.",
+            "Using a `ReadWriteLock` to allow multiple readers or a single writer to access the cache concurrently.",
+            "Using `AtomicReference` for all cache entries to ensure atomic updates."
+        ],
+        "answer": "Using a `ReadWriteLock` to allow multiple readers or a single writer to access the cache concurrently.",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 123,
+        "question": "In the context of Java memory management, which of the following statements accurately describes the behavior of the Garbage Collector (GC) concerning weak references and their interaction with different GC algorithms?",
+        "options": [
+            "Weak references are always immediately collected by any GC algorithm, regardless of memory pressure.",
+            "Weak references are only collected by the GC if there are no strong references to the object, and the timing of collection depends on the specific GC algorithm.",
+            "Weak references prevent the GC from collecting the object they refer to, ensuring the object remains in memory as long as the weak reference exists.",
+            "Weak references are only collected during full GC cycles, regardless of the GC algorithm used."
+        ],
+        "answer": "Weak references are only collected by the GC if there are no strong references to the object, and the timing of collection depends on the specific GC algorithm.",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.5,
+        "param_c": 0.08
+    },
+    {
+        "id": 124,
+        "question": "Consider a scenario where you're using Java NIO to build a high-performance network server. You've implemented a `Selector` to multiplex I/O operations. What is the most efficient way to handle 'spurious wakeups' from the `Selector`'s `select()` method, and why is it important?",
+        "options": [
+            "Ignore spurious wakeups as they don't affect the server's functionality.",
+            "Re-invoke the `select()` method immediately after a wakeup, without checking for ready channels.",
+            "Check the number of ready keys returned by `selectedKeys()` after each wakeup and only process keys if the count is greater than zero. Spurious wakeups can lead to unnecessary CPU usage.",
+            "Use a `Thread.sleep()` call after each wakeup to avoid overwhelming the CPU."
+        ],
+        "answer": "Check the number of ready keys returned by `selectedKeys()` after each wakeup and only process keys if the count is greater than zero. Spurious wakeups can lead to unnecessary CPU usage.",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.9,
+        "param_c": 0.12
+    },
+    {
+        "id": 125,
+        "question": "You are implementing a custom `ClassLoader` in Java to load classes from a specific location. What is the correct order in which a `ClassLoader` should typically attempt to load a class, and why is this order important for avoiding class loading conflicts?",
+        "options": [
+            "Delegate to the parent `ClassLoader` first, then check its own cache, and finally attempt to load the class from its specified location.",
+            "Check its own cache first, then delegate to the parent `ClassLoader`, and finally attempt to load the class from its specified location.",
+            "Attempt to load the class from its specified location first, then delegate to the parent `ClassLoader`, and finally check its own cache.",
+            "Always load the class from its specified location, ignoring the parent `ClassLoader` and cache."
+        ],
+        "answer": "Delegate to the parent `ClassLoader` first, then check its own cache, and finally attempt to load the class from its specified location.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.3,
+        "param_c": 0.07
+    },
+    {
+        "id": 126,
+        "question": "In Java, what is the primary difference between using `CompletableFuture.supplyAsync()` and `CompletableFuture.runAsync()` for asynchronous task execution, and when would you choose one over the other?",
+        "options": [
+            "`supplyAsync()` executes tasks on the main thread, while `runAsync()` executes tasks on a separate thread.",
+            "`supplyAsync()` returns a `CompletableFuture` that holds a result, while `runAsync()` returns a `CompletableFuture` that represents the completion of a task without a result.",
+            "`supplyAsync()` is used for CPU-bound tasks, while `runAsync()` is used for I/O-bound tasks.",
+            "There is no difference; they are interchangeable."
+        ],
+        "answer": "`supplyAsync()` returns a `CompletableFuture` that holds a result, while `runAsync()` returns a `CompletableFuture` that represents the completion of a task without a result.",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.6,
+        "param_c": 0.09
+    },
+    {
+        "id": 127,
+        "question": "You are tasked with optimizing a Java application that performs heavy string manipulation. Which of the following approaches would generally provide the most significant performance improvement, and why?",
+        "options": [
+            "Using `String` concatenation with the `+` operator in a loop.",
+            "Using `StringBuffer` for string concatenation in a loop.",
+            "Using `StringBuilder` for string concatenation in a loop.",
+            "Using regular expressions for all string operations."
+        ],
+        "answer": "Using `StringBuilder` for string concatenation in a loop.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.7,
+        "param_c": 0.11
+    },
+    {
+        "id": 128,
+        "question": "Consider a scenario where you need to serialize and deserialize a complex Java object graph that contains circular references. Which approach would be most suitable to prevent `StackOverflowError` and ensure correct object reconstruction?",
+        "options": [
+            "Using the default Java serialization mechanism without any modifications.",
+            "Implementing a custom serialization and deserialization logic that uses a `Map` to track already serialized/deserialized objects and handle circular references.",
+            "Using the `transient` keyword to exclude the circular references from serialization.",
+            "Relying on external libraries like JSON libraries which inherently handle circular references."
+        ],
+        "answer": "Implementing a custom serialization and deserialization logic that uses a `Map` to track already serialized/deserialized objects and handle circular references.",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 2.0,
+        "param_c": 0.06
+    },
+    {
+        "id": 129,
+        "question": "In the context of Java's `java.util.concurrent` package, what is the key difference between a `CountDownLatch` and a `CyclicBarrier`, and when would you choose one over the other?",
+        "options": [
+            "A `CountDownLatch` allows multiple threads to wait until a counter reaches zero, while a `CyclicBarrier` allows a fixed number of threads to wait at a barrier point and then proceed together. `CountDownLatch` is for one-time events, `CyclicBarrier` is reusable.",
+            "A `CountDownLatch` is used for synchronizing access to shared resources, while a `CyclicBarrier` is used for executing tasks in parallel.",
+            "A `CountDownLatch` is a more efficient alternative to `CyclicBarrier` and should always be preferred.",
+            "There is no significant difference; they can be used interchangeably."
+        ],
+        "answer": "A `CountDownLatch` allows multiple threads to wait until a counter reaches zero, while a `CyclicBarrier` allows a fixed number of threads to wait at a barrier point and then proceed together. `CountDownLatch` is for one-time events, `CyclicBarrier` is reusable.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 130,
+        "question": "You are implementing a custom annotation processor in Java to generate code at compile time. What is the correct way to handle errors and warnings during annotation processing, and why is it important to handle them properly?",
+        "options": [
+            "Print error messages to the console using `System.err.println()`. This is sufficient for reporting errors to the developer.",
+            "Throw exceptions during annotation processing to halt the compilation process immediately.",
+            "Use the `Messager` interface provided by the `ProcessingEnvironment` to report errors and warnings. This allows the compiler to display the errors in a user-friendly format and potentially halt compilation.",
+            "Ignore errors and warnings as they do not affect the generated code."
+        ],
+        "answer": "Use the `Messager` interface provided by the `ProcessingEnvironment` to report errors and warnings. This allows the compiler to display the errors in a user-friendly format and potentially halt compilation.",
+        "difficulty": "Hard",
+        "param_a": 1.4,
+        "param_b": 1.3,
+        "param_c": 0.1
+    },
+    {
+        "id": 131,
+        "question": "Consider a scenario where you need to serialize a complex object graph in Java. You want to ensure that circular dependencies are handled gracefully and that the serialized data is as compact as possible. Which serialization strategy would be most appropriate?",
+        "options": [
+            "Using the default Java serialization mechanism (ObjectOutputStream)",
+            "Implementing the Externalizable interface for all classes in the graph",
+            "Employing a custom serialization strategy using libraries like Kryo or Protocol Buffers, with explicit handling of object references and circular dependencies",
+            "Relying on transient fields to break circular dependencies and using default serialization"
+        ],
+        "answer": "Employing a custom serialization strategy using libraries like Kryo or Protocol Buffers, with explicit handling of object references and circular dependencies",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 2.1,
+        "param_c": 0.05
+    },
+    {
+        "id": 132,
+        "question": "You are designing a high-performance, concurrent application using Java. You need to implement a lock-free data structure for a critical section. Which of the following approaches would be most effective?",
+        "options": [
+            "Using synchronized blocks extensively to ensure thread safety.",
+            "Employing ReentrantLock with fair ordering to prevent starvation.",
+            "Utilizing Atomic variables and compare-and-swap (CAS) operations to implement the data structure.",
+            "Relying on volatile variables for all shared data and assuming atomicity for simple operations."
+        ],
+        "answer": "Utilizing Atomic variables and compare-and-swap (CAS) operations to implement the data structure.",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 133,
+        "question": "In the context of Java memory management, what is the primary purpose of the Garbage Collector (GC) and how does it impact application performance, especially in long-running server applications?",
+        "options": [
+            "To manually allocate and deallocate memory blocks, ensuring efficient memory utilization.",
+            "To automatically reclaim memory occupied by objects that are no longer reachable, reducing memory leaks but potentially introducing pauses.",
+            "To optimize CPU usage by reordering instructions and caching frequently accessed data.",
+            "To manage network connections and handle incoming requests in a multi-threaded environment."
+        ],
+        "answer": "To automatically reclaim memory occupied by objects that are no longer reachable, reducing memory leaks but potentially introducing pauses.",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.5,
+        "param_c": 0.08
+    },
+    {
+        "id": 134,
+        "question": "You are tasked with implementing a custom class loader in Java. What are the key considerations and potential challenges you might encounter when defining the class loading hierarchy and handling class resolution?",
+        "options": [
+            "Ensuring that the parent class loader always loads classes before the child class loader, and avoiding class loading conflicts.",
+            "Delegating class loading to the system class loader for all classes, regardless of their origin.",
+            "Ignoring the class loading hierarchy and loading classes directly from the file system.",
+            "Overriding the loadClass() method without considering the delegation model, potentially leading to ClassNotFoundException."
+        ],
+        "answer": "Ensuring that the parent class loader always loads classes before the child class loader, and avoiding class loading conflicts.",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.2,
+        "param_c": 0.03
+    },
+    {
+        "id": 135,
+        "question": "Consider a scenario where you need to implement a custom annotation processor in Java to generate boilerplate code at compile time. What are the essential steps involved in creating and registering the annotation processor, and how can you access and manipulate the annotated elements?",
+        "options": [
+            "Creating a class that implements the AnnotationProcessor interface, registering it in META-INF/services, and using the ProcessingEnvironment to access annotated elements.",
+            "Defining annotations using the @interface keyword and applying them to classes without any further processing.",
+            "Using reflection at runtime to discover and process annotations on classes.",
+            "Relying on IDE features to automatically generate code based on annotations without writing a custom processor."
+        ],
+        "answer": "Creating a class that implements the AnnotationProcessor interface, registering it in META-INF/services, and using the ProcessingEnvironment to access annotated elements.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 136,
+        "question": "You are designing a RESTful API using Spring Boot. You need to implement robust error handling to provide meaningful error responses to clients. What is the most effective approach to handle exceptions globally and customize the error response format?",
+        "options": [
+            "Using try-catch blocks in every controller method to handle exceptions locally.",
+            "Implementing a custom ErrorController to handle all unhandled exceptions and return a generic error response.",
+            "Using @ControllerAdvice and @ExceptionHandler annotations to define global exception handlers and customize the error response format.",
+            "Relying on the default Spring Boot error handling mechanism without any customization."
+        ],
+        "answer": "Using @ControllerAdvice and @ExceptionHandler annotations to define global exception handlers and customize the error response format.",
+        "difficulty": "Hard",
+        "param_a": 2.4,
+        "param_b": 1.9,
+        "param_c": 0.07
+    },
+    {
+        "id": 137,
+        "question": "In Java concurrency, what are the key differences between using `ExecutorService` and `ForkJoinPool` for managing threads, and when would you choose one over the other?",
+        "options": [
+            "ExecutorService is suitable for CPU-bound tasks, while ForkJoinPool is better for I/O-bound tasks.",
+            "ExecutorService uses a fixed number of threads, while ForkJoinPool dynamically adjusts the number of threads based on the workload.",
+            "ExecutorService is a general-purpose thread pool, while ForkJoinPool is designed for divide-and-conquer algorithms with task stealing.",
+            "ExecutorService is simpler to configure, while ForkJoinPool provides more fine-grained control over thread management."
+        ],
+        "answer": "ExecutorService is a general-purpose thread pool, while ForkJoinPool is designed for divide-and-conquer algorithms with task stealing.",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 1.7,
+        "param_c": 0.09
+    },
+    {
+        "id": 138,
+        "question": "You are developing a Java application that needs to interact with a legacy database system that does not support JDBC. How would you approach connecting to and interacting with this database?",
+        "options": [
+            "Write a custom JDBC driver that translates JDBC calls to the legacy database's protocol.",
+            "Use a third-party library that provides a bridge between JDBC and the legacy database.",
+            "Implement a custom socket-based communication protocol to interact with the database directly.",
+            "All of the above are viable options, depending on the specific requirements and constraints."
+        ],
+        "answer": "All of the above are viable options, depending on the specific requirements and constraints.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 2.4,
+        "param_c": 0.02
+    },
+    {
+        "id": 139,
+        "question": "What are the key differences between Checked Exceptions, Unchecked Exceptions (RuntimeExceptions), and Errors in Java, and how should they be handled differently in application code?",
+        "options": [
+            "Checked exceptions must be caught or declared, unchecked exceptions are optional to catch, and errors should always be caught.",
+            "Checked exceptions are for recoverable errors, unchecked exceptions are for programming errors, and errors are for JVM-level issues.",
+            "Checked exceptions are subclasses of Error, unchecked exceptions are subclasses of Exception, and errors are subclasses of Throwable.",
+            "Checked exceptions are only thrown by the JVM, unchecked exceptions are only thrown by application code, and errors can be thrown by both."
+        ],
+        "answer": "Checked exceptions are for recoverable errors, unchecked exceptions are for programming errors, and errors are for JVM-level issues.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 1.1,
+        "param_c": 0.15
+    },
+    {
+        "id": 140,
+        "question": "You are tasked with optimizing the performance of a Java application that is experiencing high CPU utilization. What are some effective techniques for identifying performance bottlenecks and improving the application's efficiency?",
+        "options": [
+            "Adding more memory to the system to reduce garbage collection overhead.",
+            "Using a profiler to identify hot spots in the code and optimizing algorithms or data structures.",
+            "Disabling logging to reduce I/O operations.",
+            "Rewriting the application in a lower-level language like C++ for better performance."
+        ],
+        "answer": "Using a profiler to identify hot spots in the code and optimizing algorithms or data structures.",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.4,
+        "param_c": 0.04
+    },
+    {
+        "id": 141,
+        "question": "Consider a scenario where you need to implement a custom class loader in Java. Which of the following approaches is the MOST robust and least likely to cause class loading conflicts, assuming multiple class loaders might be involved?",
+        "options": [
+            "A) Override the `loadClass(String name)` method directly, performing all class loading logic within it.",
+            "B) Override the `findClass(String name)` method and delegate to the parent class loader for system classes before attempting to load from your custom location.",
+            "C) Override the `defineClass(byte[] b, int off, int len)` method to directly define the class from bytecode.",
+            "D) Use the `URLClassLoader` and dynamically add URLs to its search path as needed."
+        ],
+        "answer": "B) Override the `findClass(String name)` method and delegate to the parent class loader for system classes before attempting to load from your custom location.",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 1.9,
+        "param_c": 0.05
+    },
+    {
+        "id": 142,
+        "question": "You are designing a highly concurrent application that relies heavily on shared mutable state. Which of the following approaches provides the STRONGEST guarantee of thread safety and avoids common concurrency pitfalls, such as race conditions and deadlocks?",
+        "options": [
+            "A) Using `synchronized` blocks liberally throughout the code to protect access to shared variables.",
+            "B) Employing `java.util.concurrent.atomic` classes (e.g., `AtomicInteger`, `AtomicReference`) for all shared mutable state.",
+            "C) Utilizing `java.util.concurrent.locks.ReentrantLock` with `tryLock()` and explicit condition variables for fine-grained control.",
+            "D) Designing the application using immutable data structures and functional programming principles to minimize shared mutable state."
+        ],
+        "answer": "D) Designing the application using immutable data structures and functional programming principles to minimize shared mutable state.",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 2.3,
+        "param_c": 0.1
+    },
+    {
+        "id": 143,
+        "question": "Which of the following statements BEST describes the relationship between generics and type erasure in Java?",
+        "options": [
+            "A) Type erasure allows the JVM to perform extensive runtime type checking of generic types, ensuring type safety at runtime.",
+            "B) Type erasure removes all generic type information at compile time, but the JVM retains metadata to enforce type constraints during runtime.",
+            "C) Type erasure removes generic type information at compile time, and the JVM treats all generic types as their raw types, leading to potential runtime `ClassCastException` errors if not handled carefully.",
+            "D) Type erasure is a process that converts generic types into primitive types to improve performance."
+        ],
+        "answer": "C) Type erasure removes generic type information at compile time, and the JVM treats all generic types as their raw types, leading to potential runtime `ClassCastException` errors if not handled carefully.",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.7,
+        "param_c": 0.08
+    },
+    {
+        "id": 144,
+        "question": "Consider a scenario where you need to implement a custom annotation processor in Java. Which of the following steps is CRUCIAL for ensuring that the annotation processor is correctly invoked during compilation?",
+        "options": [
+            "A) Adding the annotation processor class to the classpath of the compiler.",
+            "B) Registering the annotation processor in the `META-INF/services/javax.annotation.processing.Processor` file.",
+            "C) Implementing the `javax.lang.model.element.AnnotationMirror` interface in the annotation processor class.",
+            "D) Specifying the `-processor` option when invoking the Java compiler."
+        ],
+        "answer": "B) Registering the annotation processor in the `META-INF/services/javax.annotation.processing.Processor` file.",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 2.1,
+        "param_c": 0.12
+    },
+    {
+        "id": 145,
+        "question": "Which of the following statements is MOST accurate regarding the use of `CompletableFuture` in Java for asynchronous programming?",
+        "options": [
+            "A) `CompletableFuture` always executes tasks in a separate thread, regardless of the execution stage.",
+            "B) `CompletableFuture` provides a mechanism for composing asynchronous operations and handling exceptions, but it does not offer any performance benefits over traditional threading models.",
+            "C) `CompletableFuture` allows you to chain asynchronous operations and handle exceptions, and it provides optimized execution using a thread pool, potentially improving performance and resource utilization.",
+            "D) `CompletableFuture` is primarily designed for handling synchronous operations and does not support asynchronous execution."
+        ],
+        "answer": "C) `CompletableFuture` allows you to chain asynchronous operations and handle exceptions, and it provides optimized execution using a thread pool, potentially improving performance and resource utilization.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 2.0,
+        "param_c": 0.07
+    },
+    {
+        "id": 146,
+        "question": "In the context of Java memory management, what is the PRIMARY purpose of the Garbage Collector (GC)?",
+        "options": [
+            "A) To allocate memory for new objects.",
+            "B) To deallocate memory occupied by objects that are no longer reachable, preventing memory leaks.",
+            "C) To optimize the performance of the JVM by rearranging objects in memory.",
+            "D) To detect and correct errors in the Java code."
+        ],
+        "answer": "B) To deallocate memory occupied by objects that are no longer reachable, preventing memory leaks.",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 1.2,
+        "param_c": 0.09
+    },
+    {
+        "id": 147,
+        "question": "Which of the following BEST describes the 'double-checked locking' pattern and its significance in concurrent programming in Java?",
+        "options": [
+            "A) It's a simple and reliable way to implement thread-safe singleton instantiation, ensuring only one instance of a class is created.",
+            "B) It's an optimization technique that reduces the overhead of synchronization by only synchronizing the creation of a singleton instance if it hasn't already been created, but it's prone to issues with memory visibility and requires careful implementation using the `volatile` keyword.",
+            "C) It's a design pattern for handling exceptions in multi-threaded environments, ensuring that exceptions are properly propagated to all threads.",
+            "D) It's a technique for improving the performance of garbage collection by reducing the number of objects that need to be scanned."
+        ],
+        "answer": "B) It's an optimization technique that reduces the overhead of synchronization by only synchronizing the creation of a singleton instance if it hasn't already been created, but it's prone to issues with memory visibility and requires careful implementation using the `volatile` keyword.",
+        "difficulty": "Hard",
+        "param_a": 2.4,
+        "param_b": 2.4,
+        "param_c": 0.14
+    },
+    {
+        "id": 148,
+        "question": "You are tasked with optimizing a Java application that performs a large number of string concatenations. Which of the following approaches would generally provide the BEST performance?",
+        "options": [
+            "A) Using the `+` operator for string concatenation.",
+            "B) Using the `String.concat()` method.",
+            "C) Using the `StringBuffer` class.",
+            "D) Using the `StringBuilder` class."
+        ],
+        "answer": "D) Using the `StringBuilder` class.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 1.5,
+        "param_c": 0.06
+    },
+    {
+        "id": 149,
+        "question": "What is the PRIMARY difference between `==` and `.equals()` method in Java when comparing objects?",
+        "options": [
+            "A) `==` compares the content of the objects, while `.equals()` compares the memory addresses.",
+            "B) `==` compares the memory addresses of the objects, while `.equals()` compares the content of the objects (or its overridden implementation).",
+            "C) `==` is used for comparing primitive data types, while `.equals()` is used for comparing objects.",
+            "D) There is no difference; both operators perform the same comparison."
+        ],
+        "answer": "B) `==` compares the memory addresses of the objects, while `.equals()` compares the content of the objects (or its overridden implementation).",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 1.6,
+        "param_c": 0.11
+    },
+    {
+        "id": 150,
+        "question": "In the context of Java streams, which of the following operations is considered a 'terminal operation'?",
+        "options": [
+            "A) `filter()`",
+            "B) `map()`",
+            "C) `sorted()`",
+            "D) `collect()`"
+        ],
+        "answer": "D) `collect()`",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.8,
+        "param_c": 0.13
+    }
+]

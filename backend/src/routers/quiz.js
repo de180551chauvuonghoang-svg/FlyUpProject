@@ -20,5 +20,6 @@ router.post("/:courseId/submit", authenticateJWT, quizController.submitQuiz);
 router.post("/cat/start", authenticateJWT, quizController.startCatQuiz);
 router.post("/cat/answer", authenticateJWT, quizController.answerCatQuestion);
 router.post("/cat/finish", authenticateJWT, quizController.finishCatQuiz);
+router.post("/cat/explain", authenticateJWT, quizController.explainQuizAnswer);
 
 export default router;
