@@ -75,7 +75,51 @@ export default function CourseLessonPage() {
     lessonId || "lecture-003",
   );
   const [isInstructorPreview, setIsInstructorPreview] = useState(false);
+  const [videoLoadFailed, setVideoLoadFailed] = useState(false);
   const [, setIsVideoPlaying] = useState(false);
+
+  const normalizeLectureAssets = (lecture) => {
+    const transformedMaterials = Array.isArray(lecture?.Materials)
+      ? lecture.Materials
+      : [];
+    const rawMaterials = Array.isArray(lecture?.LectureMaterial)
+      ? lecture.LectureMaterial
+      : [];
+
+    const latestRawVideo = rawMaterials
+      .filter((m) => (m?.Type || m?.type || "").toLowerCase() === "video")
+      .sort((a, b) =>
+        Number(a?.Id || a?.id || 0) > Number(b?.Id || b?.id || 0) ? 1 : -1,
+      )
+      .at(-1);
+
+    const normalizedMaterials =
+      transformedMaterials.length > 0
+        ? transformedMaterials.map((m, index) => ({
+            Id: m?.Id ?? m?.id ?? index,
+            Type: (m?.Type || m?.type || "document").toLowerCase(),
+            Url: m?.Url || m?.url || "",
+            Name: m?.Name || m?.name || null,
+          }))
+        : rawMaterials
+            .filter((m) => (m?.Type || m?.type || "").toLowerCase() !== "video")
+            .map((m, index) => ({
+              Id: m?.Id ?? m?.id ?? index,
+              Type: (m?.Type || m?.type || "document").toLowerCase(),
+              Url: m?.Url || m?.url || "",
+              Name: m?.Name || m?.name || null,
+            }));
+
+    return {
+      videoUrl:
+        lecture?.VideoUrl ||
+        lecture?.videoUrl ||
+        latestRawVideo?.Url ||
+        latestRawVideo?.url ||
+        null,
+      materials: normalizedMaterials.filter((m) => m.Url),
+    };
+  };
 
   // Check if this is instructor preview mode
   // NEVER use instructor preview in CourseLessonPage - it's for enrolled students only
@@ -153,14 +197,7 @@ export default function CourseLessonPage() {
     for (const section of sections) {
       const lecture = section.Lectures?.find((l) => l.Id === lectureId);
       if (lecture) {
-        // Extract video URL from lecture materials
-        const videoMaterial = lecture.LectureMaterial?.find(
-          (m) => m.Type === "video",
-        );
-
-        // Get all materials for resources tab
-        const materials = lecture.LectureMaterial || [];
-
+        const assets = normalizeLectureAssets(lecture);
         return {
           Id: lecture.Id,
           Title: lecture.Title,
@@ -168,8 +205,8 @@ export default function CourseLessonPage() {
             lecture.Content || "No content available for this lesson yet.",
           IsPreviewable: lecture.IsPreviewable,
           SectionTitle: section.Title,
-          VideoUrl: videoMaterial?.Url || null,
-          Materials: materials, // Include all materials
+          VideoUrl: assets.videoUrl,
+          Materials: assets.materials,
         };
       }
     }
@@ -188,6 +225,11 @@ export default function CourseLessonPage() {
   }, [course?.Sections, lessonId]);
 
   const currentLesson = findLessonInSections(course?.Sections, currentLessonId);
+
+  useEffect(() => {
+    // Reset video error state when changing lesson/video URL
+    setVideoLoadFailed(false);
+  }, [currentLessonId, currentLesson?.VideoUrl]);
 
   // Calculate progress
   const calculateProgress = () => {
@@ -336,16 +378,23 @@ export default function CourseLessonPage() {
         {/* Decorative background elements */}
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-        
+
         <div className="flex flex-col items-center gap-6 p-8 relative z-10">
           <div className="relative w-20 h-20 flex items-center justify-center">
             <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
-            <span className="material-symbols-outlined text-primary text-2xl animate-pulse">menu_book</span>
+            <span className="material-symbols-outlined text-primary text-2xl animate-pulse">
+              menu_book
+            </span>
           </div>
           <div className="flex flex-col items-center text-center max-w-sm">
-           <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Đang tải bài học...</h3>
-           <p className="text-slate-400 text-sm leading-relaxed">Vui lòng đợi trong giây lát, hệ thống đang chuẩn bị nội dung khóa học cho bạn.</p>
+            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
+              Đang tải bài học...
+            </h3>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Vui lòng đợi trong giây lát, hệ thống đang chuẩn bị nội dung khóa
+              học cho bạn.
+            </p>
           </div>
         </div>
       </div>
@@ -356,7 +405,7 @@ export default function CourseLessonPage() {
     return (
       <div className="flex h-screen w-full bg-[#0a0a14] items-center justify-center relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-500/5 rounded-full blur-[100px] pointer-events-none"></div>
-        
+
         <div className="flex flex-col items-center gap-6 p-8 bg-[#130d1a]/80 backdrop-blur-xl rounded-3xl border border-red-500/20 max-w-md text-center shadow-2xl relative z-10 w-full mx-4">
           <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-2 ring-8 ring-red-500/5">
             <span className="material-symbols-outlined text-5xl text-red-500">
@@ -364,9 +413,12 @@ export default function CourseLessonPage() {
             </span>
           </div>
           <div>
-            <h3 className="text-white text-2xl font-bold mb-3 tracking-tight">Không thể tải khóa học</h3>
+            <h3 className="text-white text-2xl font-bold mb-3 tracking-tight">
+              Không thể tải khóa học
+            </h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-8 px-4">
-              Đã xảy ra lỗi khi tải dữ liệu khóa học. Vui lòng thử lại sau hoặc quay về trang My Learning.
+              Đã xảy ra lỗi khi tải dữ liệu khóa học. Vui lòng thử lại sau hoặc
+              quay về trang My Learning.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -374,14 +426,18 @@ export default function CourseLessonPage() {
               onClick={() => window.location.reload()}
               className="flex-1 py-3.5 rounded-xl bg-slate-800 text-white font-semibold hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
             >
-              <span className="material-symbols-outlined text-[20px]">refresh</span>
+              <span className="material-symbols-outlined text-[20px]">
+                refresh
+              </span>
               Thử lại
             </button>
             <button
               onClick={() => navigate("/my-learning")}
               className="flex-1 py-3.5 rounded-xl bg-primary text-white font-semibold hover:bg-purple-600 transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
             >
-              <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+              <span className="material-symbols-outlined text-[20px]">
+                arrow_back
+              </span>
               Quay về
             </button>
           </div>
@@ -451,18 +507,24 @@ export default function CourseLessonPage() {
           <div className="flex items-center justify-between mb-6">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="h-8 w-auto">
-                <img src="/FlyUpTeam.png" alt="FlyUp Logo" className="h-full w-auto object-contain transition-transform group-hover:scale-105" />
+                <img
+                  src="/FlyUpTeam.png"
+                  alt="FlyUp Logo"
+                  className="h-full w-auto object-contain transition-transform group-hover:scale-105"
+                />
               </div>
               <h2 className="text-white text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
                 FlyUp
               </h2>
             </Link>
-            <button 
-              onClick={() => navigate('/')}
+            <button
+              onClick={() => navigate("/")}
               className="size-8 rounded-full bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
               title="Back to Home"
             >
-              <span className="material-symbols-outlined text-[18px]">home</span>
+              <span className="material-symbols-outlined text-[18px]">
+                home
+              </span>
             </button>
           </div>
           <h3 className="text-white text-xl font-bold leading-tight mb-3">
@@ -634,7 +696,7 @@ export default function CourseLessonPage() {
             onMouseEnter={() => setIsVideoPlaying(true)}
             onMouseLeave={() => setIsVideoPlaying(false)}
           >
-            {currentLesson?.VideoUrl ? (
+            {currentLesson?.VideoUrl && !videoLoadFailed ? (
               <>
                 {/* HTML5 Video Player */}
                 <video
@@ -649,6 +711,7 @@ export default function CourseLessonPage() {
                     console.error("Video error:", e);
                     console.error("Failed URL:", currentLesson.VideoUrl);
                     console.error("Error details:", e.target.error);
+                    setVideoLoadFailed(true);
                   }}
                   onLoadedMetadata={() => {
                     console.log(
@@ -660,7 +723,7 @@ export default function CourseLessonPage() {
                     console.log("Video can play");
                   }}
                 >
-                  <source src={currentLesson.VideoUrl} type="video/mp4" />
+                  <source src={currentLesson.VideoUrl} />
                   Your browser does not support the video tag.
                 </video>
               </>

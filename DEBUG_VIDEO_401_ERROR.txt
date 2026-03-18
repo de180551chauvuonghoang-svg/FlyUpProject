@@ -1,0 +1,159 @@
+#!/usr/bin/env node
+/**
+ * Debug: Why Video Upload Is Failing
+ * Kiểm tra token, authentication, lectureid
+ */
+
+console.log(`
+╔════════════════════════════════════════════════════════════════════╗
+║                  VIDEO UPLOAD DEBUG CHECKLIST                     ║
+╚════════════════════════════════════════════════════════════════════╝
+
+🔍 STEP BY STEP DEBUG:
+
+1️⃣  CHECK AUTHENTICATION
+   
+   Mở DevTools (F12) → Console tab → Paste:
+   
+   console.log('Token:', localStorage.getItem('accessToken'));
+   console.log('User:', localStorage.getItem('user'));
+   
+   🎯 Kỳ vọng:
+      - Token: string dài (JWT token)
+      - User: JSON object
+      
+   ❌ Nếu Token là null:
+      → BẠN CHƯA LOGIN!
+      → Hãy logout rồi login lại
+
+═══════════════════════════════════════════════════════════════════════
+
+2️⃣  CHECK UPLOAD REQUEST
+
+   Khi upload video, xem Network tab:
+   
+   1. Mở DevTools (F12)
+   2. Tab "Network"
+   3. Upload video
+   4. Tìm request "upload/video"
+   5. Click vào request
+   6. Tab "Headers" → "Request headers"
+   
+   🎯 Kỳ vọng thấy:
+      Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+      Content-Type: multipart/form-data
+      
+   ❌ Nếu KHÔNG có Authorization header:
+      → Token không được gửi!
+      → Check InstructorEditCoursePage.jsx line 448-456
+
+═══════════════════════════════════════════════════════════════════════
+
+3️⃣  CHECK BACKEND LOG
+
+   Terminal backend sẽ hiện:
+   
+   [UPLOAD_VIDEO_START] timestamp: ..., file: {...}, lectureId: "..."
+   
+   ❌ Nếu KHÔNG thấy dòng này:
+      → Backend không nhận request
+      → Check: API_URL đúng không?
+      → Check: Upload button click có gọi fetch không?
+   
+   ✅ Nếu thấy dòng này:
+      → Backend nhận request
+      → Check thêm: [UPLOAD_VIDEO] lectureId received: {...}
+
+═══════════════════════════════════════════════════════════════════════
+
+4️⃣  CHECK RESPONSE STATUS
+
+   Network tab → Response:
+   
+   ✅ Status 200: Upload thành công
+      Response: { "success": true, "data": {...} }
+      
+   ❌ Status 401: Unauthorized
+      → Token invalid hoặc missing
+      → Kiểm tra token từ localStorage
+      
+   ❌ Status 400: Bad request
+      → File size hoặc format sai
+      → Check: file size < 100MB?
+      → Check: file format MP4/MOV?
+      
+   ❌ Status 404: Lecture not found
+      → lectureId sai
+      → Kiểm tra lectureId gửi đi đúng không
+
+═══════════════════════════════════════════════════════════════════════
+
+5️⃣  CHECK LECTUREMATERIAL TABLE
+
+   Sau khi upload:
+   
+   Supabase → LectureMaterial table
+   
+   ✅ Có row mới với Type = 'video'?
+      → Upload thành công!
+      
+   ❌ Không có row mới?
+      → lectureid không được lưu
+      → Upload request có lỗi
+
+═══════════════════════════════════════════════════════════════════════
+
+🎯 MOST LIKELY ISSUES:
+
+1️⃣  TOKEN MISSING (401 Error)
+    
+    Fix: Logout → Login lại
+    
+2️⃣  API_URL WRONG
+    
+    Check: frontend/.env
+    Should have: VITE_API_URL=http://localhost:5000/api
+    (NOT VITE_API_BASE_URL)
+    
+3️⃣  lectureId NOT SENT
+    
+    Check: InstructorEditCoursePage.jsx line 448
+    Should have:
+    videoFormData.append("lectureId", lectureId);
+    
+4️⃣  BACKEND NOT RUNNING
+    
+    Check: curl http://localhost:5000/api/health
+    Should respond: {"status":"ok",...}
+
+═══════════════════════════════════════════════════════════════════════
+
+🚀 QUICK TEST:
+
+1. Logout (Clear localStorage)
+2. Login lại
+3. Go Edit Course
+4. Upload video
+5. Open console (F12)
+6. Look for:
+   - Token in localStorage? ✓
+   - Authorization header in Network? ✓
+   - [UPLOAD_VIDEO] in backend logs? ✓
+   - 200 response status? ✓
+   - New row in LectureMaterial? ✓
+
+═══════════════════════════════════════════════════════════════════════
+
+📊 REPORT FORMAT:
+
+Khi file report, cung cấp:
+
+1. Token exists in localStorage? (Y/N)
+2. Authorization header sent? (Y/N)
+3. Response status code
+4. Response body (check DevTools)
+5. Backend log lines [UPLOAD_VIDEO]
+6. New row in LectureMaterial? (Y/N)
+
+═══════════════════════════════════════════════════════════════════════
+`);
