@@ -1,6 +1,4 @@
-import { apiCall } from "../config/apiConfig";
-
-const API_BASE = "http://localhost:5000";
+import { apiCall, API_BASE_URL as API_BASE } from "../config/apiConfig";
 
 /**
  * Fetch all assignments for a course
@@ -21,7 +19,7 @@ export const fetchSubmissionHistory = async (assignmentId, userId) => {
 };
 
 export const startCatQuiz = async (payload, token) => {
-    const response = await fetch(`${API_BASE}/api/quiz/cat/start`, {
+    const response = await fetch(`${API_BASE}/quiz/cat/start`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -49,7 +47,7 @@ export const startCatQuiz = async (payload, token) => {
 };
 
 export const answerCatQuestion = async (payload, token) => {
-    const response = await fetch(`${API_BASE}/api/quiz/cat/answer`, {
+    const response = await fetch(`${API_BASE}/quiz/cat/answer`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -77,7 +75,7 @@ export const answerCatQuestion = async (payload, token) => {
 };
 
 export const finishCatQuiz = async (payload, token) => {
-    const response = await fetch(`${API_BASE}/api/quiz/cat/finish`, {
+    const response = await fetch(`${API_BASE}/quiz/cat/finish`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -108,7 +106,7 @@ export const finishCatQuiz = async (payload, token) => {
  * Call AI to explain why the selected answer is correct or incorrect
  */
 export const getAIExplanation = async (payload, token) => {
-    const response = await fetch(`${API_BASE}/api/quiz/cat/explain`, {
+    const response = await fetch(`${API_BASE}/quiz/cat/explain`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
