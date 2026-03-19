@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import dns from 'node:dns';
 import express from 'express';
 import compression from 'compression';
@@ -22,9 +23,14 @@ import coursesRouter from './routers/courses.js';
 import commentRouter from './routers/comments.js';
 import wishlistRouter from './routers/wishlist.js';
 import transactionRouter from './routers/transactions.js';
-import chatbotRouter from './routers/chatbot.js';
+import chatbotRouter from './routers/ai/chatbot.js';
+import recommendationsRouter from './routers/ai/aiCourseRecommendationsRouter.js';
+import quizGenerationRouter from './routers/ai/aiQuizGenerationRouter.js';
 import quizRouter from './routers/quiz.js';
+import aiAgentRouter from './routers/ai/aiAgentRouter.js';
+
 import { getCourses, getCategories } from './services/courseService.js';
+import * as courseCache from './services/courseCacheService.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './configs/swagger.js';
 
@@ -75,7 +81,11 @@ app.use('/api/comments', commentRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/transactions', transactionRouter);
 app.use('/api/chatbot', chatbotRouter);
+app.use('/api/recommendations', recommendationsRouter);
+app.use('/api/ai/quiz', quizGenerationRouter);
 app.use('/api/quiz', quizRouter);
+app.use('/api/ai/agent', aiAgentRouter);
+
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -110,10 +120,13 @@ app.listen(PORT, () => {
   (async () => {
     try {
       console.log('🔥 Warming up cache...');
-      console.log('🔥 Warming up cache...');
       // Run sequentially to avoid DB connection timeout
       await getCategories();
       await getCourses({ page: 1, limit: 12 });
+
+      // Warm up chatbot course cache
+      await courseCache.refreshCache();
+
       console.log('✅ Cache warmed up successfully!');
     } catch (error) {
       console.warn('⚠️ Cache warmup partial failure (non-critical):', error.message);
@@ -139,3 +152,7 @@ process.on('SIGINT', gracefulShutdown);
 
 export default app;
 
+
+
+// Restart trigger 1773771940714
+// Restart trigger 1773772052219

@@ -1,3 +1,5 @@
+plans
+repomix-output.xml
 node_modules/
 .env
 .env.local
@@ -11,3 +13,4 @@ build/
 *.swp
 *.swo
 client_secret_*.json
+

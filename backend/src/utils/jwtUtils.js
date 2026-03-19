@@ -1,11 +1,13 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-// Environment variables for JWT secrets and expiry times
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-access-token-key-min-32-chars';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-super-secret-jwt-refresh-token-key-min-32-chars';
-const JWT_ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '30m'; // 30 minutes
-const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '7d'; // 7 days
+// Helper to get secrets (ensures they are read from process.env when needed, not at module load)
+const getSecrets = () => ({
+  JWT_SECRET: process.env.JWT_SECRET || 'your-super-secret-jwt-access-token-key-min-32-chars',
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'your-super-secret-jwt-refresh-token-key-min-32-chars',
+  JWT_ACCESS_EXPIRY: process.env.JWT_ACCESS_EXPIRY || '30m',
+  JWT_REFRESH_EXPIRY: process.env.JWT_REFRESH_EXPIRY || '7d'
+});
 
 /**
  * Generate JWT Access Token (short-lived)
@@ -14,16 +16,17 @@ const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '7d'; // 7 days
  */
 export const generateAccessToken = (payload) => {
   const { userId, email, role } = payload;
-  
+  const { JWT_SECRET, JWT_ACCESS_EXPIRY } = getSecrets();
+
   return jwt.sign(
-    { 
-      userId, 
-      email, 
+    {
+      userId,
+      email,
       role,
       type: 'access'
     },
     JWT_SECRET,
-    { 
+    {
       expiresIn: JWT_ACCESS_EXPIRY,
       issuer: 'flyup-edutech',
       audience: 'flyup-users'
@@ -38,15 +41,16 @@ export const generateAccessToken = (payload) => {
  */
 export const generateRefreshToken = (payload) => {
   const { userId, email } = payload;
-  
+  const { JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRY } = getSecrets();
+
   return jwt.sign(
-    { 
-      userId, 
+    {
+      userId,
       email,
       type: 'refresh'
     },
     JWT_REFRESH_SECRET,
-    { 
+    {
       expiresIn: JWT_REFRESH_EXPIRY,
       issuer: 'flyup-edutech',
       audience: 'flyup-users'
@@ -62,15 +66,16 @@ export const generateRefreshToken = (payload) => {
  */
 export const verifyAccessToken = (token) => {
   try {
+    const { JWT_SECRET } = getSecrets();
     const decoded = jwt.verify(token, JWT_SECRET, {
       issuer: 'flyup-edutech',
       audience: 'flyup-users'
     });
-    
+
     if (decoded.type !== 'access') {
       throw new Error('Invalid token type');
     }
-    
+
     return decoded;
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -91,15 +96,16 @@ export const verifyAccessToken = (token) => {
  */
 export const verifyRefreshToken = (token) => {
   try {
+    const { JWT_REFRESH_SECRET } = getSecrets();
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET, {
       issuer: 'flyup-edutech',
       audience: 'flyup-users'
     });
-    
+
     if (decoded.type !== 'refresh') {
       throw new Error('Invalid token type');
     }
-    
+
     return decoded;
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
