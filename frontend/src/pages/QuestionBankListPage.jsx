@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import useAuth from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 import {
     fetchQuestionBanks,
     fetchQuestionBankCourses,
@@ -33,8 +34,8 @@ const VisibilityBadge = ({ isPublic }) => {
     return (
         <span
             className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase border ${isPublic
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                    : 'bg-slate-100 text-slate-600 border-slate-200'
+                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                : 'bg-slate-100 text-slate-600 border-slate-200'
                 }`}
         >
             {isPublic ? 'Public' : 'Private'}
@@ -47,8 +48,8 @@ const SidebarLink = ({ active = false, icon, label }) => {
         <button
             type="button"
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all text-left ${active
-                    ? 'bg-[#4b2038] text-white shadow-lg'
-                    : 'text-[#ce8db1] hover:bg-[#4b2038] hover:text-white'
+                ? 'bg-[#4b2038] text-white shadow-lg'
+                : 'text-[#ce8db1] hover:bg-[#4b2038] hover:text-white'
                 }`}
         >
             <span className="material-symbols-outlined" style={active ? { fontVariationSettings: "'FILL' 1" } : {}}>
@@ -381,8 +382,8 @@ const QuestionBankListPage = () => {
                                     type="button"
                                     onClick={() => setActiveTab(tab.key)}
                                     className={`px-4 py-3 text-sm transition-colors ${active
-                                            ? 'font-bold text-orange-600 border-b-2 border-orange-600'
-                                            : 'font-medium text-slate-500 hover:text-slate-700'
+                                        ? 'font-bold text-orange-600 border-b-2 border-orange-600'
+                                        : 'font-medium text-slate-500 hover:text-slate-700'
                                         }`}
                                 >
                                     {tab.label}
@@ -509,13 +510,13 @@ const QuestionBankListPage = () => {
 
                                         <td className="p-4">
                                             <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    type="button"
+                                                <Link
+                                                    to={`/instructor/question-banks/${bank.Id}`}
                                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all"
                                                 >
                                                     <span className="material-symbols-outlined text-sm">visibility</span>
                                                     View
-                                                </button>
+                                                </Link>
 
                                                 <button
                                                     type="button"

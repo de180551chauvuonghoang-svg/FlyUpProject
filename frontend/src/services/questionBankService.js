@@ -53,3 +53,45 @@ export async function fetchQuestionBankDetail(bankId) {
     const data = await request(`/question-banks/${bankId}`);
     return data.data;
 }
+
+export async function fetchQuestionBankQuestions(bankId) {
+    const data = await request(`/question-banks/${bankId}/questions`);
+    return data.data || [];
+}
+
+export async function createQuestionBankQuestion(bankId, payload) {
+    const data = await request(`/question-banks/${bankId}/questions`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+    return data.data;
+}
+
+export async function updateQuestionBankQuestion(bankId, questionId, payload) {
+    const data = await request(`/question-banks/${bankId}/questions/${questionId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+    return data.data;
+}
+
+export async function deleteQuestionBankQuestion(bankId, questionId) {
+    const data = await request(`/question-banks/${bankId}/questions/${questionId}`, {
+        method: 'DELETE',
+    });
+    return data.data;
+}
+
+export async function publishQuestionBank(bankId) {
+    const data = await request(`/question-banks/${bankId}/publish`, {
+        method: 'POST',
+    });
+    return data.data;
+}
+
+export async function unpublishQuestionBank(bankId) {
+    const data = await request(`/question-banks/${bankId}/unpublish`, {
+        method: 'POST',
+    });
+    return data.data;
+}

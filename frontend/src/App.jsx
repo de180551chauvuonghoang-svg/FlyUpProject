@@ -26,7 +26,14 @@ import InstructorEditCoursePage from './pages/InstructorEditCoursePage';
 import QuestionBankListPage from './pages/QuestionBankListPage';
 import InstructorRoute from './components/Auth/InstructorRoute';
 //finish for question bank module
-import CourseLessonPage from './pages/CourseLessonPage'; function App() {
+import CourseLessonPage from './pages/CourseLessonPage';
+import QuestionBankDetailPage from './pages/QuestionBankDetailPage';
+import CreateAssignmentFromBankPage from './pages/CreateAssignmentFromBankPage';
+import AssignmentSnapshotPreviewPage from './pages/AssignmentSnapshotPreviewPage';
+
+
+
+function App() {
   return (
     <AuthProvider>
       <CartProvider>
@@ -61,7 +68,30 @@ import CourseLessonPage from './pages/CourseLessonPage'; function App() {
                 </InstructorRoute>
               }
             />
-
+            <Route
+              path="/instructor/question-banks/:id"
+              element={
+                <InstructorRoute>
+                  <QuestionBankDetailPage />
+                </InstructorRoute>
+              }
+            />
+            <Route
+              path="/instructor/create-assignment-from-bank"
+              element={
+                <InstructorRoute>
+                  <CreateAssignmentFromBankPage />
+                </InstructorRoute>
+              }
+            />
+            <Route
+              path="/instructor/assignments/:assignmentId/preview"
+              element={
+                <InstructorRoute>
+                  <AssignmentSnapshotPreviewPage />
+                </InstructorRoute>
+              }
+            />
           </Routes>
           <ChatbotWidget />
         </Router>
