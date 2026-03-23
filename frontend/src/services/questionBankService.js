@@ -25,17 +25,28 @@ async function request(path, options = {}) {
     return data;
 }
 
-export async function fetchQuestionBanks({ tab = 'mine', search = '', courseId = '' } = {}) {
-    const params = new URLSearchParams();
+export async function fetchQuestionBanks(params = {}) {
+    const searchParams = new URLSearchParams();
 
-    if (tab) params.set('tab', tab);
-    if (search) params.set('search', search);
-    if (courseId) params.set('courseId', courseId);
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && String(value) !== "") {
+            searchParams.set(key, String(value));
+        }
+    });
 
-    const data = await request(`/question-banks?${params.toString()}`);
-    return data.data || [];
+    const query = searchParams.toString();
+    const data = await request(`/question-banks${query ? `?${query}` : ""}`);
+
+    return {
+        items: data.data || [],
+        meta: data.meta || {
+            page: 1,
+            pageSize: 10,
+            total: 0,
+            totalPages: 0,
+        },
+    };
 }
-
 export async function fetchQuestionBankCourses() {
     const data = await request('/question-banks/meta/courses');
     return data.data || [];
@@ -95,3 +106,26 @@ export async function unpublishQuestionBank(bankId) {
     });
     return data.data;
 }
+
+export async function updateQuestionBank(bankId, payload) {
+    const data = await request(`/question-banks/${bankId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+    return data.data;
+}
+
+export async function archiveQuestionBank(bankId) {
+    const data = await request(`/question-banks/${bankId}/archive`, {
+        method: 'POST',
+    });
+    return data.data;
+}
+
+export async function restoreQuestionBank(bankId) {
+    const data = await request(`/question-banks/${bankId}/restore`, {
+        method: 'POST',
+    });
+    return data.data;
+}
+
