@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
-import InstructorSidebar from "../components/InstructorSidebar";
+import InstructorLayout from "../components/InstructorLayout";
 import * as mammoth from "mammoth";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
@@ -263,277 +263,255 @@ export default function InstructorToolsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-display overflow-x-hidden">
-      {/* Background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/20 blur-3xl"></div>
+    <InstructorLayout
+      title="Tools"
+      subtitle="Useful tools to enhance your teaching workflow"
+    >
+      {/* Tool Selector */}
+      <div className="flex flex-wrap gap-4 mb-10">
+        {tools.map((tool) => (
+          <button
+            key={tool.key}
+            onClick={() => setActiveTool(tool.key)}
+            className={`flex-1 min-w-[200px] flex items-center gap-4 px-8 py-6 rounded-3xl text-sm font-black tracking-wide transition-all ${
+              activeTool === tool.key
+                ? `bg-gradient-to-br ${tool.color} text-white shadow-2xl`
+                : "bg-white/5 text-slate-400 border border-white/10 hover:border-purple-500/50 hover:text-white"
+            }`}
+          >
+            <div className={`p-3 rounded-2xl ${activeTool === tool.key ? 'bg-white/20' : 'bg-white/5'}`}>
+              <span className="material-symbols-outlined">{tool.icon}</span>
+            </div>
+            {tool.label}
+          </button>
+        ))}
       </div>
 
-      <InstructorSidebar />
-
-      <main className="lg:ml-64 min-h-screen">
-        {/* Header */}
-        <header className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/5 bg-slate-950/40">
-          <div className="px-6 lg:px-10 py-6">
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <span className="material-symbols-outlined text-blue-400">build</span>
-              Tools
-            </h1>
-            <p className="text-slate-400 mt-1">
-              Useful tools to enhance your teaching workflow
-            </p>
+      {/* Text to Speech Tool */}
+      {activeTool === "tts" && (
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="p-4 bg-blue-500/20 rounded-2xl">
+              <span className="material-symbols-outlined text-blue-400 text-3xl">record_voice_over</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white">Text to Speech</h2>
+              <p className="text-slate-400 font-medium">Convert lesson content to audio using browser speech engine</p>
+            </div>
           </div>
-        </header>
 
-        <div className="px-6 lg:px-10 py-8">
-          {/* Tool Selector */}
-          <div className="flex gap-4 mb-8">
-            {tools.map((tool) => (
-              <button
-                key={tool.key}
-                onClick={() => setActiveTool(tool.key)}
-                className={`flex-1 max-w-xs flex items-center gap-3 px-6 py-5 rounded-2xl text-sm font-bold transition-all ${
-                  activeTool === tool.key
-                    ? `bg-gradient-to-r ${tool.color} text-white shadow-lg`
-                    : "bg-white/5 text-slate-400 border border-white/10 hover:border-purple-500/50 hover:text-white"
-                }`}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="space-y-3">
+              <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Voice Selection</label>
+              <select
+                value={selectedVoice}
+                onChange={(e) => setSelectedVoice(e.target.value)}
+                className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white text-sm font-bold focus:outline-none focus:border-blue-500/50 transition-all appearance-none cursor-pointer"
               >
-                <span className="material-symbols-outlined">{tool.icon}</span>
-                {tool.label}
-              </button>
-            ))}
+                {voices.map((voice) => (
+                  <option key={voice.name} value={voice.name} className="bg-slate-900">
+                    {voice.name} ({voice.lang})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-3">
+              <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1 flex justify-between">
+                <span>Speech Rate</span>
+                <span className="text-blue-400">{speechRate.toFixed(1)}x</span>
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2.0"
+                step="0.1"
+                value={speechRate}
+                onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
           </div>
 
-          {/* Text to Speech Tool */}
-          {activeTool === "tts" && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-blue-500/20 rounded-xl">
-                  <span className="material-symbols-outlined text-blue-400 text-2xl">record_voice_over</span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">Text to Speech</h2>
-                  <p className="text-sm text-slate-400">Convert text to audio using browser speech synthesis</p>
+          <div className="space-y-3 mb-8">
+            <div className="flex justify-between items-end">
+              <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Input Content</label>
+              <div>
+                <input 
+                  type="file" 
+                  id="tts-file-upload" 
+                  accept=".txt,.docx,.pdf" 
+                  className="hidden" 
+                  onChange={(e) => handleFileUpload(e, "tts")}
+                />
+                <label 
+                  htmlFor="tts-file-upload" 
+                  className="cursor-pointer text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-all bg-blue-500/10 px-4 py-2 rounded-xl border border-blue-500/20"
+                >
+                  <span className="material-symbols-outlined text-sm">upload_file</span>
+                  Import Document
+                </label>
+              </div>
+            </div>
+            <textarea
+              value={ttsText}
+              onChange={(e) => setTtsText(e.target.value)}
+              placeholder="Paste the text you want to convert into speech here..."
+              className="w-full px-6 py-5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 text-base font-medium resize-none min-h-[240px] transition-all"
+            />
+          </div>
+
+          <div className="flex items-center gap-4">
+            {!isSpeaking ? (
+              <button
+                onClick={handleSpeak}
+                className="px-10 py-5 bg-blue-500 text-white font-black rounded-2xl hover:bg-blue-600 transition-all flex items-center gap-3 shadow-[0_20px_40px_-15px_rgba(59,130,246,0.3)]"
+              >
+                <span className="material-symbols-outlined">play_arrow</span>
+                Start Speaking
+              </button>
+            ) : (
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  onClick={handlePause}
+                  className="flex-1 sm:flex-none px-8 py-5 bg-white/5 text-yellow-400 font-bold rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 border border-white/10"
+                >
+                  <span className="material-symbols-outlined">
+                    {isPaused ? "play_arrow" : "pause"}
+                  </span>
+                  {isPaused ? "Resume" : "Pause"}
+                </button>
+                <button
+                  onClick={handleStop}
+                  className="flex-1 sm:flex-none px-8 py-5 bg-red-500/10 text-red-400 font-bold rounded-2xl hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 border border-red-500/20"
+                >
+                  <span className="material-symbols-outlined">stop</span>
+                  Stop
+                </button>
+
+                <div className="hidden sm:flex items-center gap-2 ml-4 px-6 py-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-blue-400">
+                  <div className="flex gap-1.5">
+                    <div className="w-1 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                    <div className="w-1 h-5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                    <div className="w-1 h-4 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                  </div>
+                  <span className="text-xs font-black uppercase tracking-widest">{isPaused ? "Paused" : "Live Output"}</span>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+      )}
 
-              {/* Controls Row */}
-              <div className="flex flex-wrap gap-4 mb-6">
-                <div className="flex-1 min-w-[200px]">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Voice</label>
-                  <select
-                    value={selectedVoice}
-                    onChange={(e) => setSelectedVoice(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50"
-                  >
-                    {voices.map((voice) => (
-                      <option key={voice.name} value={voice.name} className="bg-slate-900">
-                        {voice.name} ({voice.lang})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="w-40">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Speed: {speechRate.toFixed(1)}x
-                  </label>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="2"
-                    step="0.1"
-                    value={speechRate}
-                    onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                    className="w-full accent-blue-500"
-                  />
-                </div>
+      {/* Summary Tool */}
+      {activeTool === "summary" && (
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="p-4 bg-purple-500/20 rounded-2xl">
+              <span className="material-symbols-outlined text-purple-400 text-3xl">summarize</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white">AI Text Summary</h2>
+              <p className="text-slate-400 font-medium">Distill massive documents into strategic key points</p>
+            </div>
+          </div>
+
+          <div className="space-y-3 mb-8">
+            <div className="flex justify-between items-end">
+              <div className="flex items-center gap-4">
+                <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Content</label>
+                <select
+                  value={summaryLanguage}
+                  onChange={(e) => setSummaryLanguage(e.target.value)}
+                  className="bg-white/5 border border-white/10 rounded-xl text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 focus:outline-none focus:border-purple-500/50"
+                >
+                  <option value="vi" className="bg-slate-900">Tiếng Việt</option>
+                  <option value="en" className="bg-slate-900">English</option>
+                </select>
               </div>
-
-              {/* File Upload & Text input */}
-              <div className="flex justify-between items-end mb-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">Content</label>
-                <div>
-                  <input 
-                    type="file" 
-                    id="tts-file-upload" 
-                    accept=".txt,.docx,.pdf" 
-                    className="hidden" 
-                    onChange={(e) => handleFileUpload(e, "tts")}
-                  />
-                  <label 
-                    htmlFor="tts-file-upload" 
-                    className="cursor-pointer text-xs flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20"
-                  >
-                    <span className="material-symbols-outlined text-sm">upload_file</span>
-                    Import File (.txt, .docx, .pdf)
-                  </label>
-                </div>
+              <div>
+                <input 
+                  type="file" 
+                  id="summary-file-upload" 
+                  accept=".txt,.docx,.pdf" 
+                  className="hidden" 
+                  onChange={(e) => handleFileUpload(e, "summary")}
+                />
+                <label 
+                  htmlFor="summary-file-upload" 
+                  className="cursor-pointer text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-all bg-purple-500/10 px-4 py-2 rounded-xl border border-purple-500/20"
+                >
+                  <span className="material-symbols-outlined text-sm">upload_file</span>
+                  Import Document
+                </label>
               </div>
-              <textarea
-                value={ttsText}
-                onChange={(e) => setTtsText(e.target.value)}
-                placeholder="Enter text you want to convert to speech..."
-                rows={6}
-                className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 text-sm resize-none mb-6"
-              />
+            </div>
+            <textarea
+              value={summaryText}
+              onChange={(e) => setSummaryText(e.target.value)}
+              placeholder="Paste the raw content here for AI distillation..."
+              className="w-full px-6 py-5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 text-base font-medium resize-none min-h-[300px] transition-all"
+            />
+          </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                {!isSpeaking ? (
-                  <button
-                    onClick={handleSpeak}
-                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold rounded-xl hover:from-blue-500 hover:to-cyan-500 transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
-                  >
-                    <span className="material-symbols-outlined">play_arrow</span>
-                    Speak
-                  </button>
-                ) : (
-                  <>
+          <button
+            onClick={handleSummarize}
+            disabled={isSummarizing}
+            className="w-full sm:w-auto px-10 py-5 bg-purple-500 text-white font-black rounded-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_-15px_rgba(168,85,247,0.3)] mb-10 disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined">
+              {isSummarizing ? "hourglass_empty" : "auto_awesome"}
+            </span>
+            {isSummarizing ? "Analyzing Data..." : "Generate AI Summary"}
+          </button>
+
+          {/* Result */}
+          {summaryResult && (
+            <div className="bg-gradient-to-br from-purple-500/10 via-white/[0.02] to-pink-500/5 border border-purple-500/20 rounded-3xl p-8 animate-in zoom-in-95 duration-700">
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-purple-400 text-base">auto_awesome</span>
+                  </div>
+                  <span className="text-xs font-black uppercase tracking-widest text-purple-400">AI Intelligence Report</span>
+                </div>
+                
+                <div className="flex gap-2">
+                  {!isSpeaking ? (
                     <button
-                      onClick={handlePause}
-                      className="px-6 py-3 bg-yellow-600/20 text-yellow-400 font-bold rounded-xl hover:bg-yellow-600/30 transition-all flex items-center gap-2 border border-yellow-500/30"
+                      onClick={() => handleSpeak(summaryResult, summaryLanguage)}
+                      className="flex items-center gap-2 px-4 py-2 bg-white/5 text-purple-300 hover:text-white hover:bg-purple-500/20 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border border-white/10"
                     >
-                      <span className="material-symbols-outlined">
-                        {isPaused ? "play_arrow" : "pause"}
-                      </span>
-                      {isPaused ? "Resume" : "Pause"}
+                      <span className="material-symbols-outlined text-sm">volume_up</span>
+                      Listen
                     </button>
+                  ) : (
                     <button
                       onClick={handleStop}
-                      className="px-6 py-3 bg-red-600/20 text-red-400 font-bold rounded-xl hover:bg-red-600/30 transition-all flex items-center gap-2 border border-red-500/30"
+                      className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-300 hover:text-white hover:bg-red-500/20 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border border-red-500/20"
                     >
-                      <span className="material-symbols-outlined">stop</span>
+                      <span className="material-symbols-outlined text-sm">stop</span>
                       Stop
                     </button>
-                  </>
-                )}
-              </div>
-
-              {isSpeaking && (
-                <div className="mt-4 flex items-center gap-2 text-blue-400 text-sm">
-                  <div className="flex gap-1">
-                    <div className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0ms" }}></div>
-                    <div className="w-1 h-6 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "150ms" }}></div>
-                    <div className="w-1 h-3 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "300ms" }}></div>
-                    <div className="w-1 h-5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "450ms" }}></div>
-                    <div className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "600ms" }}></div>
-                  </div>
-                  <span className="font-semibold">{isPaused ? "Paused" : "Speaking..."}</span>
+                  )}
                 </div>
-              )}
+              </div>
+              
+              <div className="prose prose-invert max-w-none">
+                <p className="text-[17px] text-slate-200 leading-[1.8] font-medium whitespace-pre-wrap">
+                  {summaryResult}
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Summary Tool */}
-          {activeTool === "summary" && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-purple-500/20 rounded-xl">
-                  <span className="material-symbols-outlined text-purple-400 text-2xl">summarize</span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">Text Summary</h2>
-                  <p className="text-sm text-slate-400">Summarize long text into key points using AI</p>
-                </div>
-              </div>
-
-              {/* Language, File Upload & Input */}
-              <div className="flex justify-between items-end mb-2">
-                <div className="flex items-center gap-3">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">Content</label>
-                  <select
-                    value={summaryLanguage}
-                    onChange={(e) => setSummaryLanguage(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-lg text-white text-xs px-2 py-1 focus:outline-none focus:border-purple-500/50"
-                  >
-                    <option value="vi" className="bg-slate-900">Vietnamese</option>
-                    <option value="en" className="bg-slate-900">English</option>
-                  </select>
-                </div>
-                <div>
-                  <input 
-                    type="file" 
-                    id="summary-file-upload" 
-                    accept=".txt,.docx,.pdf" 
-                    className="hidden" 
-                    onChange={(e) => handleFileUpload(e, "summary")}
-                  />
-                  <label 
-                    htmlFor="summary-file-upload" 
-                    className="cursor-pointer text-xs flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors bg-purple-500/10 px-3 py-1.5 rounded-lg border border-purple-500/20"
-                  >
-                    <span className="material-symbols-outlined text-sm">upload_file</span>
-                    Import File (.txt, .docx, .pdf)
-                  </label>
-                </div>
-              </div>
-              <textarea
-                value={summaryText}
-                onChange={(e) => setSummaryText(e.target.value)}
-                placeholder="Paste or type the text you want to summarize..."
-                rows={8}
-                className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500/50 text-sm resize-none mb-6"
-              />
-
-              <button
-                onClick={handleSummarize}
-                disabled={isSummarizing}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-purple-500/20 mb-6"
-              >
-                <span className="material-symbols-outlined">
-                  {isSummarizing ? "hourglass_empty" : "auto_awesome"}
-                </span>
-                {isSummarizing ? "Summarizing..." : "Summarize"}
-              </button>
-
-              {/* Result */}
-              {summaryResult && (
-                <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20 rounded-xl p-6">
-                  <div className="flex items-center justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-purple-400 text-sm">auto_awesome</span>
-                      <span className="text-xs font-bold uppercase tracking-wider text-purple-400">AI Summary</span>
-                    </div>
-                    {/* Speak Button */}
-                    <div className="flex gap-2">
-                      {!isSpeaking ? (
-                        <button
-                          onClick={() => handleSpeak(summaryResult, summaryLanguage)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/20 text-purple-300 hover:text-white hover:bg-purple-500/40 rounded-lg transition-colors text-xs font-bold border border-purple-500/30"
-                        >
-                          <span className="material-symbols-outlined text-sm">volume_up</span>
-                          Listen
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handleStop}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 text-red-300 hover:text-white hover:bg-red-500/40 rounded-lg transition-colors text-xs font-bold border border-red-500/30"
-                        >
-                          <span className="material-symbols-outlined text-sm">stop</span>
-                          Stop
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
-                    {summaryResult}
-                  </p>
-                </div>
-              )}
-
-              {isSummarizing && (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-center">
-                    <div className="w-10 h-10 border-3 border-white/10 border-t-purple-500 rounded-full animate-spin mx-auto mb-3"></div>
-                    <p className="text-slate-400 text-sm">Generating summary...</p>
-                  </div>
-                </div>
-              )}
+          {isSummarizing && (
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
+              <div className="w-12 h-12 border-4 border-white/10 border-t-purple-500 rounded-full animate-spin"></div>
+              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">AI is reading your document...</p>
             </div>
           )}
         </div>
-      </main>
-    </div>
+      )}
+    </InstructorLayout>
   );
 }

@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { icon: "dashboard", label: "Dashboard", path: "/instructor/dashboard" },
   { icon: "group", label: "Students", path: "/instructor/students" },
   { icon: "forum", label: "Communication", path: "/instructor/communication" },
+  { icon: "database", label: "Question Bank", path: "/instructor/question-banks" },
   { icon: "build", label: "Tool", path: "/instructor/tools" },
 ];
 
