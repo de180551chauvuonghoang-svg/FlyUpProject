@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
 
@@ -8,6 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 export default function InstructorDashboard() {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [timeframe, setTimeframe] = useState("6months");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -199,8 +200,8 @@ export default function InstructorDashboard() {
   };
 
   const handleView = (id) => {
-    // Navigate to course preview (as learner view)
-    navigate(`/course/${id}`);
+    // Navigate to instructor preview page (learn-page style)
+    navigate(`/instructor/preview/${id}`);
   };
 
   const handleDelete = async (courseId) => {
@@ -297,27 +298,29 @@ export default function InstructorDashboard() {
         {/* Navigation */}
         <nav className="flex-1 space-y-2">
           {[
-            { icon: "dashboard", label: "Dashboard", active: true },
-            { icon: "layers", label: "Courses" },
-            { icon: "group", label: "Students" },
-            { icon: "trending_up", label: "Analytics" },
-            { icon: "wallet", label: "Earnings" },
-          ].map((item) => (
-            <a
-              key={item.label}
-              href="#"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                item.active
-                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm">
-                {item.icon}
-              </span>
-              <span className="text-sm font-medium">{item.label}</span>
-            </a>
-          ))}
+            { icon: "dashboard", label: "Dashboard", path: "/instructor/dashboard" },
+            { icon: "group", label: "Students", path: "/instructor/students" },
+            { icon: "forum", label: "Communication", path: "/instructor/communication" },
+            { icon: "build", label: "Tool", path: "/instructor/tools" },
+          ].map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.label}
+                onClick={() => navigate(item.path)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">
+                  {item.icon}
+                </span>
+                <span className="text-sm font-medium">{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
         {/* User Profile */}
@@ -682,8 +685,9 @@ export default function InstructorDashboard() {
                     <div className="relative h-48 overflow-hidden bg-linear-to-br from-purple-900 to-blue-900">
                       <img
                         src={
-                          course.thumbnailUrl ||
-                          "https://via.placeholder.com/400x300?text=No+Image"
+                          course.thumbnail ||
+                            course.thumbnailUrl ||
+                            "https://via.placeholder.com/400x300?text=No+Image"
                         }
                         alt={course.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -725,13 +729,13 @@ export default function InstructorDashboard() {
                           <span className="material-symbols-outlined text-sm">
                             people
                           </span>
-                          {course.studentCount || 0} Learners
+                          {course.students || course.studentCount || 0} Learners
                         </span>
                         <span className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-sm">
                             video_library
                           </span>
-                          {course.lectureCount || 0} Lectures
+                          {course.lectures || course.lectureCount || 0} Lectures
                         </span>
                       </div>
 
