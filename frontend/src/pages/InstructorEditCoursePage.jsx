@@ -251,7 +251,7 @@ export default function InstructorEditCoursePage() {
     if (assignmentTarget.type === "section") {
       setSections(sections.map(sec => {
         if (sec.id === assignmentTarget.id) {
-          const isNew = !updatedAssignment.isExisting;
+          const _isNew = !updatedAssignment.isExisting;
           const existingAssignments = sec.assignments || [];
           let newAssignments;
           
@@ -692,7 +692,7 @@ export default function InstructorEditCoursePage() {
     }
   };
 
-  const renderAssignmentModal = () => {
+  const _renderAssignmentModal = () => {
     if (!isAssignmentModalOpen || !currentAssignment) return null;
 
     const addQuestion = () => {

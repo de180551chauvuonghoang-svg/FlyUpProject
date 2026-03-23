@@ -203,6 +203,29 @@ export default function InstructorCreateCoursePage() {
     toast.success("Material added");
   };
 
+  const removeMaterial = (sectionId, lectureId, materialId) => {
+    setSections(
+      sections.map((section) => {
+        if (section.id === sectionId) {
+          return {
+            ...section,
+            lectures: section.lectures.map((lec) => {
+              if (lec.id === lectureId) {
+                return {
+                  ...lec,
+                  materials: (lec.materials || []).filter((m) => m.id !== materialId),
+                };
+              }
+              return lec;
+            }),
+          };
+        }
+        return section;
+      }),
+    );
+    toast.success("Material removed");
+  };
+
   // Assignment management
   const openAssignmentModal = (type, parentId, existingAssignment = null) => {
     if (existingAssignment) {

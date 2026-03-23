@@ -487,7 +487,7 @@ export default function CourseLessonPage() {
       try {
         const completedLectures = JSON.parse(enrollment.LectureMilestones || "[]");
         completed = Array.isArray(completedLectures) ? completedLectures.includes(currentLessonId) : false;
-      } catch (e) {
+      } catch (_e) {
         completed = false;
       }
     }
@@ -1117,7 +1117,7 @@ export default function CourseLessonPage() {
                             maxTimePlayed.current = maxTime || currentTime;
                             toast("Khôi phục tiến độ học...", { icon: "⏱️", id: "resume-toast" });
                           }
-                        } catch (err) {
+                        } catch (_err) {
                           console.warn("Could not parse saved video progress");
                         }
                       }
