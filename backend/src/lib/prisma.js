@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import pg from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const prismaClientSingleton = () => {
   if (!process.env.DATABASE_URL || process.env.DATABASE_URL.trim() === '') {
@@ -6,7 +8,12 @@ const prismaClientSingleton = () => {
     process.exit(1);
   }
 
+  // Define postgres pool and prisma pg adapter
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
+
   return new PrismaClient({
+    adapter,
     log: ['query', 'info', 'warn', 'error'],
   });
 };

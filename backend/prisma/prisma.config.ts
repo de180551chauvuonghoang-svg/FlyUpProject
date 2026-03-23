@@ -1,8 +1,12 @@
-import path from "path";
-import "dotenv/config";
+import { defineConfig } from '@prisma/config';
+import process from 'process';
+import dotenv from 'dotenv';
 
-export default {
+dotenv.config({ path: '../.env' }); // Since it's in prisma/ folder, .env might be in root
+
+export default defineConfig({
+  schema: 'schema.prisma',
   datasource: {
     url: process.env.DATABASE_URL,
   },
-};
+});
