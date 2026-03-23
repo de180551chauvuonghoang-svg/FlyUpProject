@@ -415,7 +415,7 @@ export default function InstructorDashboard() {
                         src={
                           course.thumbnail ||
                             course.thumbnailUrl ||
-                            "https://via.placeholder.com/400x300?text=No+Image"
+                            "https://placehold.co/400x300?text=No+Image"
                         }
                         alt={course.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"

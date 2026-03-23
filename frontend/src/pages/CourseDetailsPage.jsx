@@ -27,7 +27,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Helper to resolve image URLs
 const getImageUrl = (path) => {
-    if (!path) return 'https://via.placeholder.com/150';
+    if (!path) return 'https://placehold.co/150';
     if (path.startsWith('http')) return path;
     const baseUrl = API_URL.replace(/\/api\/?$/, '');
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
@@ -330,7 +330,7 @@ export default function CourseDetailsPage() {
           {/* Video Preview - Lazy loaded */}
           <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-white/10 group mb-10 shadow-2xl shadow-violet-900/10 hover:scale-[1.01] transition-transform">
             <img 
-              src={course.ThumbUrl || 'https://via.placeholder.com/800x450'}
+              src={course.ThumbUrl || 'https://placehold.co/800x450'}
               alt={course.Title}
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-70 transition-opacity duration-500"
@@ -459,7 +459,7 @@ export default function CourseDetailsPage() {
                   <img 
                     className="w-full h-full object-cover" 
                     alt="Portrait of instructor" 
-                    src={getImageUrl(instructor.AvatarUrl) || 'https://via.placeholder.com/100?text=Instructor'}
+                    src={getImageUrl(instructor.AvatarUrl) || 'https://placehold.co/100?text=Instructor'}
                     loading="lazy"
                   />
                 </motion.div>

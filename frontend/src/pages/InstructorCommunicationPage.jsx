@@ -139,7 +139,7 @@ export default function InstructorCommunicationPage() {
               <div className="flex items-start gap-5">
                 {/* Avatar */}
                 <img
-                  src={item.user?.avatar || item.user?.AvatarUrl || "https://via.placeholder.com/40?text=U"}
+                  src={item.user?.avatar || item.user?.AvatarUrl || "https://placehold.co/40?text=U"}
                   alt={item.user?.name || item.user?.FullName || "User"}
                   className="w-12 h-12 rounded-full object-cover border-2 border-white/5 group-hover:border-purple-500/40 transition-all flex-shrink-0"
                 />

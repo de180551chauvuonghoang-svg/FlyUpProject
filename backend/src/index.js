@@ -6,6 +6,20 @@ import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment variables as early as possible
+const result = dotenv.config({ path: join(__dirname, "../.env") });
+
+if (result.error) {
+  if (result.error.code !== "ENOENT") {
+    console.error("DOTENV LOAD ERROR:", result.error);
+  }
+} else {
+  console.log("DOTENV LOADED VARS:", Object.keys(result.parsed));
+}
+
 // Force IPv4 for DNS resolution to avoid ENOTFOUND with Gmail API on some networks
 try {
   dns.setDefaultResultOrder("ipv4first");
@@ -14,7 +28,7 @@ try {
   console.log("Note: dns.setDefaultResultOrder not supported or failed");
 }
 
-// Import routers
+// Import routers (after environment variables are loaded)
 import authRouter from "./routers/auth.js";
 import usersRouter from "./routers/users.js";
 import checkoutRouter from "./routers/checkout.js";
@@ -22,6 +36,7 @@ import coursesRouter from "./routers/courses.js";
 import commentRouter from "./routers/comments.js";
 import wishlistRouter from "./routers/wishlist.js";
 import transactionRouter from "./routers/transactions.js";
+import adminRouter from "./routers/admin.js";
 import chatbotRouter from "./routers/chatbot.js";
 import quizRouter from "./routers/quiz.js";
 import uploadRouter from "./routers/upload.js";
@@ -31,37 +46,35 @@ import swaggerSpec from "./configs/swagger.js";
 //import routers question bank
 import questionBankRouter from './routers/questionBank.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const result = dotenv.config({ path: join(__dirname, "../.env") });
-
-if (result.error) {
-  if (result.error.code !== "ENOENT") {
-    console.error("DOTENV LOAD ERROR:", result.error);
-  }
-} else {
-  console.log("DOTENV LOADED VARS:", Object.keys(result.parsed));
-
-  // Dynamic import worker after env vars are loaded to ensure Redis connection works
-  import("./workers/emailWorker.js").catch((err) =>
-    console.error("Failed to start email worker:", err),
-  );
-}
+// Dynamic import worker after env vars are loaded to ensure Redis connection works
+import("./workers/emailWorker.js").catch((err) =>
+  console.error("Failed to start email worker:", err),
+);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:5173',  // Frontend
+  'http://localhost:3000',
+  'https://fly-up-project.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 // Middleware
 app.use(compression());
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL,
-    'https://fly-up-project.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:3000',
-  ].filter(Boolean),
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -80,6 +93,7 @@ app.use("/api/checkout", checkoutRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/wishlist", wishlistRouter);
 app.use("/api/transactions", transactionRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/chatbot", chatbotRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api/upload", uploadRouter);
@@ -109,7 +123,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
   console.log(`Swagger Docs available at http://localhost:${PORT}/api-docs`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || "development"}`);
@@ -117,7 +131,6 @@ app.listen(PORT, () => {
   // Warm up cache
   (async () => {
     try {
-      console.log("🔥 Warming up cache...");
       console.log("🔥 Warming up cache...");
       // Run sequentially to avoid DB connection timeout
       await getCategories();
@@ -132,19 +145,33 @@ app.listen(PORT, () => {
   })();
 });
 
+// Graceful shutdown
 const gracefulShutdown = async () => {
-  console.log("🛑 Received kill signal, shutting down gracefully");
-  try {
-    await import("./lib/prisma.js").then((m) => m.default.$disconnect());
-    console.log("✅ Prisma disconnected");
-    process.exit(0);
-  } catch (err) {
-    console.error("❌ Error during shutdown:", err);
+  console.log("\n🛑 Received kill signal, shutting down gracefully");
+  
+  // Close the server first to stop accepting new requests
+  server.close(async () => {
+    console.log("✅ Server closed. Port released.");
+    try {
+      // Disconnect Prisma
+      await import("./lib/prisma.js").then((m) => m.default.$disconnect());
+      console.log("✅ Prisma disconnected");
+      process.exit(0);
+    } catch (err) {
+      console.error("❌ Error during Prisma disconnect:", err);
+      process.exit(1);
+    }
+  });
+
+  // Force exit after 5 seconds if graceful shutdown fails
+  setTimeout(() => {
+    console.error("❌ Forced shutdown after timeout");
     process.exit(1);
-  }
+  }, 5000);
 };
 
 process.on("SIGTERM", gracefulShutdown);
 process.on("SIGINT", gracefulShutdown);
+process.on("SIGUSR2", gracefulShutdown);
 
 export default app;

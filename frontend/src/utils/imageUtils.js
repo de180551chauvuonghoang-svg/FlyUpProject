@@ -1,7 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const getImageUrl = (path) => {
-    if (!path) return 'https://via.placeholder.com/150';
+    if (!path) return 'https://placehold.co/150';
     if (path.startsWith('http')) return path;
     // Remove /api from API_URL to get base URL
     const baseUrl = API_URL.replace(/\/api\/?$/, '');

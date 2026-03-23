@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import './index.css';
 import AuthProvider from './contexts/AuthContext';
@@ -34,6 +34,16 @@ import InstructorRoute from './components/Auth/InstructorRoute';
 import QuestionBankDetailPage from './pages/QuestionBankDetailPage';
 import CreateAssignmentFromBankPage from './pages/CreateAssignmentFromBankPage';
 import AssignmentSnapshotPreviewPage from './pages/AssignmentSnapshotPreviewPage';
+// Admin Imports
+import AdminRoute from './components/Auth/AdminRoute';
+import AdminLayout from './components/Admin/layout/Layout';
+import AdminDashboard from './pages/Admin/Dashboard/Dashboard';
+import AdminLearners from './pages/Admin/Learners/Learners';
+import AdminInstructors from './pages/Admin/Instructors/Instructors';
+import AdminCourses from './pages/Admin/Courses/Courses';
+import AdminCourseDetail from './pages/Admin/CourseDetail/CourseDetail';
+import AdminUserDetail from './pages/Admin/UserDetail/UserDetail';
+
 
 function App() {
   return (
@@ -153,6 +163,25 @@ function App() {
                 </InstructorRoute>
               }
             />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="learners" element={<AdminLearners />} />
+            <Route path="learners/:id" element={<AdminUserDetail />} />
+            <Route path="instructors" element={<AdminInstructors />} />
+            <Route path="instructors/:id" element={<AdminUserDetail />} />
+            <Route path="courses" element={<AdminCourses />} />
+            <Route path="courses/:id" element={<AdminCourseDetail />} />
+          </Route>
 
         </Routes>
         <ChatbotWidget />
