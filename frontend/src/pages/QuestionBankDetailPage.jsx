@@ -9,6 +9,9 @@ import {
     deleteQuestionBankQuestion,
     publishQuestionBank,
     unpublishQuestionBank,
+    updateQuestionBank,
+    archiveQuestionBank,
+    restoreQuestionBank,
 } from '../services/questionBankService';
 import InstructorLayout from '../components/InstructorLayout';
 
@@ -70,6 +73,12 @@ const QuestionBankDetailPage = () => {
     const navigate = useNavigate();
     const [linkedAssignments, setLinkedAssignments] = useState([]);
     const [loadingAssignments, setLoadingAssignments] = useState(false);
+
+    const [isEditBankOpen, setIsEditBankOpen] = useState(false);
+    const [editBankForm, setEditBankForm] = useState({
+        name: '',
+        description: '',
+    });
 
     const loadLinkedAssignments = useCallback(async () => {
         setLoadingAssignments(true);
@@ -155,6 +164,58 @@ const QuestionBankDetailPage = () => {
         loadLinkedAssignments();
     }, [id, loadLinkedAssignments]);
 
+    useEffect(() => {
+        if (!bank) return;
+
+        setEditBankForm({
+            name: bank.Name || '',
+            description: bank.Description || '',
+        });
+    }, [bank]);
+
+    const handleUpdateBank = async (e) => {
+        e.preventDefault();
+
+        const toastId = toast.loading('Updating question bank...');
+        try {
+            await updateQuestionBank(id, {
+                name: editBankForm.name,
+                description: editBankForm.description,
+            });
+
+            toast.success('Question bank updated', { id: toastId });
+            setIsEditBankOpen(false);
+            loadBank();
+        } catch (error) {
+            toast.error(error.message || 'Failed to update question bank', { id: toastId });
+        }
+    };
+
+    const handleArchiveBank = async () => {
+        const confirmed = window.confirm('Archive this question bank? It will no longer be usable for new assignment snapshots.');
+        if (!confirmed) return;
+
+        const toastId = toast.loading('Archiving question bank...');
+        try {
+            await archiveQuestionBank(id);
+            toast.success('Question bank archived', { id: toastId });
+            loadBank();
+        } catch (error) {
+            toast.error(error.message || 'Failed to archive question bank', { id: toastId });
+        }
+    };
+
+    const handleRestoreBank = async () => {
+        const toastId = toast.loading('Restoring question bank...');
+        try {
+            await restoreQuestionBank(id);
+            toast.success('Question bank restored to draft', { id: toastId });
+            loadBank();
+        } catch (error) {
+            toast.error(error.message || 'Failed to restore question bank', { id: toastId });
+        }
+    };
+
     if (loadingBank) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -166,12 +227,12 @@ const QuestionBankDetailPage = () => {
     if (error || !bank) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
-              <div className="max-w-md w-full bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl">
-                <span className="material-symbols-outlined text-5xl text-red-400 mb-4">error</span>
-                <h2 className="text-xl font-bold text-white mb-2">Error</h2>
-                <p className="text-slate-400 mb-6">{error || 'Bank not found'}</p>
-                <Link to="/instructor/question-banks" className="px-6 py-2 bg-purple-500 text-white rounded-lg font-bold">Back to Banks</Link>
-              </div>
+                <div className="max-w-md w-full bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl">
+                    <span className="material-symbols-outlined text-5xl text-red-400 mb-4">error</span>
+                    <h2 className="text-xl font-bold text-white mb-2">Error</h2>
+                    <p className="text-slate-400 mb-6">{error || 'Bank not found'}</p>
+                    <Link to="/instructor/question-banks" className="px-6 py-2 bg-purple-500 text-white rounded-lg font-bold">Back to Banks</Link>
+                </div>
             </div>
         );
     }
@@ -187,6 +248,24 @@ const QuestionBankDetailPage = () => {
                     ) : (
                         <button onClick={handlePublish} className="px-4 py-2 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20">Publish</button>
                     )}
+
+                    {bank.Status === 'Archived' ? (
+                        <button
+                            type="button"
+                            onClick={handleRestoreBank}
+                            className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700"
+                        >
+                            Restore
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleArchiveBank}
+                            className="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700"
+                        >
+                            Archive
+                        </button>
+                    )}
                     <button onClick={() => setIsCreateOpen(true)} className="px-4 py-2 bg-purple-500 text-white font-bold rounded-lg hover:bg-purple-600 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">add</span> Add Question
                     </button>
@@ -196,21 +275,21 @@ const QuestionBankDetailPage = () => {
             <div className="space-y-8">
                 {/* Info Bar */}
                 <div className="flex flex-wrap items-center gap-6 text-sm">
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <span className="material-symbols-outlined text-sm text-purple-400">school</span>
-                    <span className="font-bold">{bank.CourseTitle || "No Course"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={bank.Status} />
-                    <VisibilityBadge isPublic={bank.IsPublic} />
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <span className="material-symbols-outlined text-sm text-purple-400">quiz</span>
-                    <span className="font-bold">{bank.QuestionCount} Questions</span>
-                  </div>
-                  <div className="ml-auto flex items-center gap-4 text-xs text-slate-500 font-bold uppercase tracking-wider">
-                    <span>Updated: {formatDateTime(bank.LastModificationTime)}</span>
-                  </div>
+                    <div className="flex items-center gap-2 text-slate-400">
+                        <span className="material-symbols-outlined text-sm text-purple-400">school</span>
+                        <span className="font-bold">{bank.CourseTitle || "No Course"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <StatusBadge status={bank.Status} />
+                        <VisibilityBadge isPublic={bank.IsPublic} />
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-400">
+                        <span className="material-symbols-outlined text-sm text-purple-400">quiz</span>
+                        <span className="font-bold">{bank.QuestionCount} Questions</span>
+                    </div>
+                    <div className="ml-auto flex items-center gap-4 text-xs text-slate-500 font-bold uppercase tracking-wider">
+                        <span>Updated: {formatDateTime(bank.LastModificationTime)}</span>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
@@ -219,36 +298,39 @@ const QuestionBankDetailPage = () => {
                         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
                             <h3 className="text-lg font-bold text-white mb-6">Quick Actions</h3>
                             <div className="space-y-3">
-                              <button 
-                                onClick={() => navigate(`/instructor/create-assignment-from-bank?courseId=${bank.CourseId}&sourceQuestionBankId=${bank.Id}`)}
-                                disabled={!bank?.IsPublic}
-                                className="w-full flex items-center gap-3 px-4 py-3 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-left"
-                              >
-                                <span className="material-symbols-outlined">assignment_add</span>
-                                Create Assignment
-                              </button>
-                              <button className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl text-sm font-bold transition-all text-left">
-                                <span className="material-symbols-outlined">edit</span>
-                                Edit Bank Info
-                              </button>
+                                <button
+                                    onClick={() => navigate(`/instructor/create-assignment-from-bank?courseId=${bank.CourseId}&sourceQuestionBankId=${bank.Id}`)}
+                                    disabled={!bank?.IsPublic}
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                                >
+                                    <span className="material-symbols-outlined">assignment_add</span>
+                                    Create Assignment
+                                </button>
+                                <button
+                                    onClick={() => setIsEditBankOpen(true)}
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl text-sm font-bold transition-all text-left"
+                                >
+                                    <span className="material-symbols-outlined">edit</span>
+                                    Edit Bank Info
+                                </button>
                             </div>
                         </div>
 
                         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
                             <h3 className="text-lg font-bold text-white mb-4">Linked Assignments</h3>
                             {loadingAssignments ? (
-                              <div className="w-6 h-6 border-2 border-white/10 border-t-purple-500 rounded-full animate-spin mx-auto my-4"></div>
+                                <div className="w-6 h-6 border-2 border-white/10 border-t-purple-500 rounded-full animate-spin mx-auto my-4"></div>
                             ) : linkedAssignments.length === 0 ? (
-                              <p className="text-xs text-slate-500 text-center py-4">No assignments yet</p>
+                                <p className="text-xs text-slate-500 text-center py-4">No assignments yet</p>
                             ) : (
-                              <div className="space-y-3">
-                                {linkedAssignments.map(a => (
-                                  <div key={a.Id} onClick={() => navigate(`/instructor/assignments/${a.Id}/preview`)} className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-purple-500/50 cursor-pointer transition-all">
-                                    <p className="text-sm font-bold text-slate-300 truncate">{a.Name}</p>
-                                    <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">{a.QuestionCount} Qs · {a.SubmissionCount} Subs</p>
-                                  </div>
-                                ))}
-                              </div>
+                                <div className="space-y-3">
+                                    {linkedAssignments.map(a => (
+                                        <div key={a.Id} onClick={() => navigate(`/instructor/assignments/${a.Id}/preview`)} className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-purple-500/50 cursor-pointer transition-all">
+                                            <p className="text-sm font-bold text-slate-300 truncate">{a.Name}</p>
+                                            <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">{a.QuestionCount} Qs · {a.SubmissionCount} Subs</p>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -286,12 +368,12 @@ const QuestionBankDetailPage = () => {
                                                         <div className="flex flex-wrap gap-2">
                                                             <StatusBadge status={question.Status || 'Draft'} />
                                                             {question.Difficulty && (
-                                                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border border-purple-500/30 bg-purple-500/10 text-purple-300">
-                                                                {question.Difficulty}
-                                                              </span>
+                                                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border border-purple-500/30 bg-purple-500/10 text-purple-300">
+                                                                    {question.Difficulty}
+                                                                </span>
                                                             )}
                                                         </div>
-                                                        
+
                                                         {/* Choice Grid */}
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                                                             {question.Choices.map((choice, cIdx) => (
@@ -319,10 +401,10 @@ const QuestionBankDetailPage = () => {
                                                             ))}
                                                         </div>
                                                         {question.Explanation && (
-                                                          <div className="p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl">
-                                                            <p className="text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-2">Explanation</p>
-                                                            <p className="text-sm text-slate-400 leading-relaxed italic">{question.Explanation}</p>
-                                                          </div>
+                                                            <div className="p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl">
+                                                                <p className="text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-2">Explanation</p>
+                                                                <p className="text-sm text-slate-400 leading-relaxed italic">{question.Explanation}</p>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
@@ -371,6 +453,71 @@ const QuestionBankDetailPage = () => {
                             <button onClick={() => setConfirmDeleteId(null)} className="flex-1 py-3 bg-white/5 border border-white/10 text-slate-300 font-bold rounded-xl hover:bg-white/10 transition-all">Cancel</button>
                             <button onClick={() => handleDeleteQuestion(confirmDeleteId)} className="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">Delete</button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {isEditBankOpen && (
+                <div className="fixed inset-0 z-[150] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-lg bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/5">
+                            <h3 className="text-lg font-bold text-white uppercase tracking-wider">Edit Bank Info</h3>
+                            <button
+                                type="button"
+                                onClick={() => setIsEditBankOpen(false)}
+                                className="text-slate-400 hover:text-white transition-colors"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleUpdateBank} className="p-8 space-y-6">
+                            <div>
+                                <label className="block text-xs font-bold text-purple-400 uppercase tracking-widest mb-3">
+                                    Bank Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editBankForm.name}
+                                    onChange={(e) =>
+                                        setEditBankForm((prev) => ({ ...prev, name: e.target.value }))
+                                    }
+                                    placeholder="Enter bank name..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-purple-500/50 transition-all"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-purple-400 uppercase tracking-widest mb-3">
+                                    Description
+                                </label>
+                                <textarea
+                                    rows={4}
+                                    value={editBankForm.description}
+                                    onChange={(e) =>
+                                        setEditBankForm((prev) => ({ ...prev, description: e.target.value }))
+                                    }
+                                    placeholder="Enter brief description..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-purple-500/50 transition-all resize-none"
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditBankOpen(false)}
+                                    className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm font-bold hover:bg-white/10 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2 rounded-xl bg-purple-500 text-white text-sm font-bold hover:bg-purple-600 transition-all shadow-lg shadow-purple-500/20"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
