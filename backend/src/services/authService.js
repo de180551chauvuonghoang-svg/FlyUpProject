@@ -73,7 +73,7 @@ export const registerUser = async ({ email, password, fullName, role }) => {
       Token: '', // JWT access tokens are stateless, not stored in DB
       RefreshToken: hashedRefreshToken, // Store hashed refresh token only
       IsVerified: false,
-      IsApproved: false,
+      IsApproved: true,
       AccessFailedCount: 0,
       Bio: '',
       EnrollmentCount: 0,

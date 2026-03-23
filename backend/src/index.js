@@ -57,11 +57,9 @@ const PORT = process.env.PORT || 5000;
 // Allowed origins for CORS
 const allowedOrigins = [
   'http://localhost:5173',  // Frontend
-  'http://localhost:5174',  // Admin
   'http://localhost:3000',
   'https://fly-up-project.vercel.app',
-  process.env.FRONTEND_URL,
-  process.env.ADMIN_URL
+  process.env.FRONTEND_URL
 ].filter(Boolean);
 
 // Middleware
@@ -174,5 +172,6 @@ const gracefulShutdown = async () => {
 
 process.on("SIGTERM", gracefulShutdown);
 process.on("SIGINT", gracefulShutdown);
+process.on("SIGUSR2", gracefulShutdown);
 
 export default app;

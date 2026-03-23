@@ -77,7 +77,13 @@ const LoginPage = () => {
 
       toast.success('Logged in with Google!', { id: toastId });
       const role = String(data?.user?.Role || data?.user?.role || '').trim().toLowerCase();
-      window.location.href = role === 'instructor' ? '/instructor/question-banks' : '/';
+      if (role === 'admin') {
+        window.location.href = '/admin/dashboard';
+      } else if (role === 'instructor') {
+        window.location.href = '/instructor/question-banks';
+      } else {
+        window.location.href = '/';
+      }
 
     } catch (error) {
       console.error('Google login error', error);
@@ -128,7 +134,13 @@ const LoginPage = () => {
 
           toast.success('Logged in with GitHub!', { id: toastId });
           const role = String(data?.user?.Role || data?.user?.role || '').trim().toLowerCase();
-          window.location.href = role === 'instructor' ? '/instructor/question-banks' : '/';
+          if (role === 'admin') {
+            window.location.href = '/admin/dashboard';
+          } else if (role === 'instructor') {
+            window.location.href = '/instructor/question-banks';
+          } else {
+            window.location.href = '/';
+          }
 
         } catch (error) {
           console.error('GitHub login error', error);
@@ -166,7 +178,9 @@ const LoginPage = () => {
 
       toast.success('Welcome back!', { id: toastId });
 
-      if (role === 'instructor') {
+      if (role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (role === 'instructor') {
         navigate('/instructor/question-banks');
       } else {
         navigate('/');

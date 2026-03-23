@@ -217,7 +217,7 @@ export default function InstructorStudentsPage() {
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-4">
                         <img
-                          src={student.avatar || "https://via.placeholder.com/40?text=U"}
+                          src={student.avatar || "https://placehold.co/40?text=U"}
                           alt={student.name}
                           className="w-10 h-10 rounded-full object-cover border-2 border-white/5 group-hover:border-purple-500/50 transition-all"
                         />
