@@ -24,8 +24,9 @@ const removeAccents = (str) => {
 
 export const registerUser = async ({ email, password, fullName, role }) => {
   // Validate role
+  const trimmedRole = String(role || '').trim().toLowerCase();
   const validRoles = ['learner', 'instructor'];
-  const userRole = validRoles.includes(role) ? role : 'learner';
+  const userRole = validRoles.includes(trimmedRole) ? trimmedRole : 'learner';
 
   // Check if email already exists
   const existingUser = await prisma.users.findFirst({

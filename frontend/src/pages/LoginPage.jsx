@@ -76,7 +76,7 @@ const LoginPage = () => {
       localStorage.setItem('user', JSON.stringify(data.user));
 
       toast.success('Logged in with Google!', { id: toastId });
-      const role = String(data?.user?.Role || data?.user?.role || '').toLowerCase();
+      const role = String(data?.user?.Role || data?.user?.role || '').trim().toLowerCase();
       window.location.href = role === 'instructor' ? '/instructor/question-banks' : '/';
 
     } catch (error) {
@@ -127,7 +127,7 @@ const LoginPage = () => {
           localStorage.setItem('user', JSON.stringify(data.user));
 
           toast.success('Logged in with GitHub!', { id: toastId });
-          const role = String(data?.user?.Role || data?.user?.role || '').toLowerCase();
+          const role = String(data?.user?.Role || data?.user?.role || '').trim().toLowerCase();
           window.location.href = role === 'instructor' ? '/instructor/question-banks' : '/';
 
         } catch (error) {

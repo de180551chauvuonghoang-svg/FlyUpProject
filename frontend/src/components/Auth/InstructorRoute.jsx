@@ -21,7 +21,7 @@ const InstructorRoute = ({ children }) => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    const role = String(user?.Role || user?.role || '').toLowerCase();
+    const role = String(user?.Role || user?.role || '').trim().toLowerCase();
 
     if (role !== 'instructor') {
         return <Navigate to="/" replace />;
