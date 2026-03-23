@@ -6,6 +6,20 @@ import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment variables as early as possible
+const result = dotenv.config({ path: join(__dirname, "../.env") });
+
+if (result.error) {
+  if (result.error.code !== "ENOENT") {
+    console.error("DOTENV LOAD ERROR:", result.error);
+  }
+} else {
+  console.log("DOTENV LOADED VARS:", Object.keys(result.parsed));
+}
+
 // Force IPv4 for DNS resolution to avoid ENOTFOUND with Gmail API on some networks
 try {
   dns.setDefaultResultOrder("ipv4first");
@@ -14,7 +28,7 @@ try {
   console.log("Note: dns.setDefaultResultOrder not supported or failed");
 }
 
-// Import routers
+// Import routers (after environment variables are loaded)
 import authRouter from "./routers/auth.js";
 import usersRouter from "./routers/users.js";
 import checkoutRouter from "./routers/checkout.js";
@@ -32,23 +46,10 @@ import swaggerSpec from "./configs/swagger.js";
 //import routers question bank
 import questionBankRouter from './routers/questionBank.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const result = dotenv.config({ path: join(__dirname, "../.env") });
-
-if (result.error) {
-  if (result.error.code !== "ENOENT") {
-    console.error("DOTENV LOAD ERROR:", result.error);
-  }
-} else {
-  console.log("DOTENV LOADED VARS:", Object.keys(result.parsed));
-
-  // Dynamic import worker after env vars are loaded to ensure Redis connection works
-  import("./workers/emailWorker.js").catch((err) =>
-    console.error("Failed to start email worker:", err),
-  );
-}
+// Dynamic import worker after env vars are loaded to ensure Redis connection works
+import("./workers/emailWorker.js").catch((err) =>
+  console.error("Failed to start email worker:", err),
+);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
