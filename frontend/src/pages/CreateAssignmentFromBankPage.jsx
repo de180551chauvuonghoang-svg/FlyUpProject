@@ -115,7 +115,7 @@ const CreateAssignmentFromBankPage = () => {
         };
 
         loadDependentData();
-    }, [form.courseId]);
+    }, [form.courseId, form.sourceQuestionBankId]);
 
     // Fetch questions when bank is selected
     useEffect(() => {
@@ -132,7 +132,7 @@ const CreateAssignmentFromBankPage = () => {
                 setBankQuestions(questions);
                 // Default select all
                 setSelectedQuestionIds(new Set(questions.map(q => q.Id)));
-            } catch (error) {
+            } catch {
                 toast.error('Failed to load questions from bank');
             } finally {
                 setLoadingQuestions(false);
