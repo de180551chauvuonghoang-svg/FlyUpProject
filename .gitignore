@@ -11,3 +11,8 @@ build/
 *.swp
 *.swo
 client_secret_*.json
+*.zip
+*.rar
+*.7z
+*.tmp
+*.bak
