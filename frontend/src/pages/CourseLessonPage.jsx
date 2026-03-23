@@ -1,12 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "../hooks/useAuth";
 import Quiz from "../components/Quiz";
+import toast from "react-hot-toast";
 import {
   fetchCourseLessons,
   fetchEnrollmentProgress,
 } from "../services/lessonService";
+import * as mammoth from "mammoth";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+
+// Set pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Mock data for demonstration
 const MOCK_COURSE = {
@@ -77,6 +86,18 @@ export default function CourseLessonPage() {
   const [isInstructorPreview, setIsInstructorPreview] = useState(false);
   const [videoLoadFailed, setVideoLoadFailed] = useState(false);
   const [, setIsVideoPlaying] = useState(false);
+
+  // AI Assistant states
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [aiSummary, setAiSummary] = useState("");
+  const [summaryLang, setSummaryLang] = useState("vi");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const cloudAudioRef = useRef(null);
+
+  // File upload state for AI
+  const [customFileText, setCustomFileText] = useState("");
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const normalizeLectureAssets = (lecture) => {
     const transformedMaterials = Array.isArray(lecture?.Materials)
@@ -190,6 +211,148 @@ export default function CourseLessonPage() {
     console.log("[CourseLessonPage] courseId:", courseId);
     console.log("[CourseLessonPage] user:", user);
   }, [course, enrollment, courseId, user]);
+
+  // File Upload Handler
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setCustomFileText("");
+
+    try {
+      const fileType = file.name.split(".").pop().toLowerCase();
+
+      if (fileType === "txt") {
+        const reader = new FileReader();
+        reader.onload = (event) => setCustomFileText(event.target.result);
+        reader.readAsText(file);
+      } else if (fileType === "docx") {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        setCustomFileText(result.value);
+      } else if (fileType === "pdf") {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let text = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          text += textContent.items.map((item) => item.str).join(" ") + " ";
+        }
+        setCustomFileText(text);
+        toast.success("Trích xuất PDF thành công.");
+      } else {
+        toast.error("Vui lòng tải lên file định dạng: txt, docx, pdf");
+      }
+    } catch (error) {
+      console.error("File upload error:", error);
+      toast.error("Có lỗi xảy ra khi đọc file");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  // AI Function handlers
+  const handleSummarize = async () => {
+    const contentToSummarize = customFileText || currentLesson?.Content;
+    if (!contentToSummarize) {
+      toast.error("Không có nội dung bài học hoặc file để tóm tắt");
+      return;
+    }
+    setIsSummarizing(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_URL}/chatbot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          message: `Please provide a concise summary of the following text. The summary MUST be in ${summaryLang === 'vi' ? 'Vietnamese' : 'English'}. Focus on the key points and main ideas:\n\n${contentToSummarize}`,
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiSummary(data.response || "Không có tóm tắt nào.");
+        toast.success("Tóm tắt thành công!");
+      } else {
+        toast.error("Không thể tóm tắt bài học");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi kết nối bộ AI");
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  const handleSpeak = async () => {
+    const textToSpeak = aiSummary || customFileText || currentLesson?.Content;
+    if (!textToSpeak) return;
+
+    if (cloudAudioRef.current) {
+      cloudAudioRef.current.pause();
+      cloudAudioRef.current = null;
+    }
+
+    setIsSpeaking(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_URL}/chatbot/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: textToSpeak, lang: summaryLang })
+      });
+      if (!res.ok) throw new Error("API error");
+      const { urls } = await res.json();
+      
+      if (!urls || urls.length === 0) {
+        setIsSpeaking(false);
+        return;
+      }
+      
+      let index = 0;
+      const playNext = () => {
+        if (index >= urls.length) {
+          setIsSpeaking(false);
+          cloudAudioRef.current = null;
+          return;
+        }
+        const chunk = urls[index];
+        const audio = new Audio("data:audio/mp3;base64," + (chunk.base64 || chunk.url));
+        cloudAudioRef.current = audio;
+        audio.onended = () => {
+          index++;
+          playNext();
+        };
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          cloudAudioRef.current = null;
+        };
+        audio.play().catch((e) => {
+          console.error(e);
+          setIsSpeaking(false);
+        });
+      };
+      playNext();
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi kết nối bộ đọc Cloud TTS");
+      setIsSpeaking(false);
+    }
+  };
+
+  const handleStop = () => {
+    if (cloudAudioRef.current) {
+      cloudAudioRef.current.pause();
+      cloudAudioRef.current = null;
+    }
+    setIsSpeaking(false);
+  };
+
+  useEffect(() => {
+    return () => handleStop();
+  }, []);
 
   // Find the current lesson from sections
   const findLessonInSections = (sections, lectureId) => {
@@ -827,6 +990,17 @@ export default function CourseLessonPage() {
               >
                 Notes
               </button>
+              <button
+                onClick={() => setActiveTab("ai")}
+                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${
+                  activeTab === "ai"
+                    ? "text-purple-400 border-purple-400"
+                    : "text-slate-400 hover:text-purple-300 border-transparent"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                AI Assistant
+              </button>
             </div>
 
             {/* Tab Content */}
@@ -1017,6 +1191,121 @@ export default function CourseLessonPage() {
                   placeholder="Add your notes here..."
                   rows="6"
                 ></textarea>
+              </div>
+            )}
+
+            {activeTab === "ai" && (
+              <div className="glass-panel rounded-xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                
+                <div className="flex items-center justify-between mb-6 relative z-10">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-purple-400">auto_awesome</span>
+                      Trợ lý AI
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      Tóm tắt nhanh kiến thức và đọc bài giảng cho bạn
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-slate-900/50 p-1.5 rounded-lg border border-glass-border">
+                    <button
+                      onClick={() => setSummaryLang("vi")}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                        summaryLang === "vi" ? "bg-purple-500/20 text-purple-400" : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Tiếng Việt
+                    </button>
+                    <button
+                      onClick={() => setSummaryLang("en")}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                        summaryLang === "en" ? "bg-purple-500/20 text-purple-400" : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      English
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 relative z-10">
+                  {customFileText && (
+                    <div className="px-4 py-3 bg-indigo-500/20 text-indigo-300 text-sm rounded-lg border border-indigo-500/30 flex items-start gap-3 relative">
+                       <span className="material-symbols-outlined mt-0.5 text-indigo-400">description</span>
+                       <div className="flex-1">
+                         <p className="font-medium mb-1">Đang sử dụng tài liệu tùy chỉnh ({customFileText.length} ký tự)</p>
+                         <button onClick={() => setCustomFileText("")} className="text-xs text-indigo-400 underline font-bold hover:text-white transition-colors">Hủy bỏ và trở lại dùng nội dung khóa học</button>
+                       </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      accept=".txt,.pdf,.docx"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold border border-glass-border flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        upload_file
+                      </span>
+                      {isUploading ? "Đang đọc..." : "Upload tài liệu"}
+                    </button>
+
+                    <button
+                      onClick={handleSummarize}
+                      disabled={isSummarizing || (!currentLesson?.Content && !customFileText)}
+                      className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        {isSummarizing ? "hourglass_empty" : "auto_awesome"}
+                      </span>
+                      {isSummarizing ? "Đang tóm tắt..." : "Tóm tắt"}
+                    </button>
+                    
+                    {!isSpeaking ? (
+                      <button
+                        onClick={handleSpeak}
+                        disabled={!currentLesson?.Content && !customFileText && !aiSummary}
+                        className="px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        <span className="material-symbols-outlined text-[20px] text-cyan-400">
+                          volume_up
+                        </span>
+                        Nghe bài học
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleStop}
+                        className="px-6 py-3 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold border border-red-500/30 transition-all flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">
+                          stop_circle
+                        </span>
+                        Dừng phát
+                      </button>
+                    )}
+                  </div>
+
+                  {aiSummary && (
+                    <div className="mt-4 p-6 rounded-xl bg-slate-900/60 border border-purple-500/20">
+                      <h4 className="text-sm font-bold text-purple-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                        Bản tóm tắt AI
+                      </h4>
+                      <div className="prose prose-sm prose-invert max-w-none text-slate-300 whitespace-pre-wrap leading-relaxed">
+                        {aiSummary}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

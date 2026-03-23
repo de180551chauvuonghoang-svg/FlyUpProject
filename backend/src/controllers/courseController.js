@@ -128,7 +128,10 @@ export const getCourses = async (req, res) => {
 export const getCourseById = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await courseService.getCourseById(id);
+    // If user is authenticated (via optionalAuthenticateJWT), skip status filter
+    // so instructors can view/edit their draft/pending courses
+    const skipStatusFilter = !!req.user;
+    const course = await courseService.getCourseById(id, { skipStatusFilter });
 
     // Convert BigInt to string for JSON serialization
     const serializedCourse = JSON.parse(
@@ -1025,5 +1028,323 @@ export const deleteLecture = async (req, res) => {
   } catch (error) {
     console.error("Delete lecture error:", error);
     res.status(500).json({ success: false, error: "Failed to delete lecture" });
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                    INSTRUCTOR STUDENTS & COMMUNICATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── GET INSTRUCTOR STUDENTS ────────────────────────────────────────────────
+export const getInstructorStudents = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { courseId } = req.query;
+    const prisma = (await import("../lib/prisma.js")).default;
+
+    // Find instructor record
+    const instructor = await prisma.instructors.findFirst({
+      where: { CreatorId: userId },
+    });
+    if (!instructor) {
+      return res.json({ success: true, data: [] });
+    }
+
+    // Get instructor's courses
+    const coursesWhere = { InstructorId: instructor.Id };
+    if (courseId) {
+      coursesWhere.Id = courseId;
+    }
+    const courses = await prisma.courses.findMany({
+      where: coursesWhere,
+      select: {
+        Id: true,
+        Title: true,
+        LectureCount: true,
+      },
+    });
+    const courseIds = courses.map((c) => c.Id);
+    const courseMap = Object.fromEntries(courses.map((c) => [c.Id, c]));
+
+    if (courseIds.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    // Get enrollments with user data
+    const enrollments = await prisma.enrollments.findMany({
+      where: {
+        CourseId: { in: courseIds },
+        Status: "Active",
+      },
+      include: {
+        Users: {
+          select: {
+            Id: true,
+            FullName: true,
+            Email: true,
+            AvatarUrl: true,
+          },
+        },
+      },
+    });
+
+    // Calculate progress for each student
+    const students = enrollments.map((enrollment) => {
+      const course = courseMap[enrollment.CourseId];
+      // Parse LectureMilestones to count completed lectures
+      let lecturesCompleted = 0;
+      try {
+        const milestones = JSON.parse(enrollment.LectureMilestones || "[]");
+        lecturesCompleted = Array.isArray(milestones) ? milestones.length : 0;
+      } catch (e) {
+        lecturesCompleted = 0;
+      }
+      const totalLectures = course?.LectureCount || 1;
+      const completionPercent = Math.min(
+        100,
+        Math.round((lecturesCompleted / totalLectures) * 100)
+      );
+
+      return {
+        userId: enrollment.Users.Id,
+        courseId: enrollment.CourseId,
+        name: enrollment.Users.FullName,
+        email: enrollment.Users.Email,
+        avatar: enrollment.Users.AvatarUrl || "",
+        courseTitle: course?.Title || "Unknown",
+        enrolledAt: enrollment.CreationTime,
+        lecturesCompleted,
+        totalLectures,
+        completionPercent,
+      };
+    });
+
+    res.json({ success: true, data: students });
+  } catch (error) {
+    console.error("Get instructor students error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch students" });
+  }
+};
+
+// ─── EXPORT STUDENT RESULTS TO EXCEL ────────────────────────────────────────
+export const exportStudentResults = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { courseId } = req.query;
+    const prisma = (await import("../lib/prisma.js")).default;
+    const xlsxModule = await import("xlsx");
+    const XLSX = xlsxModule.default || xlsxModule;
+
+    // Find instructor record
+    const instructor = await prisma.instructors.findFirst({
+      where: { CreatorId: userId },
+    });
+    if (!instructor) {
+      return res.status(404).json({ success: false, error: "Instructor not found" });
+    }
+
+    // Get instructor's courses
+    const coursesWhere = { InstructorId: instructor.Id };
+    if (courseId) {
+      coursesWhere.Id = courseId;
+    }
+    const courses = await prisma.courses.findMany({
+      where: coursesWhere,
+      select: { Id: true, Title: true, LectureCount: true },
+    });
+    const courseIds = courses.map((c) => c.Id);
+    const courseMap = Object.fromEntries(courses.map((c) => [c.Id, c]));
+
+    if (courseIds.length === 0) {
+      return res.status(404).json({ success: false, error: "No courses found" });
+    }
+
+    // Get enrollments
+    const enrollments = await prisma.enrollments.findMany({
+      where: { CourseId: { in: courseIds }, Status: "Active" },
+      include: {
+        Users: {
+          select: { FullName: true, Email: true },
+        },
+      },
+    });
+
+    // Build spreadsheet rows
+    const rows = enrollments.map((enrollment) => {
+      const course = courseMap[enrollment.CourseId];
+      let lecturesCompleted = 0;
+      try {
+        const milestones = JSON.parse(enrollment.LectureMilestones || "[]");
+        lecturesCompleted = Array.isArray(milestones) ? milestones.length : 0;
+      } catch (e) {
+        lecturesCompleted = 0;
+      }
+      const totalLectures = course?.LectureCount || 0;
+      const completionPercent = totalLectures > 0
+        ? Math.min(100, Math.round((lecturesCompleted / totalLectures) * 100))
+        : 0;
+
+      return {
+        "Student Name": enrollment.Users.FullName,
+        "Email": enrollment.Users.Email,
+        "Course": course?.Title || "Unknown",
+        "Enrolled Date": new Date(enrollment.CreationTime).toLocaleDateString(),
+        "Lectures Completed": `${lecturesCompleted}/${totalLectures}`,
+        "Completion %": `${completionPercent}%`,
+      };
+    });
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows.length > 0 ? rows : [{ "Student Name": "No data", Email: "", Course: "", "Enrolled Date": "", "Lectures Completed": "", "Completion %": "" }]);
+
+    // Set column widths
+    ws["!cols"] = [
+      { wch: 25 }, // Student Name
+      { wch: 30 }, // Email
+      { wch: 40 }, // Course
+      { wch: 15 }, // Enrolled Date
+      { wch: 20 }, // Lectures Completed
+      { wch: 15 }, // Completion %
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Student Results");
+
+    // Generate buffer
+    const buffer = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
+
+    res.setHeader("Content-Disposition", 'attachment; filename="student_results.xlsx"');
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.send(buffer);
+  } catch (error) {
+    console.error("Export student results error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to export student results" });
+  }
+};
+
+// ─── GET INSTRUCTOR COMMUNICATION ───────────────────────────────────────────
+export const getInstructorCommunication = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const prisma = (await import("../lib/prisma.js")).default;
+
+    // Find instructor record
+    const instructor = await prisma.instructors.findFirst({
+      where: { CreatorId: userId },
+    });
+    if (!instructor) {
+      return res.json({ success: true, data: { comments: [], reviews: [] } });
+    }
+
+    // Get instructor's courses
+    const courses = await prisma.courses.findMany({
+      where: { InstructorId: instructor.Id },
+      select: {
+        Id: true,
+        Title: true,
+        Sections: {
+          select: {
+            Lectures: {
+              select: { Id: true, Title: true },
+            },
+          },
+        },
+      },
+    });
+    const courseIds = courses.map((c) => c.Id);
+
+    // Build lecture → course/lecture title map
+    const lectureMap = {};
+    courses.forEach((course) => {
+      course.Sections?.forEach((section) => {
+        section.Lectures?.forEach((lecture) => {
+          lectureMap[lecture.Id] = {
+            lectureTitle: lecture.Title,
+            courseTitle: course.Title,
+          };
+        });
+      });
+    });
+
+    const lectureIds = Object.keys(lectureMap);
+
+    // Fetch comments on instructor's lectures
+    const comments = lectureIds.length > 0
+      ? await prisma.comments.findMany({
+          where: {
+            LectureId: { in: lectureIds },
+            ParentId: null,
+          },
+          include: {
+            Users: {
+              select: { Id: true, FullName: true, AvatarUrl: true },
+            },
+          },
+          orderBy: { CreationTime: "desc" },
+          take: 50,
+        })
+      : [];
+
+    // Fetch reviews on instructor's courses
+    const reviews = courseIds.length > 0
+      ? await prisma.courseReviews.findMany({
+          where: { CourseId: { in: courseIds } },
+          include: {
+            Users: {
+              select: { Id: true, FullName: true, AvatarUrl: true },
+            },
+          },
+          orderBy: { CreationTime: "desc" },
+          take: 50,
+        })
+      : [];
+
+    // Transform
+    const transformedComments = comments.map((c) => {
+      const info = lectureMap[c.LectureId] || {};
+      return {
+        id: c.Id,
+        content: c.Content,
+        createdAt: c.CreationTime,
+        user: {
+          id: c.Users.Id,
+          name: c.Users.FullName,
+          avatar: c.Users.AvatarUrl || "",
+        },
+        lectureTitle: info.lectureTitle || "",
+        courseTitle: info.courseTitle || "",
+      };
+    });
+
+    const courseMap2 = Object.fromEntries(courses.map((c) => [c.Id, c.Title]));
+    const transformedReviews = reviews.map((r) => ({
+      id: r.Id,
+      Content: r.Content,
+      Rating: r.Rating,
+      CreationTime: r.CreationTime,
+      user: {
+        id: r.Users.Id,
+        FullName: r.Users.FullName,
+        AvatarUrl: r.Users.AvatarUrl || "",
+      },
+      courseTitle: courseMap2[r.CourseId] || "",
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        comments: transformedComments,
+        reviews: transformedReviews,
+      },
+    });
+  } catch (error) {
+    console.error("Get instructor communication error:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch communication data" });
   }
 };

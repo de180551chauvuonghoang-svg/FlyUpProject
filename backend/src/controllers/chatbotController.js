@@ -1,5 +1,6 @@
 import Groq from "groq-sdk";
 import prisma from '../lib/prisma.js';
+import * as googleTTS from 'google-tts-api';
 
 export const chat = async (req, res) => {
   try {
@@ -75,8 +76,8 @@ export const chat = async (req, res) => {
     }).join("\n");
 
     // 2. Construct the prompt
-    // Use openai/gpt-oss-20b on Groq (Latest supported model)
-    const model = "openai/gpt-oss-20b";
+    // Use llama-3.3-70b-versatile on Groq
+    const model = "llama-3.3-70b-versatile";
 
     const prompt = `
     You are "FlyUp", a professional and concise Academic Counselor.
@@ -120,5 +121,24 @@ export const chat = async (req, res) => {
   } catch (error) {
     console.error("Chatbot Error:", error);
     return res.status(500).json({ error: "Failed to generate response" });
+  }
+};
+
+export const tts = async (req, res) => {
+  try {
+    const { text, lang = 'vi' } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: "Text is required" });
+    }
+    const results = await googleTTS.getAllAudioBase64(text, {
+      lang: lang,
+      slow: false,
+      host: 'https://translate.google.com',
+      splitPunct: ',.?:;'
+    });
+    return res.status(200).json({ urls: results });
+  } catch (error) {
+    console.error("TTS Error:", error);
+    return res.status(500).json({ error: "Failed to generate TTS audio URLs" });
   }
 };

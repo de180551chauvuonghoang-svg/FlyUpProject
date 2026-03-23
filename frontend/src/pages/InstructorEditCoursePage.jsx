@@ -61,19 +61,35 @@ export default function InstructorEditCoursePage() {
       });
 
       // Set sections and lectures
+      // Handle both raw LectureMaterial format and transformed VideoUrl/Materials format
       const sectionsData = (course.Sections || []).map((section) => ({
         id: section.Id,
         title: section.Title,
         isExisting: true,
-        lectures: (section.Lectures || []).map((lecture) => ({
-          id: lecture.Id,
-          title: lecture.Title,
-          content: lecture.Content || "",
-          isExisting: true,
-          videoUrl: lecture.LectureMaterial?.find((m) => m.Type === "video")
-            ?.Url,
-          materials: lecture.LectureMaterial || [],
-        })),
+        lectures: (section.Lectures || []).map((lecture) => {
+          // Support both formats from backend
+          const hasRawMaterial = Array.isArray(lecture.LectureMaterial) && lecture.LectureMaterial.length > 0;
+          const videoUrl = hasRawMaterial
+            ? lecture.LectureMaterial.find((m) => m.Type === "video")?.Url
+            : lecture.VideoUrl || null;
+          const materials = hasRawMaterial
+            ? lecture.LectureMaterial.filter((m) => m.Type !== "video")
+            : lecture.Materials || [];
+
+          return {
+            id: lecture.Id,
+            title: lecture.Title,
+            content: lecture.Content || "",
+            isExisting: true,
+            videoUrl,
+            materials: materials.map((m) => ({
+              id: m.Id,
+              Name: m.Name || m.Type || "Material",
+              Type: m.Type,
+              Url: m.Url,
+            })),
+          };
+        }),
       }));
 
       setSections(sectionsData);
@@ -115,11 +131,31 @@ export default function InstructorEditCoursePage() {
     toast.success("Section added!");
   };
 
-  const removeSection = (sectionId) => {
-    if (confirm("Are you sure you want to delete this section?")) {
-      setSections(sections.filter((sec) => sec.id !== sectionId));
-      toast.success("Section removed");
+  const removeSection = async (sectionId) => {
+    if (!confirm("Are you sure you want to delete this section?")) return;
+
+    // If it's an existing section, delete from backend first
+    const section = sections.find((s) => s.id === sectionId);
+    if (section?.isExisting) {
+      try {
+        const res = await fetch(`${API_URL}/courses/sections/${sectionId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error("Failed to delete section");
+        }
+      } catch (error) {
+        console.error("Delete section error:", error);
+        toast.error("Failed to delete section from server");
+        return;
+      }
     }
+
+    setSections(sections.filter((sec) => sec.id !== sectionId));
+    toast.success("Section removed");
   };
 
   const updateSectionTitle = (sectionId, newTitle) => {
@@ -162,21 +198,42 @@ export default function InstructorEditCoursePage() {
     toast.success("Lecture added!");
   };
 
-  const removeLecture = (sectionId, lectureId) => {
-    if (confirm("Are you sure you want to delete this lecture?")) {
-      setSections(
-        sections.map((section) => {
-          if (section.id === sectionId) {
-            return {
-              ...section,
-              lectures: section.lectures.filter((lec) => lec.id !== lectureId),
-            };
-          }
-          return section;
-        }),
-      );
-      toast.success("Lecture removed");
+  const removeLecture = async (sectionId, lectureId) => {
+    if (!confirm("Are you sure you want to delete this lecture?")) return;
+
+    // If it's an existing lecture, delete from backend first
+    const section = sections.find((s) => s.id === sectionId);
+    const lecture = section?.lectures.find((l) => l.id === lectureId);
+    if (lecture?.isExisting) {
+      try {
+        const res = await fetch(`${API_URL}/courses/lectures/${lectureId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error("Failed to delete lecture");
+        }
+      } catch (error) {
+        console.error("Delete lecture error:", error);
+        toast.error("Failed to delete lecture from server");
+        return;
+      }
     }
+
+    setSections(
+      sections.map((section) => {
+        if (section.id === sectionId) {
+          return {
+            ...section,
+            lectures: section.lectures.filter((lec) => lec.id !== lectureId),
+          };
+        }
+        return section;
+      }),
+    );
+    toast.success("Lecture removed");
   };
 
   const updateLecture = (sectionId, lectureId, field, value) => {

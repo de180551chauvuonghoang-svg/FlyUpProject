@@ -1,6 +1,6 @@
 import express from "express";
 import * as courseController from "../controllers/courseController.js";
-import { authenticateJWT } from "../middleware/authMiddleware.js";
+import { authenticateJWT, optionalAuthenticateJWT } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -14,6 +14,21 @@ router.get(
   "/instructor/courses",
   authenticateJWT,
   courseController.getInstructorCourses,
+);
+router.get(
+  "/instructor/students",
+  authenticateJWT,
+  courseController.getInstructorStudents,
+);
+router.get(
+  "/instructor/students/export",
+  authenticateJWT,
+  courseController.exportStudentResults,
+);
+router.get(
+  "/instructor/communication",
+  authenticateJWT,
+  courseController.getInstructorCommunication,
 );
 
 // Section management routes (must be BEFORE /:id to avoid conflicts)
@@ -188,6 +203,6 @@ router.get("/", courseController.getCourses);
  *       404:
  *         description: Course not found
  */
-router.get("/:id", courseController.getCourseById);
+router.get("/:id", optionalAuthenticateJWT, courseController.getCourseById);
 
 export default router;

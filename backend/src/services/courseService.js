@@ -227,19 +227,21 @@ export const getCourses = async (filters = {}) => {
 };
 
 // Get single course by ID
-export const getCourseById = async (courseId) => {
+export const getCourseById = async (courseId, { skipStatusFilter = false } = {}) => {
   try {
-    console.log("[courseService] Fetching course:", courseId);
+    console.log("[courseService] Fetching course:", courseId, { skipStatusFilter });
 
     // Always fetch fresh course detail because lecture video/material updates
     // happen frequently and must appear immediately on learning pages.
 
+    const whereClause = { Id: courseId };
+    if (!skipStatusFilter) {
+      whereClause.ApprovalStatus = "APPROVED";
+      whereClause.Status = "Ongoing";
+    }
+
     const course = await prisma.courses.findFirst({
-      where: {
-        Id: courseId,
-        ApprovalStatus: "APPROVED", // Match actual DB value
-        Status: "Ongoing", // Match actual DB value
-      },
+      where: whereClause,
       select: {
         // Core fields
         Id: true,

@@ -22,7 +22,11 @@ import InstructorCourseCurriculumPage from './pages/InstructorCourseCurriculumPa
 import InstructorCourseReviewPage from './pages/InstructorCourseReviewPage';
 import InstructorUploadPage from './pages/InstructorUploadPage';
 import InstructorEditCoursePage from './pages/InstructorEditCoursePage';
-import CourseLessonPage from './pages/CourseLessonPage';function App() {
+import InstructorPreviewPage from './pages/InstructorPreviewPage';
+import CourseLessonPage from './pages/CourseLessonPage';
+import InstructorStudentsPage from './pages/InstructorStudentsPage';
+import InstructorCommunicationPage from './pages/InstructorCommunicationPage';
+import InstructorToolsPage from './pages/InstructorToolsPage';function App() {
   return (
     <AuthProvider>
       <CartProvider>
@@ -101,6 +105,10 @@ import CourseLessonPage from './pages/CourseLessonPage';function App() {
           <Route path="/instructor/create-course/review" element={<InstructorCourseReviewPage />} />
           <Route path="/instructor/upload" element={<InstructorUploadPage />} />
           <Route path="/edit-course/:id" element={<InstructorEditCoursePage />} />
+          <Route path="/instructor/preview/:id" element={<InstructorPreviewPage />} />
+          <Route path="/instructor/students" element={<InstructorStudentsPage />} />
+          <Route path="/instructor/communication" element={<InstructorCommunicationPage />} />
+          <Route path="/instructor/tools" element={<InstructorToolsPage />} />
           <Route path="/learning/:courseId" element={<CourseLessonPage />} />
           <Route path="/learning/:courseId/lesson/:lessonId" element={<CourseLessonPage />} />
 
