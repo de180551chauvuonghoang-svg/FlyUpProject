@@ -1,0 +1,63 @@
+
+> frontend@0.0.0 lint
+> eslint . --max-warnings 100
+
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\components\Admin\dashboard\EarningPulse.jsx
+    2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  100:32  error  'i' is defined but never used                                                  no-unused-vars
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\components\Admin\dashboard\StatCard.jsx
+  1:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\components\Auth\AdminRoute.jsx
+  6:11  error  'user' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\pages\Admin\CourseDetail.jsx
+   3:10  error    'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                   no-unused-vars
+  85:8   warning  React Hook useEffect has a missing dependency: 'fetchCourse'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\pages\Admin\CourseDetail\CourseDetail.jsx
+   3:10  error    'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                   no-unused-vars
+  85:8   warning  React Hook useEffect has a missing dependency: 'fetchCourse'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\pages\Admin\Courses\Courses.jsx
+    3:10  error    'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                    no-unused-vars
+   61:18  error    'error' is defined but never used                                                                                no-unused-vars
+   79:8   warning  React Hook useEffect has a missing dependency: 'fetchCourses'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  109:18  error    'error' is defined but never used                                                                                no-unused-vars
+  124:18  error    'error' is defined but never used                                                                                no-unused-vars
+  139:18  error    'error' is defined but never used                                                                                no-unused-vars
+  154:18  error    'error' is defined but never used                                                                                no-unused-vars
+  162:11  error    'formatDate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                       no-unused-vars
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\pages\Admin\Dashboard\Dashboard.jsx
+   2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  39:16  error  'error' is defined but never used                                              no-unused-vars
+  55:14  error  'error' is defined but never used                                              no-unused-vars
+  72:14  error  'error' is defined but never used                                              no-unused-vars
+  84:14  error  'error' is defined but never used                                              no-unused-vars
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\pages\Admin\Instructors\Instructors.jsx
+    3:10  error    'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                  no-unused-vars
+   57:14  error    'error' is defined but never used                                                                              no-unused-vars
+   72:6   warning  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   98:14  error    'error' is defined but never used                                                                              no-unused-vars
+  112:14  error    'error' is defined but never used                                                                              no-unused-vars
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\pages\Admin\Learners\Learners.jsx
+    3:10  error    'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                  no-unused-vars
+   57:18  error    'error' is defined but never used                                                                              no-unused-vars
+   72:8   warning  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   98:18  error    'error' is defined but never used                                                                              no-unused-vars
+  112:18  error    'error' is defined but never used                                                                              no-unused-vars
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\pages\Admin\UserDetail\UserDetail.jsx
+  3:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\frontend\src\services\admin\dashboardService.js
+   7:39  error  'createAuthHeaders' is defined but never used. Allowed unused vars must match /^[A-Z_]/u         no-unused-vars
+  12:7   error  'formatStatValue' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+Γ£û 34 problems (29 errors, 5 warnings)
+

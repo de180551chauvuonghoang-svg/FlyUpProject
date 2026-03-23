@@ -79,14 +79,14 @@ function UserDetail() {
     useEffect(() => {
         fetchUser();
         fetchTransactions(1);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [id]);
 
     useEffect(() => {
         if (txPage > 1) {
             fetchTransactions(txPage);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [txPage]);
 
     const handleLock = async () => {
