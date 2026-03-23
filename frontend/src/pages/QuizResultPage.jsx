@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import useAuth from '../hooks/useAuth';
+import { getAIExplanation } from '../services/quizService';
 
 const QuizResultPage = ({
     result,
@@ -9,8 +10,10 @@ const QuizResultPage = ({
     gradeToPass = 5
 }) => {
 
-    const { user } = useAuth();
+    const { user, accessToken } = useAuth();
     const [showReview, setShowReview] = useState(false);
+    const [aiExplanations, setAiExplanations] = useState({}); // { idx: string }
+    const [loadingAI, setLoadingAI] = useState({}); // { idx: bool }
 
     const {
         correctCount = 0,
@@ -35,6 +38,27 @@ const QuizResultPage = ({
         const m = Math.floor(secs / 60);
         const s = secs % 60;
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    };
+
+    const handleAIExplain = async (idx, entry) => {
+        if (aiExplanations[idx] || loadingAI[idx]) return;
+        setLoadingAI(prev => ({ ...prev, [idx]: true }));
+        try {
+            const choices = entry.question?.choices || [];
+            const selected = choices.find(c => c.Id === entry.selectedChoiceId);
+            const res = await getAIExplanation({
+                questionContent: entry.question?.content,
+                choices,
+                selectedChoiceContent: selected?.Content || 'Không chọn (hết giờ)',
+                isCorrect: entry.isCorrect,
+            }, accessToken);
+            setAiExplanations(prev => ({ ...prev, [idx]: res.explanation }));
+        } catch (err) {
+            console.error(err);
+            setAiExplanations(prev => ({ ...prev, [idx]: '⚠️ Không thể tải giải thích AI lúc này.' }));
+        } finally {
+            setLoadingAI(prev => ({ ...prev, [idx]: false }));
+        }
     };
 
     const userName = user?.FullName?.split(' ').pop() || 'Learner';
@@ -330,73 +354,99 @@ const QuizResultPage = ({
 
                                 <div className="flex flex-col gap-4">
 
-                                    {questionHistory.map((entry, idx) => (
+                                    {questionHistory.map((entry, idx) => {
+                                        const correct = entry.isCorrect === true;
+                                        const timedOut = entry.selectedChoiceId === null;
+                                        const statusColor = timedOut
+                                            ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400'
+                                            : correct
+                                                ? 'bg-green-500/20 border-green-500/40 text-green-400'
+                                                : 'bg-red-500/20 border-red-500/40 text-red-400';
 
-                                        <div key={entry.question?.id || idx} className="glass-card rounded-2xl p-5 flex flex-col gap-4">
+                                        return (
+                                            <div key={entry.question?.question_id || entry.question?.id || idx} className="glass-card rounded-2xl p-5 flex flex-col gap-4">
 
-                                            <div className="flex items-start gap-3">
-                                                <span className="shrink-0 size-7 rounded-full bg-[#7f13ec]/20 border border-[#7f13ec]/40 flex items-center justify-center text-xs font-bold text-[#a78bfa]">
-                                                    {idx + 1}
-                                                </span>
+                                                {/* Question header */}
+                                                <div className="flex items-start gap-3">
+                                                    <span className={`shrink-0 size-7 rounded-full border flex items-center justify-center text-xs font-bold ${statusColor}`}>
+                                                        {idx + 1}
+                                                    </span>
+                                                    <p className="text-base font-semibold text-white leading-snug">
+                                                        {entry.question?.content}
+                                                    </p>
+                                                </div>
 
-                                                <p className="text-base font-semibold text-white leading-snug">
-                                                    {entry.question?.content}
-                                                </p>
-                                            </div>
+                                                {/* Choices */}
+                                                <div className="flex flex-col gap-2 pl-10">
+                                                    {(entry.question?.choices ?? []).map((choice) => {
+                                                        const isSelected = entry.selectedChoiceId === choice.Id;
 
-                                            <div className="flex flex-col gap-2 pl-10">
+                                                        // Only highlight the selected choice with green/red − don't reveal correct answer for others
+                                                        let choiceBorderBg = 'border-white/10 bg-white/[0.03]';
+                                                        let dotColor = 'bg-white/20';
+                                                        let textColor = 'text-white/60';
+                                                        let badge = null;
 
-                                                {(entry.question?.choices ?? []).map((choice) => {
+                                                        if (isSelected) {
+                                                            if (correct) {
+                                                                choiceBorderBg = 'border-green-500/50 bg-green-500/10';
+                                                                dotColor = 'bg-green-500';
+                                                                textColor = 'text-white font-semibold';
+                                                                badge = <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">✓ ĐÚNG</span>;
+                                                            } else {
+                                                                choiceBorderBg = 'border-red-500/50 bg-red-500/10';
+                                                                dotColor = 'bg-red-500';
+                                                                textColor = 'text-white font-semibold';
+                                                                badge = <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">✗ SAI</span>;
+                                                            }
+                                                        }
 
-                                                    const isSelected = entry.selectedChoiceId === choice.Id;
+                                                        return (
+                                                            <div key={choice.Id} className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${choiceBorderBg}`}>
+                                                                <div className={`size-2.5 rounded-full shrink-0 ${dotColor}`} />
+                                                                <span className={`text-sm ${textColor}`}>{choice.Content}</span>
+                                                                {badge}
+                                                            </div>
+                                                        );
+                                                    })}
 
-                                                    return (
-
-                                                        <div
-                                                            key={choice.Id}
-                                                            className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${isSelected
-                                                                ? 'border-[#7f13ec]/60 bg-[#7f13ec]/15'
-                                                                : 'border-white/10 bg-white/3'
-                                                                }`}
-                                                        >
-
-                                                            <div className={`size-2.5 rounded-full shrink-0 ${isSelected
-                                                                ? 'bg-[#7f13ec]'
-                                                                : 'bg-white/20'
-                                                                }`} />
-
-                                                            <span className={`text-sm ${isSelected
-                                                                ? 'text-white font-semibold'
-                                                                : 'text-white/60'
-                                                                }`}>
-                                                                {choice.Content}
-                                                            </span>
-
-                                                            {isSelected && (
-                                                                <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-[#7f13ec]/30 text-[#c4b5fd]">
-                                                                    Đã chọn
-                                                                </span>
-                                                            )}
-
+                                                    {timedOut && (
+                                                        <div className="flex items-center gap-2 text-xs text-yellow-400/70 mt-1">
+                                                            <span className="material-symbols-outlined text-[14px]">timer_off</span>
+                                                            Không trả lời (hết giờ)
                                                         </div>
+                                                    )}
+                                                </div>
 
-                                                    );
-                                                })}
-
-                                                {entry.selectedChoiceId === null && (
-                                                    <div className="flex items-center gap-2 text-xs text-yellow-400/70 mt-1">
-                                                        <span className="material-symbols-outlined text-[14px]">
-                                                            timer_off
-                                                        </span>
-                                                        Không trả lời (hết giờ)
-                                                    </div>
-                                                )}
+                                                {/* AI Explanation */}
+                                                <div className="pl-10">
+                                                    {!aiExplanations[idx] ? (
+                                                        <button
+                                                            onClick={() => handleAIExplain(idx, entry)}
+                                                            disabled={loadingAI[idx]}
+                                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#a78bfa] hover:text-white transition-colors disabled:opacity-60"
+                                                        >
+                                                            <span className={`material-symbols-outlined text-[15px] ${loadingAI[idx] ? 'animate-spin' : ''}`}>
+                                                                {loadingAI[idx] ? 'sync' : 'psychology'}
+                                                            </span>
+                                                            {loadingAI[idx] ? 'AI đang phân tích...' : 'AI Giải thích đáp án này'}
+                                                        </button>
+                                                    ) : (
+                                                        <div className="bg-[#7f13ec]/8 border border-[#7f13ec]/20 rounded-xl p-4">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="material-symbols-outlined text-[#a78bfa] text-[16px]">psychology</span>
+                                                                <span className="text-[11px] font-bold text-[#a78bfa] uppercase tracking-widest">AI Phân tích</span>
+                                                            </div>
+                                                            <p className="text-sm text-white/80 leading-relaxed">
+                                                                {aiExplanations[idx]}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
 
                                             </div>
-
-                                        </div>
-
-                                    ))}
+                                        );
+                                    })}
 
                                 </div>
 

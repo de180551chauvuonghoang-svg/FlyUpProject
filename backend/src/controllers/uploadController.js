@@ -5,6 +5,7 @@ import {
   deleteFile,
 } from "../services/storageService.js";
 import prisma from "../lib/prisma.js";
+import { safeDel } from "../lib/cache.js";
 
 /**
  * Upload video for lecture
@@ -14,6 +15,14 @@ import prisma from "../lib/prisma.js";
  */
 export async function uploadVideoController(req, res) {
   try {
+    console.log("[UPLOAD_VIDEO_START]", {
+      timestamp: new Date().toISOString(),
+      file: req.file
+        ? { name: req.file.originalname, size: req.file.size }
+        : null,
+      lectureId: req.body.lectureId,
+    });
+
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
@@ -28,39 +37,89 @@ export async function uploadVideoController(req, res) {
       "video/x-msvideo",
     ];
     if (!allowedMimeTypes.includes(req.file.mimetype)) {
+      console.log("[UPLOAD_VIDEO] Invalid mime type:", req.file.mimetype);
       return res.status(400).json({
         error: "Invalid file type. Only MP4, MPEG, MOV, AVI are allowed",
       });
     }
 
     // Upload to Supabase
+    console.log("[UPLOAD_VIDEO] Uploading to Supabase...");
     const result = await uploadVideo(
       req.file.buffer,
       req.file.originalname,
       req.file.mimetype,
     );
+    console.log("[UPLOAD_VIDEO] Supabase response:", {
+      url: result.url.substring(0, 100),
+      path: result.path,
+    });
+
+    // DEBUG: Log lectureId status
+    console.log("[UPLOAD_VIDEO] lectureId received:", {
+      value: lectureId,
+      type: typeof lectureId,
+      isEmpty: !lectureId,
+      isString: typeof lectureId === 'string',
+    });
 
     // If lectureId provided, save to database
     if (lectureId) {
-      // Verify lecture exists
+      console.log("[UPLOAD_VIDEO] Checking lecture:", lectureId);
+      // Verify lecture exists and get course ID
       const lecture = await prisma.lectures.findUnique({
         where: { Id: lectureId },
+        include: {
+          Sections: {
+            select: { CourseId: true },
+          },
+        },
       });
 
       if (!lecture) {
+        console.log("[UPLOAD_VIDEO] Lecture not found:", lectureId);
         return res.status(404).json({ error: "Lecture not found" });
       }
 
-      // Save to LectureMaterial
-      await prisma.lectureMaterial.create({
+      console.log("[UPLOAD_VIDEO] Lecture found, deleting old videos...");
+      // Delete old video if exists (1 lecture can only have 1 video)
+      const deleted = await prisma.lectureMaterial.deleteMany({
+        where: {
+          LectureId: lectureId,
+          Type: {
+            equals: "video",
+            mode: "insensitive",
+          },
+        },
+      });
+      console.log("[UPLOAD_VIDEO] Old videos deleted:", deleted.count);
+
+      console.log("[UPLOAD_VIDEO] Creating new material record...");
+      // Save new video to LectureMaterial
+      const newMaterial = await prisma.lectureMaterial.create({
         data: {
           LectureId: lectureId,
           Type: "video",
           Url: result.url,
         },
       });
+      console.log("[UPLOAD_VIDEO] Material created:", {
+        LectureId: newMaterial.LectureId,
+        Id: newMaterial.Id,
+        Type: newMaterial.Type,
+      });
+
+      // Invalidate course cache so video appears immediately
+      const courseId = lecture.Sections.CourseId;
+      await safeDel(`course:${courseId}`);
+      console.log(`[UPLOAD_VIDEO] Cache invalidated for course: ${courseId}`);
+    } else {
+      console.log("[UPLOAD_VIDEO] ⚠️ WARNING: lectureId NOT provided!");
+      console.log("[UPLOAD_VIDEO] File uploaded to storage but NOT saved to database!");
+      console.log("[UPLOAD_VIDEO] Request body:", req.body);
     }
 
+    console.log("[UPLOAD_VIDEO_END] Success");
     res.json({
       success: true,
       message: "Video uploaded successfully",
@@ -71,7 +130,10 @@ export async function uploadVideoController(req, res) {
       },
     });
   } catch (error) {
-    console.error("Video upload error:", error);
+    console.error("[UPLOAD_VIDEO_ERROR]", {
+      message: error.message,
+      stack: error.stack,
+    });
     res.status(500).json({
       error: "Upload failed",
       message: error.message,
@@ -119,6 +181,11 @@ export async function uploadDocumentController(req, res) {
     if (lectureId) {
       const lecture = await prisma.lectures.findUnique({
         where: { Id: lectureId },
+        include: {
+          Sections: {
+            select: { CourseId: true },
+          },
+        },
       });
 
       if (!lecture) {
@@ -132,6 +199,13 @@ export async function uploadDocumentController(req, res) {
           Url: result.url,
         },
       });
+
+      // Invalidate course cache so material appears immediately
+      const courseId = lecture.Sections.CourseId;
+      await safeDel(`course:${courseId}`);
+      console.log(
+        `[Cache] Invalidated cache for course after material upload: ${courseId}`,
+      );
     }
 
     res.json({

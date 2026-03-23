@@ -1,0 +1,2253 @@
+[
+    {
+        "id": 1,
+        "question": "Which SQL keyword is used to retrieve data from a database?",
+        "options": [
+            "A. INSERT",
+            "B. UPDATE",
+            "C. SELECT",
+            "D. DELETE"
+        ],
+        "answer": "C. SELECT",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.2,
+        "param_c": 0.2
+    },
+    {
+        "id": 2,
+        "question": "Which clause is used to filter data based on a specified condition in SQL?",
+        "options": [
+            "A. ORDER BY",
+            "B. GROUP BY",
+            "C. WHERE",
+            "D. HAVING"
+        ],
+        "answer": "C. WHERE",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.5,
+        "param_c": 0.18
+    },
+    {
+        "id": 3,
+        "question": "What does SQL stand for?",
+        "options": [
+            "A. Structured Question Language",
+            "B. Standard Query Language",
+            "C. Structured Query Language",
+            "D. Simple Query Language"
+        ],
+        "answer": "C. Structured Query Language",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -0.9,
+        "param_c": 0.22
+    },
+    {
+        "id": 4,
+        "question": "Which SQL keyword is used to sort the result-set?",
+        "options": [
+            "A. SORT BY",
+            "B. ORDER BY",
+            "C. ARRANGE BY",
+            "D. GROUP BY"
+        ],
+        "answer": "B. ORDER BY",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -1.8,
+        "param_c": 0.15
+    },
+    {
+        "id": 5,
+        "question": "Which operator is used to compare a value to a list of specified values?",
+        "options": [
+            "A. BETWEEN",
+            "B. LIKE",
+            "C. IN",
+            "D. EXISTS"
+        ],
+        "answer": "C. IN",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.7,
+        "param_c": 0.25
+    },
+    {
+        "id": 6,
+        "question": "Which SQL command is used to modify existing data in a table?",
+        "options": [
+            "A. CREATE",
+            "B. ALTER",
+            "C. UPDATE",
+            "D. INSERT"
+        ],
+        "answer": "C. UPDATE",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -2.0,
+        "param_c": 0.17
+    },
+    {
+        "id": 7,
+        "question": "Which function returns the current date in MySQL?",
+        "options": [
+            "A. GETDATE()",
+            "B. NOW()",
+            "C. TODAY()",
+            "D. CURDATE()"
+        ],
+        "answer": "D. CURDATE()",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -1.1,
+        "param_c": 0.21
+    },
+    {
+        "id": 8,
+        "question": "Which keyword is used to remove duplicate rows from a SELECT query?",
+        "options": [
+            "A. UNIQUE",
+            "B. DISTINCT",
+            "C. REMOVE",
+            "D. GROUP BY"
+        ],
+        "answer": "B. DISTINCT",
+        "difficulty": "Easy",
+        "param_a": 0.75,
+        "param_b": -0.8,
+        "param_c": 0.19
+    },
+    {
+        "id": 9,
+        "question": "What is the purpose of the `LIMIT` clause in SQL?",
+        "options": [
+            "A. To limit the size of a column",
+            "B. To limit the number of tables in a database",
+            "C. To limit the number of rows returned by a query",
+            "D. To limit the execution time of a query"
+        ],
+        "answer": "C. To limit the number of rows returned by a query",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -2.3,
+        "param_c": 0.23
+    },
+    {
+        "id": 10,
+        "question": "Which SQL command is used to add a new column to an existing table?",
+        "options": [
+            "A. INSERT COLUMN",
+            "B. ADD COLUMN",
+            "C. ALTER TABLE",
+            "D. CREATE COLUMN"
+        ],
+        "answer": "C. ALTER TABLE",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.6,
+        "param_c": 0.16
+    },
+    {
+        "id": 11,
+        "question": "Which SQL keyword is used to retrieve data from a database?",
+        "options": [
+            "INSERT",
+            "UPDATE",
+            "SELECT",
+            "DELETE"
+        ],
+        "answer": "SELECT",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 12,
+        "question": "Which SQL clause is used to sort the result-set of a query?",
+        "options": [
+            "GROUP BY",
+            "SORT BY",
+            "ORDER BY",
+            "FILTER BY"
+        ],
+        "answer": "ORDER BY",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 13,
+        "question": "Which SQL keyword is used to filter records?",
+        "options": [
+            "SORT",
+            "FILTER",
+            "WHERE",
+            "HAVING"
+        ],
+        "answer": "WHERE",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -1.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 14,
+        "question": "Which SQL function returns the number of rows in a table?",
+        "options": [
+            "SUM()",
+            "AVG()",
+            "COUNT()",
+            "MAX()"
+        ],
+        "answer": "COUNT()",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -0.8,
+        "param_c": 0.15
+    },
+    {
+        "id": 15,
+        "question": "What does SQL stand for?",
+        "options": [
+            "Structured Question Language",
+            "Standard Query Language",
+            "Structured Query Language",
+            "Simple Query Language"
+        ],
+        "answer": "Structured Query Language",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -2.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 16,
+        "question": "Which operator is used to compare two values for equality in SQL?",
+        "options": [
+            "=",
+            "<>",
+            ">",
+            "<"
+        ],
+        "answer": "=",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -1.0,
+        "param_c": 0.2
+    },
+    {
+        "id": 17,
+        "question": "Which SQL statement is used to modify existing data in a table?",
+        "options": [
+            "CREATE",
+            "ALTER",
+            "UPDATE",
+            "INSERT"
+        ],
+        "answer": "UPDATE",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.3,
+        "param_c": 0.17
+    },
+    {
+        "id": 18,
+        "question": "Which SQL keyword is used to group rows that have the same values in specified columns into summary rows?",
+        "options": [
+            "ORDER BY",
+            "WHERE",
+            "GROUP BY",
+            "HAVING"
+        ],
+        "answer": "GROUP BY",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -0.9,
+        "param_c": 0.23
+    },
+    {
+        "id": 19,
+        "question": "Which clause is used with GROUP BY to filter group results?",
+        "options": [
+            "WHERE",
+            "ORDER BY",
+            "HAVING",
+            "FILTER"
+        ],
+        "answer": "HAVING",
+        "difficulty": "Easy",
+        "param_a": 0.75,
+        "param_b": -1.6,
+        "param_c": 0.19
+    },
+    {
+        "id": 20,
+        "question": "Which data type is used to store whole numbers in MySQL?",
+        "options": [
+            "TEXT",
+            "VARCHAR",
+            "DATE",
+            "INT"
+        ],
+        "answer": "INT",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -0.75,
+        "param_c": 0.21
+    },
+    {
+        "id": 21,
+        "question": "Which SQL keyword is used to retrieve data from a database?",
+        "options": [
+            "INSERT",
+            "UPDATE",
+            "SELECT",
+            "DELETE"
+        ],
+        "answer": "SELECT",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 22,
+        "question": "Which clause is used to filter rows based on a specified condition in SQL?",
+        "options": [
+            "ORDER BY",
+            "GROUP BY",
+            "WHERE",
+            "HAVING"
+        ],
+        "answer": "WHERE",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 23,
+        "question": "What does SQL stand for?",
+        "options": [
+            "Structured Question Language",
+            "Standard Query Language",
+            "Structured Query Language",
+            "Simple Query Language"
+        ],
+        "answer": "Structured Query Language",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -0.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 24,
+        "question": "Which SQL keyword is used to sort the result-set?",
+        "options": [
+            "SORT BY",
+            "ORDER BY",
+            "ARRANGE BY",
+            "FILTER BY"
+        ],
+        "answer": "ORDER BY",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -2.0,
+        "param_c": 0.15
+    },
+    {
+        "id": 25,
+        "question": "Which SQL command is used to modify existing data in a table?",
+        "options": [
+            "CREATE",
+            "ALTER",
+            "UPDATE",
+            "INSERT"
+        ],
+        "answer": "UPDATE",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -0.9,
+        "param_c": 0.23
+    },
+    {
+        "id": 26,
+        "question": "Which operator is used to check if a value is within a range?",
+        "options": [
+            "LIKE",
+            "BETWEEN",
+            "IN",
+            "EXISTS"
+        ],
+        "answer": "BETWEEN",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -1.7,
+        "param_c": 0.19
+    },
+    {
+        "id": 27,
+        "question": "Which function returns the current date and time in MySQL?",
+        "options": [
+            "NOW()",
+            "TODAY()",
+            "CURRENT_DATE()",
+            "GETDATE()"
+        ],
+        "answer": "NOW()",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.1,
+        "param_c": 0.21
+    },
+    {
+        "id": 28,
+        "question": "Which clause is used to group rows that have the same values in specified columns into summary rows?",
+        "options": [
+            "WHERE",
+            "ORDER BY",
+            "GROUP BY",
+            "HAVING"
+        ],
+        "answer": "GROUP BY",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -1.3,
+        "param_c": 0.17
+    },
+    {
+        "id": 29,
+        "question": "Which SQL command is used to add new data to a table?",
+        "options": [
+            "CREATE",
+            "SELECT",
+            "UPDATE",
+            "INSERT"
+        ],
+        "answer": "INSERT",
+        "difficulty": "Easy",
+        "param_a": 0.75,
+        "param_b": -0.75,
+        "param_c": 0.24
+    },
+    {
+        "id": 30,
+        "question": "What is the purpose of the `LIMIT` clause in SQL?",
+        "options": [
+            "To limit the number of columns returned",
+            "To limit the number of tables used",
+            "To limit the number of rows returned",
+            "To limit the size of the database"
+        ],
+        "answer": "To limit the number of rows returned",
+        "difficulty": "Easy",
+        "param_a": 1.15,
+        "param_b": -2.2,
+        "param_c": 0.16
+    },
+    {
+        "id": 31,
+        "question": "Which SQL keyword is used to retrieve data from a database?",
+        "options": [
+            "A. INSERT",
+            "B. UPDATE",
+            "C. SELECT",
+            "D. DELETE"
+        ],
+        "answer": "C. SELECT",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 32,
+        "question": "Which SQL clause is used to filter the results of a SELECT statement?",
+        "options": [
+            "A. ORDER BY",
+            "B. GROUP BY",
+            "C. WHERE",
+            "D. HAVING"
+        ],
+        "answer": "C. WHERE",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 33,
+        "question": "Which SQL keyword is used to sort the result-set of a query?",
+        "options": [
+            "A. FILTER BY",
+            "B. SORT BY",
+            "C. ORDER BY",
+            "D. ARRANGE BY"
+        ],
+        "answer": "C. ORDER BY",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -1.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 34,
+        "question": "Which SQL function returns the number of rows in a table?",
+        "options": [
+            "A. SUM()",
+            "B. AVG()",
+            "C. COUNT()",
+            "D. MAX()"
+        ],
+        "answer": "C. COUNT()",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -0.8,
+        "param_c": 0.15
+    },
+    {
+        "id": 35,
+        "question": "What does SQL stand for?",
+        "options": [
+            "A. Structured Question Language",
+            "B. Standard Query Language",
+            "C. Structured Query Language",
+            "D. Simple Query Language"
+        ],
+        "answer": "C. Structured Query Language",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -2.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 36,
+        "question": "Which SQL command is used to modify existing data in a table?",
+        "options": [
+            "A. CREATE",
+            "B. ALTER",
+            "C. UPDATE",
+            "D. INSERT"
+        ],
+        "answer": "C. UPDATE",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -1.0,
+        "param_c": 0.19
+    },
+    {
+        "id": 37,
+        "question": "Which clause is used to group rows that have the same values in specified columns into summary rows?",
+        "options": [
+            "A. WHERE",
+            "B. ORDER BY",
+            "C. HAVING",
+            "D. GROUP BY"
+        ],
+        "answer": "D. GROUP BY",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -1.3,
+        "param_c": 0.21
+    },
+    {
+        "id": 38,
+        "question": "Which operator is used to specify a range of values in a WHERE clause?",
+        "options": [
+            "A. LIKE",
+            "B. IN",
+            "C. BETWEEN",
+            "D. EQUAL"
+        ],
+        "answer": "C. BETWEEN",
+        "difficulty": "Easy",
+        "param_a": 1.05,
+        "param_b": -0.9,
+        "param_c": 0.17
+    },
+    {
+        "id": 39,
+        "question": "Which SQL command is used to add new data to a table?",
+        "options": [
+            "A. UPDATE",
+            "B. SELECT",
+            "C. INSERT",
+            "D. DELETE"
+        ],
+        "answer": "C. INSERT",
+        "difficulty": "Easy",
+        "param_a": 0.75,
+        "param_b": -1.6,
+        "param_c": 0.23
+    },
+    {
+        "id": 40,
+        "question": "Which keyword is used to find similar values in a column?",
+        "options": [
+            "A. EQUAL",
+            "B. SIMILAR",
+            "C. LIKE",
+            "D. IDENTICAL"
+        ],
+        "answer": "C. LIKE",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -0.6,
+        "param_c": 0.16
+    },
+    {
+        "id": 41,
+        "question": "Which SQL keyword is used to retrieve data from a database?",
+        "options": [
+            "A. INSERT",
+            "B. UPDATE",
+            "C. SELECT",
+            "D. DELETE"
+        ],
+        "answer": "C. SELECT",
+        "difficulty": "Easy",
+        "param_a": 0.8,
+        "param_b": -1.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 42,
+        "question": "Which clause is used to sort the result-set of a SELECT statement?",
+        "options": [
+            "A. SORT BY",
+            "B. GROUP BY",
+            "C. ORDER BY",
+            "D. FILTER BY"
+        ],
+        "answer": "C. ORDER BY",
+        "difficulty": "Easy",
+        "param_a": 0.9,
+        "param_b": -1.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 43,
+        "question": "Which SQL keyword is used to filter records?",
+        "options": [
+            "A. GROUP BY",
+            "B. ORDER BY",
+            "C. HAVING",
+            "D. WHERE"
+        ],
+        "answer": "D. WHERE",
+        "difficulty": "Easy",
+        "param_a": 1.1,
+        "param_b": -1.8,
+        "param_c": 0.22
+    },
+    {
+        "id": 44,
+        "question": "Which SQL function returns the number of rows in a table?",
+        "options": [
+            "A. SUM()",
+            "B. AVG()",
+            "C. COUNT()",
+            "D. MAX()"
+        ],
+        "answer": "C. COUNT()",
+        "difficulty": "Easy",
+        "param_a": 0.7,
+        "param_b": -0.9,
+        "param_c": 0.15
+    },
+    {
+        "id": 45,
+        "question": "What does SQL stand for?",
+        "options": [
+            "A. Structured Question Language",
+            "B. Standard Query Language",
+            "C. Structured Query Language",
+            "D. Simple Query Language"
+        ],
+        "answer": "C. Structured Query Language",
+        "difficulty": "Easy",
+        "param_a": 0.6,
+        "param_b": -2.0,
+        "param_c": 0.25
+    },
+    {
+        "id": 46,
+        "question": "Which operator is used to compare two values for equality in SQL?",
+        "options": [
+            "A. <>",
+            "B. !=",
+            "C. =",
+            "D. LIKE"
+        ],
+        "answer": "C. =",
+        "difficulty": "Easy",
+        "param_a": 1.2,
+        "param_b": -0.8,
+        "param_c": 0.21
+    },
+    {
+        "id": 47,
+        "question": "Which clause is used to group rows that have the same values in specified columns into summary rows?",
+        "options": [
+            "A. ORDER BY",
+            "B. WHERE",
+            "C. GROUP BY",
+            "D. HAVING"
+        ],
+        "answer": "C. GROUP BY",
+        "difficulty": "Easy",
+        "param_a": 0.5,
+        "param_b": -1.1,
+        "param_c": 0.19
+    },
+    {
+        "id": 48,
+        "question": "Which keyword is used to update existing data in a table?",
+        "options": [
+            "A. INSERT",
+            "B. DELETE",
+            "C. UPDATE",
+            "D. SELECT"
+        ],
+        "answer": "C. UPDATE",
+        "difficulty": "Easy",
+        "param_a": 1.0,
+        "param_b": -2.2,
+        "param_c": 0.17
+    },
+    {
+        "id": 49,
+        "question": "Which keyword is used to delete data from a table?",
+        "options": [
+            "A. INSERT",
+            "B. UPDATE",
+            "C. SELECT",
+            "D. DELETE"
+        ],
+        "answer": "D. DELETE",
+        "difficulty": "Easy",
+        "param_a": 0.85,
+        "param_b": -0.75,
+        "param_c": 0.23
+    },
+    {
+        "id": 50,
+        "question": "Which of the following is NOT a SQL aggregate function?",
+        "options": [
+            "A. SUM()",
+            "B. AVG()",
+            "C. CONCAT()",
+            "D. COUNT()"
+        ],
+        "answer": "C. CONCAT()",
+        "difficulty": "Easy",
+        "param_a": 0.95,
+        "param_b": -1.35,
+        "param_c": 0.16
+    },
+    {
+        "id": 51,
+        "question": "Which SQL clause is used to group rows that have the same value in a specified column, often used with aggregate functions?",
+        "options": [
+            "WHERE",
+            "HAVING",
+            "GROUP BY",
+            "ORDER BY"
+        ],
+        "answer": "GROUP BY",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 52,
+        "question": "Which aggregate function returns the number of rows, including rows with NULL values, in a specified column?",
+        "options": [
+            "COUNT(*)",
+            "COUNT(column_name)",
+            "SUM(column_name)",
+            "AVG(column_name)"
+        ],
+        "answer": "COUNT(*)",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 53,
+        "question": "What is the purpose of the `HAVING` clause in SQL?",
+        "options": [
+            "To filter rows before grouping.",
+            "To filter rows after grouping.",
+            "To sort the result set.",
+            "To join tables together."
+        ],
+        "answer": "To filter rows after grouping.",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.1,
+        "param_c": 0.18
+    },
+    {
+        "id": 54,
+        "question": "Which type of JOIN returns all rows from the left table and the matching rows from the right table? If there is no match in the right table, it returns NULL values for the right table's columns.",
+        "options": [
+            "INNER JOIN",
+            "RIGHT JOIN",
+            "FULL OUTER JOIN",
+            "LEFT JOIN"
+        ],
+        "answer": "LEFT JOIN",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.1,
+        "param_c": 0.1
+    },
+    {
+        "id": 55,
+        "question": "Which SQL function is used to extract a substring from a string?",
+        "options": [
+            "CONCAT()",
+            "REPLACE()",
+            "SUBSTRING()",
+            "UPPER()"
+        ],
+        "answer": "SUBSTRING()",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.4,
+        "param_c": 0.2
+    },
+    {
+        "id": 56,
+        "question": "What is the purpose of a `CASE` statement in SQL?",
+        "options": [
+            "To define a stored procedure.",
+            "To handle exceptions.",
+            "To perform conditional logic.",
+            "To create a view."
+        ],
+        "answer": "To perform conditional logic.",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.3,
+        "param_c": 0.16
+    },
+    {
+        "id": 57,
+        "question": "Which SQL command is used to modify data in a table?",
+        "options": [
+            "SELECT",
+            "INSERT",
+            "DELETE",
+            "UPDATE"
+        ],
+        "answer": "UPDATE",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.0,
+        "param_c": 0.14
+    },
+    {
+        "id": 58,
+        "question": "Which SQL keyword is used to remove duplicate rows from a result set?",
+        "options": [
+            "UNIQUE",
+            "DISTINCT",
+            "GROUP BY",
+            "REMOVE"
+        ],
+        "answer": "DISTINCT",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": -0.4,
+        "param_c": 0.19
+    },
+    {
+        "id": 59,
+        "question": "Which function is used to convert a value from one data type to another in SQL?",
+        "options": [
+            "CONVERT()",
+            "CAST()",
+            "TRANSFORM()",
+            "CHANGE()"
+        ],
+        "answer": "CAST()",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.2,
+        "param_c": 0.11
+    },
+    {
+        "id": 60,
+        "question": "Which SQL clause is used to sort the result-set of a query?",
+        "options": [
+            "GROUP BY",
+            "SORT BY",
+            "ORDER BY",
+            "FILTER BY"
+        ],
+        "answer": "ORDER BY",
+        "difficulty": "Medium",
+        "param_a": 0.95,
+        "param_b": 0.5,
+        "param_c": 0.17
+    },
+    {
+        "id": 61,
+        "question": "Which SQL clause is most efficient for filtering data *before* joining tables, improving query performance in large datasets?",
+        "options": [
+            "A. HAVING",
+            "B. WHERE",
+            "C. GROUP BY",
+            "D. ORDER BY"
+        ],
+        "answer": "B. WHERE",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 62,
+        "question": "You need to calculate the running total of sales for each month. Which window function is most appropriate?",
+        "options": [
+            "A. RANK()",
+            "B. DENSE_RANK()",
+            "C. SUM() OVER (ORDER BY ...)",
+            "D. COUNT()"
+        ],
+        "answer": "C. SUM() OVER (ORDER BY ...)",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": 0.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 63,
+        "question": "What is the primary purpose of creating indexes on columns in a MySQL database used for data analytics?",
+        "options": [
+            "A. To enforce data integrity constraints.",
+            "B. To improve the speed of data retrieval.",
+            "C. To reduce the storage space required by the table.",
+            "D. To automatically generate reports."
+        ],
+        "answer": "B. To improve the speed of data retrieval.",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": -0.1,
+        "param_c": 0.18
+    },
+    {
+        "id": 64,
+        "question": "Which SQL statement is used to combine the results of two or more SELECT statements, eliminating duplicate rows?",
+        "options": [
+            "A. JOIN",
+            "B. UNION ALL",
+            "C. INTERSECT",
+            "D. UNION"
+        ],
+        "answer": "D. UNION",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.1,
+        "param_c": 0.14
+    },
+    {
+        "id": 65,
+        "question": "You want to identify customers who made purchases in both January and February. Which SQL clause would be most suitable for achieving this?",
+        "options": [
+            "A. JOIN",
+            "B. WHERE",
+            "C. GROUP BY",
+            "D. INTERSECT"
+        ],
+        "answer": "D. INTERSECT",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.5,
+        "param_c": 0.11
+    },
+    {
+        "id": 66,
+        "question": "Which aggregate function is used to calculate the standard deviation of a numeric column in MySQL?",
+        "options": [
+            "A. AVG()",
+            "B. VARIANCE()",
+            "C. STDDEV()",
+            "D. MEDIAN()"
+        ],
+        "answer": "C. STDDEV()",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.0,
+        "param_c": 0.19
+    },
+    {
+        "id": 67,
+        "question": "What is the purpose of the `EXPLAIN` statement in MySQL?",
+        "options": [
+            "A. To execute a SQL query.",
+            "B. To display the data in a table.",
+            "C. To analyze the execution plan of a query.",
+            "D. To create a new table."
+        ],
+        "answer": "C. To analyze the execution plan of a query.",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.3,
+        "param_c": 0.16
+    },
+    {
+        "id": 68,
+        "question": "Which function is used to convert a date into a specific string format in MySQL?",
+        "options": [
+            "A. DATE()",
+            "B. STR_TO_DATE()",
+            "C. DATE_FORMAT()",
+            "D. CONVERT()"
+        ],
+        "answer": "C. DATE_FORMAT()",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": 0.2,
+        "param_c": 0.13
+    },
+    {
+        "id": 69,
+        "question": "How can you optimize a slow-running query that involves multiple joins and aggregations in MySQL?",
+        "options": [
+            "A. By adding more indexes to all tables.",
+            "B. By rewriting the query to use subqueries instead of joins.",
+            "C. By analyzing the query execution plan and optimizing indexes and join order.",
+            "D. By increasing the server's memory."
+        ],
+        "answer": "C. By analyzing the query execution plan and optimizing indexes and join order.",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": 0.4,
+        "param_c": 0.17
+    },
+    {
+        "id": 70,
+        "question": "Which type of join returns all rows from the left table and the matching rows from the right table, padding with NULLs where there is no match?",
+        "options": [
+            "A. INNER JOIN",
+            "B. RIGHT JOIN",
+            "C. FULL OUTER JOIN",
+            "D. LEFT JOIN"
+        ],
+        "answer": "D. LEFT JOIN",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": -0.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 71,
+        "question": "Which SQL clause is primarily used for filtering data based on a specified condition in a SELECT statement?",
+        "options": [
+            "A. GROUP BY",
+            "B. ORDER BY",
+            "C. WHERE",
+            "D. HAVING"
+        ],
+        "answer": "C. WHERE",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.3,
+        "param_c": 0.15
+    },
+    {
+        "id": 72,
+        "question": "Which aggregate function in SQL is used to calculate the average value of a numeric column?",
+        "options": [
+            "A. COUNT()",
+            "B. SUM()",
+            "C. AVG()",
+            "D. MAX()"
+        ],
+        "answer": "C. AVG()",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": 0.2,
+        "param_c": 0.12
+    },
+    {
+        "id": 73,
+        "question": "What is the purpose of the `JOIN` clause in SQL?",
+        "options": [
+            "A. To filter rows based on a condition",
+            "B. To sort the result set",
+            "C. To combine rows from two or more tables based on a related column",
+            "D. To group rows with the same values"
+        ],
+        "answer": "C. To combine rows from two or more tables based on a related column",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": -0.1,
+        "param_c": 0.18
+    },
+    {
+        "id": 74,
+        "question": "Which SQL command is used to modify existing data in a table?",
+        "options": [
+            "A. SELECT",
+            "B. INSERT",
+            "C. UPDATE",
+            "D. DELETE"
+        ],
+        "answer": "C. UPDATE",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.1,
+        "param_c": 0.14
+    },
+    {
+        "id": 75,
+        "question": "What is the difference between `COUNT(*)` and `COUNT(column_name)` in SQL?",
+        "options": [
+            "A. `COUNT(*)` counts all rows, while `COUNT(column_name)` counts only rows where column_name is not NULL.",
+            "B. `COUNT(column_name)` counts all rows, while `COUNT(*)` counts only rows where column_name is not NULL.",
+            "C. They both perform the same function.",
+            "D. `COUNT(*)` is used for numeric columns, while `COUNT(column_name)` is used for string columns."
+        ],
+        "answer": "A. `COUNT(*)` counts all rows, while `COUNT(column_name)` counts only rows where column_name is not NULL.",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.0,
+        "param_c": 0.16
+    },
+    {
+        "id": 76,
+        "question": "Which clause is used to group rows that have the same values in specified columns into summary rows, like calculating the sum of items for each customer?",
+        "options": [
+            "A. WHERE",
+            "B. ORDER BY",
+            "C. GROUP BY",
+            "D. HAVING"
+        ],
+        "answer": "C. GROUP BY",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": -0.2,
+        "param_c": 0.13
+    },
+    {
+        "id": 77,
+        "question": "What is the purpose of the `HAVING` clause in SQL?",
+        "options": [
+            "A. To filter rows before grouping",
+            "B. To sort the result set",
+            "C. To filter groups after grouping",
+            "D. To join tables"
+        ],
+        "answer": "C. To filter groups after grouping",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": 0.3,
+        "param_c": 0.19
+    },
+    {
+        "id": 78,
+        "question": "Which type of JOIN returns all rows from the left table and the matching rows from the right table? If there are no matches, the result is NULL on the right side.",
+        "options": [
+            "A. INNER JOIN",
+            "B. RIGHT JOIN",
+            "C. FULL OUTER JOIN",
+            "D. LEFT JOIN"
+        ],
+        "answer": "D. LEFT JOIN",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.4,
+        "param_c": 0.11
+    },
+    {
+        "id": 79,
+        "question": "Which SQL function is used to extract a substring from a string?",
+        "options": [
+            "A. CONCAT()",
+            "B. REPLACE()",
+            "C. SUBSTRING()",
+            "D. UPPER()"
+        ],
+        "answer": "C. SUBSTRING()",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": -0.4,
+        "param_c": 0.17
+    },
+    {
+        "id": 80,
+        "question": "How can you prevent duplicate rows from appearing in the result of a SELECT statement?",
+        "options": [
+            "A. Using the `UNIQUE` keyword",
+            "B. Using the `DISTINCT` keyword",
+            "C. Using the `GROUP BY` clause",
+            "D. Using the `ORDER BY` clause"
+        ],
+        "answer": "B. Using the `DISTINCT` keyword",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.5,
+        "param_c": 0.2
+    },
+    {
+        "id": 81,
+        "question": "Which SQL clause is primarily used to group rows that have the same value in one or more columns, often in conjunction with aggregate functions?",
+        "options": [
+            "A. ORDER BY",
+            "B. WHERE",
+            "C. GROUP BY",
+            "D. HAVING"
+        ],
+        "answer": "C. GROUP BY",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.2,
+        "param_c": 0.15
+    },
+    {
+        "id": 82,
+        "question": "What is the purpose of the `HAVING` clause in SQL?",
+        "options": [
+            "A. To filter rows before grouping.",
+            "B. To sort the result set.",
+            "C. To filter groups after grouping.",
+            "D. To specify the columns to be retrieved."
+        ],
+        "answer": "C. To filter groups after grouping.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": 0.1,
+        "param_c": 0.12
+    },
+    {
+        "id": 83,
+        "question": "Which SQL function is used to calculate the percentage of total for each row in a group, based on a specified expression?",
+        "options": [
+            "A. PERCENTILE_CONT",
+            "B. RANK",
+            "C. CUME_DIST",
+            "D. PERCENT_RANK"
+        ],
+        "answer": "D. PERCENT_RANK",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": 0.3,
+        "param_c": 0.18
+    },
+    {
+        "id": 84,
+        "question": "Which type of join returns all rows from the left table and the matching rows from the right table. If there are no matching rows in the right table, it returns NULL values for the columns from the right table?",
+        "options": [
+            "A. INNER JOIN",
+            "B. RIGHT JOIN",
+            "C. FULL OUTER JOIN",
+            "D. LEFT JOIN"
+        ],
+        "answer": "D. LEFT JOIN",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": -0.4,
+        "param_c": 0.11
+    },
+    {
+        "id": 85,
+        "question": "What does the `COALESCE()` function do in SQL?",
+        "options": [
+            "A. Returns the average of the values in a group.",
+            "B. Returns the first non-NULL expression in a list.",
+            "C. Converts a value to a specific data type.",
+            "D. Counts the number of rows in a table."
+        ],
+        "answer": "B. Returns the first non-NULL expression in a list.",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.2,
+        "param_c": 0.16
+    },
+    {
+        "id": 86,
+        "question": "Which SQL statement is used to create a temporary table?",
+        "options": [
+            "A. CREATE TABLE TEMP",
+            "B. CREATE TEMPORARY TABLE",
+            "C. MAKE TABLE",
+            "D. ALTER TABLE TEMP"
+        ],
+        "answer": "B. CREATE TEMPORARY TABLE",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": -0.1,
+        "param_c": 0.13
+    },
+    {
+        "id": 87,
+        "question": "Which window function calculates the cumulative distribution of a value within a group?",
+        "options": [
+            "A. RANK()",
+            "B. DENSE_RANK()",
+            "C. ROW_NUMBER()",
+            "D. CUME_DIST()"
+        ],
+        "answer": "D. CUME_DIST()",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": 0.4,
+        "param_c": 0.19
+    },
+    {
+        "id": 88,
+        "question": "What is the purpose of the `EXPLAIN` statement in MySQL?",
+        "options": [
+            "A. To execute a SQL query.",
+            "B. To display the data in a table.",
+            "C. To analyze the execution plan of a query.",
+            "D. To create a new database."
+        ],
+        "answer": "C. To analyze the execution plan of a query.",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": 0.0,
+        "param_c": 0.14
+    },
+    {
+        "id": 89,
+        "question": "Which aggregate function returns the sample standard deviation of a population?",
+        "options": [
+            "A. STDDEV_POP()",
+            "B. STDDEV_SAMP()",
+            "C. VARIANCE()",
+            "D. AVG()"
+        ],
+        "answer": "A. STDDEV_POP()",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": 0.5,
+        "param_c": 0.17
+    },
+    {
+        "id": 90,
+        "question": "How can you prevent SQL injection vulnerabilities when using user input in a query?",
+        "options": [
+            "A. By using `SELECT * FROM`",
+            "B. By concatenating strings directly into the query.",
+            "C. By using parameterized queries or prepared statements.",
+            "D. By escaping all special characters manually."
+        ],
+        "answer": "C. By using parameterized queries or prepared statements.",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": -0.3,
+        "param_c": 0.2
+    },
+    {
+        "id": 91,
+        "question": "Which SQL clause is used to group rows that have the same value in one or more columns into a summary row?",
+        "options": [
+            "A. ORDER BY",
+            "B. WHERE",
+            "C. GROUP BY",
+            "D. HAVING"
+        ],
+        "answer": "C. GROUP BY",
+        "difficulty": "Medium",
+        "param_a": 1.2,
+        "param_b": -0.3,
+        "param_c": 0.15
+    },
+    {
+        "id": 92,
+        "question": "Which aggregate function returns the number of rows that match a specified criterion?",
+        "options": [
+            "A. SUM()",
+            "B. AVG()",
+            "C. COUNT()",
+            "D. MAX()"
+        ],
+        "answer": "C. COUNT()",
+        "difficulty": "Medium",
+        "param_a": 0.9,
+        "param_b": -0.1,
+        "param_c": 0.12
+    },
+    {
+        "id": 93,
+        "question": "Which SQL keyword is used to filter the results of a GROUP BY clause?",
+        "options": [
+            "A. WHERE",
+            "B. ORDER BY",
+            "C. HAVING",
+            "D. FILTER"
+        ],
+        "answer": "C. HAVING",
+        "difficulty": "Medium",
+        "param_a": 1.5,
+        "param_b": 0.2,
+        "param_c": 0.18
+    },
+    {
+        "id": 94,
+        "question": "What is the purpose of the `JOIN` clause in SQL?",
+        "options": [
+            "A. To filter rows based on a condition.",
+            "B. To sort the result set.",
+            "C. To combine rows from two or more tables based on a related column.",
+            "D. To aggregate data."
+        ],
+        "answer": "C. To combine rows from two or more tables based on a related column.",
+        "difficulty": "Medium",
+        "param_a": 1.1,
+        "param_b": -0.5,
+        "param_c": 0.1
+    },
+    {
+        "id": 95,
+        "question": "Which type of JOIN returns all rows from the left table, and the matching rows from the right table. If there is no match, the result is NULL on the right side?",
+        "options": [
+            "A. INNER JOIN",
+            "B. RIGHT JOIN",
+            "C. FULL JOIN",
+            "D. LEFT JOIN"
+        ],
+        "answer": "D. LEFT JOIN",
+        "difficulty": "Medium",
+        "param_a": 1.3,
+        "param_b": 0.1,
+        "param_c": 0.17
+    },
+    {
+        "id": 96,
+        "question": "Which SQL function is used to extract a substring from a string?",
+        "options": [
+            "A. CONCAT()",
+            "B. LENGTH()",
+            "C. SUBSTRING()",
+            "D. REPLACE()"
+        ],
+        "answer": "C. SUBSTRING()",
+        "difficulty": "Medium",
+        "param_a": 0.8,
+        "param_b": -0.2,
+        "param_c": 0.13
+    },
+    {
+        "id": 97,
+        "question": "What does the `UNION` operator do in SQL?",
+        "options": [
+            "A. Combines rows from two tables, excluding duplicates.",
+            "B. Combines rows from two tables, including duplicates.",
+            "C. Filters rows based on a condition.",
+            "D. Sorts the result set."
+        ],
+        "answer": "A. Combines rows from two tables, excluding duplicates.",
+        "difficulty": "Medium",
+        "param_a": 1.6,
+        "param_b": 0.4,
+        "param_c": 0.19
+    },
+    {
+        "id": 98,
+        "question": "Which function is used to calculate the percentage change between two values in MySQL?",
+        "options": [
+            "A. PERCENT_CHANGE()",
+            "B. LAG() and LEAD() with manual calculation",
+            "C. CHANGE_PERCENT()",
+            "D. DIFF()"
+        ],
+        "answer": "B. LAG() and LEAD() with manual calculation",
+        "difficulty": "Medium",
+        "param_a": 1.7,
+        "param_b": 0.8,
+        "param_c": 0.2
+    },
+    {
+        "id": 99,
+        "question": "Which SQL statement is used to modify existing data in a table?",
+        "options": [
+            "A. SELECT",
+            "B. INSERT",
+            "C. DELETE",
+            "D. UPDATE"
+        ],
+        "answer": "D. UPDATE",
+        "difficulty": "Medium",
+        "param_a": 1.0,
+        "param_b": -0.4,
+        "param_c": 0.11
+    },
+    {
+        "id": 100,
+        "question": "Which clause is used to sort the result-set of a query?",
+        "options": [
+            "A. GROUP BY",
+            "B. WHERE",
+            "C. ORDER BY",
+            "D. HAVING"
+        ],
+        "answer": "C. ORDER BY",
+        "difficulty": "Medium",
+        "param_a": 1.4,
+        "param_b": 0.0,
+        "param_c": 0.16
+    },
+    {
+        "id": 101,
+        "question": "Which of the following SQL statements is the MOST efficient way to calculate a weighted average of 'sales' based on 'quantity' in a table named 'transactions', assuming both columns are integers and you need to handle cases where 'quantity' is zero?",
+        "options": [
+            "A) SELECT SUM(sales * quantity) / SUM(quantity) FROM transactions;",
+            "B) SELECT SUM(sales * quantity) / NULLIF(SUM(quantity), 0) FROM transactions;",
+            "C) SELECT AVG(sales * quantity) FROM transactions WHERE quantity > 0;",
+            "D) SELECT SUM(CASE WHEN quantity > 0 THEN sales * quantity ELSE 0 END) / SUM(CASE WHEN quantity > 0 THEN quantity ELSE 1 END) FROM transactions;"
+        ],
+        "answer": "B) SELECT SUM(sales * quantity) / NULLIF(SUM(quantity), 0) FROM transactions;",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 1.5,
+        "param_c": 0.05
+    },
+    {
+        "id": 102,
+        "question": "You have a table 'orders' with columns 'order_id', 'customer_id', and 'order_date'. You need to identify customers who placed orders on consecutive days. Which SQL query BEST achieves this, optimizing for performance with a large dataset?",
+        "options": [
+            "A) SELECT DISTINCT o1.customer_id FROM orders o1 JOIN orders o2 ON o1.customer_id = o2.customer_id AND DATEDIFF(o1.order_date, o2.order_date) = 1;",
+            "B) SELECT DISTINCT o1.customer_id FROM orders o1, orders o2 WHERE o1.customer_id = o2.customer_id AND o1.order_date = DATE_SUB(o2.order_date, INTERVAL 1 DAY);",
+            "C) SELECT DISTINCT customer_id FROM (SELECT customer_id, order_date, LAG(order_date, 1, order_date) OVER (PARTITION BY customer_id ORDER BY order_date) as prev_date FROM orders) sub WHERE DATEDIFF(order_date, prev_date) = 1;",
+            "D) SELECT DISTINCT customer_id FROM (SELECT customer_id, order_date, LEAD(order_date, 1, order_date) OVER (PARTITION BY customer_id ORDER BY order_date) as next_date FROM orders) sub WHERE DATEDIFF(next_date, order_date) = 1;"
+        ],
+        "answer": "D) SELECT DISTINCT customer_id FROM (SELECT customer_id, order_date, LEAD(order_date, 1, order_date) OVER (PARTITION BY customer_id ORDER BY order_date) as next_date FROM orders) sub WHERE DATEDIFF(next_date, order_date) = 1;",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 103,
+        "question": "Given a table 'products' with columns 'product_id', 'category', and 'price', and another table 'sales' with columns 'sale_id', 'product_id', and 'quantity', how would you calculate the total revenue per category, including categories with no sales, ensuring that categories with no sales are represented with a revenue of 0?",
+        "options": [
+            "A) SELECT p.category, COALESCE(SUM(s.quantity * p.price), 0) AS total_revenue FROM products p LEFT JOIN sales s ON p.product_id = s.product_id GROUP BY p.category;",
+            "B) SELECT p.category, IFNULL(SUM(s.quantity * p.price), 0) AS total_revenue FROM products p JOIN sales s ON p.product_id = s.product_id GROUP BY p.category;",
+            "C) SELECT p.category, SUM(s.quantity * p.price) AS total_revenue FROM products p LEFT JOIN sales s ON p.product_id = s.product_id GROUP BY p.category;",
+            "D) SELECT p.category, SUM(IFNULL(s.quantity * p.price, 0)) AS total_revenue FROM products p LEFT JOIN sales s ON p.product_id = s.product_id GROUP BY p.category;"
+        ],
+        "answer": "A) SELECT p.category, COALESCE(SUM(s.quantity * p.price), 0) AS total_revenue FROM products p LEFT JOIN sales s ON p.product_id = s.product_id GROUP BY p.category;",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 2.0,
+        "param_c": 0.08
+    },
+    {
+        "id": 104,
+        "question": "You need to create a stored procedure in MySQL that accepts a 'customer_id' as input and returns a comma-separated string of all 'order_ids' associated with that customer. Which approach is the MOST robust and efficient, especially for a large number of order IDs?",
+        "options": [
+            "A) Using a cursor to iterate through the orders and concatenate the order IDs into a string variable.",
+            "B) Using GROUP_CONCAT() within a SELECT statement and returning the result.",
+            "C) Using a temporary table to store the order IDs and then concatenating them using a loop.",
+            "D) Using a recursive common table expression (CTE) to concatenate the order IDs."
+        ],
+        "answer": "B) Using GROUP_CONCAT() within a SELECT statement and returning the result.",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.2,
+        "param_c": 0.12
+    },
+    {
+        "id": 105,
+        "question": "Given a table 'website_visits' with columns 'visit_id', 'user_id', 'visit_date', and 'page_url', how would you efficiently identify users who visited at least 3 different pages on the same day?",
+        "options": [
+            "A) SELECT user_id FROM website_visits GROUP BY user_id, visit_date HAVING COUNT(DISTINCT page_url) >= 3;",
+            "B) SELECT DISTINCT user_id FROM website_visits WHERE (SELECT COUNT(DISTINCT page_url) FROM website_visits WHERE user_id = wv.user_id AND visit_date = wv.visit_date) >= 3;",
+            "C) SELECT user_id FROM (SELECT user_id, visit_date, COUNT(page_url) AS page_count FROM website_visits GROUP BY user_id, visit_date) sub WHERE page_count >= 3;",
+            "D) SELECT user_id FROM website_visits GROUP BY user_id, visit_date HAVING COUNT(page_url) >= 3;"
+        ],
+        "answer": "A) SELECT user_id FROM website_visits GROUP BY user_id, visit_date HAVING COUNT(DISTINCT page_url) >= 3;",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 1.9,
+        "param_c": 0.07
+    },
+    {
+        "id": 106,
+        "question": "You have a table 'products' with columns 'product_id', 'name', and 'price'. You want to implement a full-text search functionality to allow users to search for products by name. Which approach provides the BEST performance and accuracy for a large dataset, considering stemming and stop words?",
+        "options": [
+            "A) Using LIKE '%keyword%' for each keyword in the search query.",
+            "B) Using MATCH AGAINST with a BOOLEAN MODE and a custom stopword list.",
+            "C) Using REGEXP to match keywords in the product name.",
+            "D) Using a combination of LIKE and REGEXP for better accuracy."
+        ],
+        "answer": "B) Using MATCH AGAINST with a BOOLEAN MODE and a custom stopword list.",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 1.6,
+        "param_c": 0.09
+    },
+    {
+        "id": 107,
+        "question": "Given a table 'sessions' with columns 'session_id', 'user_id', 'start_time', and 'end_time', how would you calculate the average session duration in minutes, considering that 'start_time' and 'end_time' are stored as DATETIME values?",
+        "options": [
+            "A) SELECT AVG(TIMESTAMPDIFF(MINUTE, start_time, end_time)) FROM sessions;",
+            "B) SELECT AVG(end_time - start_time) / 60 FROM sessions;",
+            "C) SELECT AVG(TIME_TO_SEC(end_time - start_time) / 60) FROM sessions;",
+            "D) SELECT AVG(UNIX_TIMESTAMP(end_time) - UNIX_TIMESTAMP(start_time)) / 60 FROM sessions;"
+        ],
+        "answer": "A) SELECT AVG(TIMESTAMPDIFF(MINUTE, start_time, end_time)) FROM sessions;",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 2.1,
+        "param_c": 0.06
+    },
+    {
+        "id": 108,
+        "question": "You have a table 'events' with columns 'event_id', 'event_type', and 'event_timestamp'. You need to calculate the rolling average of the number of events per day over a 7-day window. Which SQL query BEST accomplishes this?",
+        "options": [
+            "A) SELECT event_timestamp, AVG(COUNT(*)) OVER (ORDER BY event_timestamp ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) FROM events GROUP BY DATE(event_timestamp);",
+            "B) SELECT DATE(event_timestamp), AVG(COUNT(*)) OVER (ORDER BY DATE(event_timestamp) ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) FROM events GROUP BY DATE(event_timestamp);",
+            "C) SELECT DATE(event_timestamp), AVG(COUNT(*)) OVER (PARTITION BY DATE(event_timestamp) ORDER BY DATE(event_timestamp) ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) FROM events GROUP BY DATE(event_timestamp);",
+            "D) SELECT DATE(event_timestamp), AVG(event_id) OVER (ORDER BY DATE(event_timestamp) ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) FROM events GROUP BY DATE(event_timestamp);"
+        ],
+        "answer": "B) SELECT DATE(event_timestamp), AVG(COUNT(*)) OVER (ORDER BY DATE(event_timestamp) ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) FROM events GROUP BY DATE(event_timestamp);",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.3,
+        "param_c": 0.11
+    },
+    {
+        "id": 109,
+        "question": "In MySQL, which isolation level provides the MOST protection against dirty reads, non-repeatable reads, and phantom reads, while potentially impacting concurrency the most?",
+        "options": [
+            "A) READ UNCOMMITTED",
+            "B) READ COMMITTED",
+            "C) REPEATABLE READ",
+            "D) SERIALIZABLE"
+        ],
+        "answer": "D) SERIALIZABLE",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.4,
+        "param_c": 0.04
+    },
+    {
+        "id": 110,
+        "question": "You have a table 'users' with columns 'user_id', 'signup_date', and 'last_login'. You want to calculate the retention rate of users who signed up in January 2023, considering users are retained if they logged in at least once in February 2023. Which SQL query is the MOST accurate and efficient?",
+        "options": [
+            "A) SELECT COUNT(DISTINCT u.user_id) / (SELECT COUNT(*) FROM users WHERE signup_date BETWEEN '2023-01-01' AND '2023-01-31') FROM users u WHERE u.signup_date BETWEEN '2023-01-01' AND '2023-01-31' AND EXISTS (SELECT 1 FROM users WHERE user_id = u.user_id AND last_login BETWEEN '2023-02-01' AND '2023-02-28');",
+            "B) SELECT COUNT(DISTINCT u.user_id) / (SELECT COUNT(*) FROM users WHERE signup_date BETWEEN '2023-01-01' AND '2023-01-31') FROM users u WHERE u.signup_date BETWEEN '2023-01-01' AND '2023-01-31' AND last_login BETWEEN '2023-02-01' AND '2023-02-28';",
+            "C) SELECT SUM(CASE WHEN last_login BETWEEN '2023-02-01' AND '2023-02-28' THEN 1 ELSE 0 END) / COUNT(*) FROM users WHERE signup_date BETWEEN '2023-01-01' AND '2023-01-31';",
+            "D) SELECT (SELECT COUNT(*) FROM users WHERE signup_date BETWEEN '2023-01-01' AND '2023-01-31' AND last_login BETWEEN '2023-02-01' AND '2023-02-28') / (SELECT COUNT(*) FROM users WHERE signup_date BETWEEN '2023-01-01' AND '2023-01-31');"
+        ],
+        "answer": "D) SELECT (SELECT COUNT(*) FROM users WHERE signup_date BETWEEN '2023-01-01' AND '2023-01-31' AND last_login BETWEEN '2023-02-01' AND '2023-02-28') / (SELECT COUNT(*) FROM users WHERE signup_date BETWEEN '2023-01-01' AND '2023-01-31');",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 2.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 111,
+        "question": "Given a table `sales` with columns `product_id`, `sale_date`, and `revenue`, which SQL query most efficiently calculates the cumulative revenue for each product over time, ordered by `sale_date`?",
+        "options": [
+            "A) SELECT product_id, sale_date, SUM(revenue) OVER (PARTITION BY product_id ORDER BY sale_date) AS cumulative_revenue FROM sales ORDER BY product_id, sale_date;",
+            "B) SELECT product_id, sale_date, SUM(revenue) OVER (ORDER BY sale_date) AS cumulative_revenue FROM sales GROUP BY product_id ORDER BY product_id, sale_date;",
+            "C) SELECT product_id, sale_date, SUM(revenue) AS cumulative_revenue FROM sales GROUP BY product_id, sale_date ORDER BY product_id, sale_date;",
+            "D) SELECT product_id, sale_date, SUM(revenue) OVER (PARTITION BY product_id) AS cumulative_revenue FROM sales ORDER BY product_id, sale_date;"
+        ],
+        "answer": "A) SELECT product_id, sale_date, SUM(revenue) OVER (PARTITION BY product_id ORDER BY sale_date) AS cumulative_revenue FROM sales ORDER BY product_id, sale_date;",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 1.5,
+        "param_c": 0.05
+    },
+    {
+        "id": 112,
+        "question": "Consider a table `users` with columns `user_id`, `signup_date`, and `last_login`.  Which query identifies users who signed up in 2022 but haven't logged in since January 1, 2023, assuming dates are stored as DATETIME?",
+        "options": [
+            "A) SELECT user_id FROM users WHERE YEAR(signup_date) = 2022 AND last_login < '2023-01-01';",
+            "B) SELECT user_id FROM users WHERE signup_date BETWEEN '2022-01-01' AND '2022-12-31' AND last_login < '2023-01-01';",
+            "C) SELECT user_id FROM users WHERE YEAR(signup_date) = 2022 AND last_login <= '2023-01-01';",
+            "D) SELECT user_id FROM users WHERE signup_date LIKE '2022%' AND last_login < '2023-01-01';"
+        ],
+        "answer": "B) SELECT user_id FROM users WHERE signup_date BETWEEN '2022-01-01' AND '2022-12-31' AND last_login < '2023-01-01';",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 113,
+        "question": "You have two tables: `orders` (order_id, customer_id, order_date, total_amount) and `customers` (customer_id, customer_name, city).  How can you efficiently retrieve the top 5 cities with the highest total order amount in the last quarter of 2023?",
+        "options": [
+            "A) SELECT city, SUM(total_amount) AS total FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE order_date BETWEEN '2023-10-01' AND '2023-12-31' GROUP BY city ORDER BY total DESC LIMIT 5;",
+            "B) SELECT city, SUM(total_amount) AS total FROM customers c, orders o WHERE c.customer_id = o.customer_id AND order_date >= '2023-10-01' GROUP BY city ORDER BY total DESC LIMIT 5;",
+            "C) SELECT city, SUM(total_amount) AS total FROM customers c INNER JOIN orders o ON c.customer_id = o.customer_id WHERE QUARTER(order_date) = 4 AND YEAR(order_date) = 2023 GROUP BY city ORDER BY total DESC LIMIT 5;",
+            "D) SELECT city, SUM(total_amount) AS total FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE order_date >= '2023-10-01' AND order_date <= '2023-12-31' GROUP BY city ORDER BY total DESC LIMIT 5;"
+        ],
+        "answer": "D) SELECT city, SUM(total_amount) AS total FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE order_date >= '2023-10-01' AND order_date <= '2023-12-31' GROUP BY city ORDER BY total DESC LIMIT 5;",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 2.0,
+        "param_c": 0.0
+    },
+    {
+        "id": 114,
+        "question": "Given a table `page_views` with columns `user_id`, `page_id`, and `view_time`, which query effectively identifies users who viewed more than 3 distinct pages within a 5-minute window?",
+        "options": [
+            "A) SELECT user_id FROM page_views GROUP BY user_id, page_id, view_time HAVING COUNT(DISTINCT page_id) > 3;",
+            "B) SELECT DISTINCT user_id FROM (SELECT user_id, page_id, view_time, LAG(view_time, 3, view_time) OVER (PARTITION BY user_id ORDER BY view_time) AS prev_time FROM page_views) AS subquery WHERE TIMESTAMPDIFF(MINUTE, prev_time, view_time) <= 5;",
+            "C) SELECT user_id FROM (SELECT user_id, page_id, view_time, LEAD(view_time) OVER (PARTITION BY user_id ORDER BY view_time) AS next_time FROM page_views) AS subquery WHERE TIMESTAMPDIFF(MINUTE, view_time, next_time) <= 5 GROUP BY user_id HAVING COUNT(DISTINCT page_id) > 3;",
+            "D) SELECT user_id FROM (SELECT user_id, page_id, view_time, LAG(view_time) OVER (PARTITION BY user_id ORDER BY view_time) AS prev_time FROM page_views) AS subquery WHERE TIMESTAMPDIFF(MINUTE, prev_time, view_time) <= 5 GROUP BY user_id HAVING COUNT(DISTINCT page_id) > 3;"
+        ],
+        "answer": "D) SELECT user_id FROM (SELECT user_id, page_id, view_time, LAG(view_time) OVER (PARTITION BY user_id ORDER BY view_time) AS prev_time FROM page_views) AS subquery WHERE TIMESTAMPDIFF(MINUTE, prev_time, view_time) <= 5 GROUP BY user_id HAVING COUNT(DISTINCT page_id) > 3;",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 2.3,
+        "param_c": 0.12
+    },
+    {
+        "id": 115,
+        "question": "Given a table `products` (product_id, product_name, category_id) and `categories` (category_id, category_name), which query efficiently retrieves all products that belong to categories whose names contain the word 'Electronics'?",
+        "options": [
+            "A) SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.category_name LIKE '%Electronics%';",
+            "B) SELECT p.* FROM products p WHERE p.category_id IN (SELECT category_id FROM categories WHERE category_name LIKE '%Electronics%');",
+            "C) SELECT p.* FROM products p, categories c WHERE p.category_id = c.category_id AND c.category_name LIKE '%Electronics%';",
+            "D) All of the above queries are equally efficient."
+        ],
+        "answer": "B) SELECT p.* FROM products p WHERE p.category_id IN (SELECT category_id FROM categories WHERE category_name LIKE '%Electronics%');",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 1.2,
+        "param_c": 0.08
+    },
+    {
+        "id": 116,
+        "question": "Consider a table `sessions` with columns `session_id`, `user_id`, `start_time`, and `end_time`. How would you calculate the average session duration in minutes, considering that `start_time` and `end_time` are stored as DATETIME?",
+        "options": [
+            "A) SELECT AVG(TIMESTAMPDIFF(MINUTE, start_time, end_time)) AS avg_duration FROM sessions;",
+            "B) SELECT AVG(end_time - start_time) AS avg_duration FROM sessions;",
+            "C) SELECT AVG(TIME_TO_SEC(end_time - start_time)/60) AS avg_duration FROM sessions;",
+            "D) SELECT AVG(DATEDIFF(MINUTE, start_time, end_time)) AS avg_duration FROM sessions;"
+        ],
+        "answer": "A) SELECT AVG(TIMESTAMPDIFF(MINUTE, start_time, end_time)) AS avg_duration FROM sessions;",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.7,
+        "param_c": 0.02
+    },
+    {
+        "id": 117,
+        "question": "You have a table `events` with columns `event_id`, `user_id`, and `event_timestamp`.  How can you identify users who performed the same event at least twice within 10 seconds of each other?",
+        "options": [
+            "A) SELECT DISTINCT e1.user_id FROM events e1 JOIN events e2 ON e1.user_id = e2.user_id AND e1.event_id = e2.event_id WHERE ABS(TIMESTAMPDIFF(SECOND, e1.event_timestamp, e2.event_timestamp)) <= 10 AND e1.event_timestamp != e2.event_timestamp;",
+            "B) SELECT DISTINCT e1.user_id FROM events e1 JOIN events e2 ON e1.user_id = e2.user_id AND e1.event_id = e2.event_id WHERE TIMESTAMPDIFF(SECOND, e1.event_timestamp, e2.event_timestamp) <= 10;",
+            "C) SELECT user_id FROM events GROUP BY user_id, event_id HAVING COUNT(*) > 1 AND MAX(event_timestamp) - MIN(event_timestamp) <= 10;",
+            "D) SELECT DISTINCT e1.user_id FROM events e1 JOIN events e2 ON e1.user_id = e2.user_id AND e1.event_id = e2.event_id AND e1.event_timestamp < e2.event_timestamp WHERE TIMESTAMPDIFF(SECOND, e1.event_timestamp, e2.event_timestamp) <= 10;"
+        ],
+        "answer": "D) SELECT DISTINCT e1.user_id FROM events e1 JOIN events e2 ON e1.user_id = e2.user_id AND e1.event_id = e2.event_id AND e1.event_timestamp < e2.event_timestamp WHERE TIMESTAMPDIFF(SECOND, e1.event_timestamp, e2.event_timestamp) <= 10;",
+        "difficulty": "Hard",
+        "param_a": 2.4,
+        "param_b": 2.1,
+        "param_c": 0.15
+    },
+    {
+        "id": 118,
+        "question": "Given a table `transactions` (transaction_id, user_id, transaction_date, amount), which query calculates the moving average of transaction amounts for each user over a 7-day window, ordered by transaction date?",
+        "options": [
+            "A) SELECT user_id, transaction_date, AVG(amount) OVER (PARTITION BY user_id ORDER BY transaction_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_average FROM transactions;",
+            "B) SELECT user_id, transaction_date, AVG(amount) OVER (ORDER BY transaction_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_average FROM transactions GROUP BY user_id;",
+            "C) SELECT user_id, transaction_date, AVG(amount) OVER (PARTITION BY user_id ORDER BY transaction_date) AS moving_average FROM transactions;",
+            "D) SELECT user_id, transaction_date, AVG(amount) OVER (PARTITION BY user_id ORDER BY transaction_date RANGE BETWEEN INTERVAL 7 DAY PRECEDING AND CURRENT ROW) AS moving_average FROM transactions;"
+        ],
+        "answer": "A) SELECT user_id, transaction_date, AVG(amount) OVER (PARTITION BY user_id ORDER BY transaction_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_average FROM transactions;",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.4,
+        "param_c": 0.07
+    },
+    {
+        "id": 119,
+        "question": "Consider a table `products` (product_id, product_name, price) and a table `sales` (sale_id, product_id, quantity). How can you efficiently find the product with the highest total revenue (price * quantity) without using a subquery in the FROM clause?",
+        "options": [
+            "A) SELECT p.product_name FROM products p JOIN sales s ON p.product_id = s.product_id ORDER BY p.price * s.quantity DESC LIMIT 1;",
+            "B) SELECT p.product_name FROM products p JOIN sales s ON p.product_id = s.product_id GROUP BY p.product_name ORDER BY SUM(p.price * s.quantity) DESC LIMIT 1;",
+            "C) SELECT p.product_name FROM products p JOIN sales s ON p.product_id = s.product_id WHERE p.price * s.quantity = (SELECT MAX(p.price * s.quantity) FROM products p JOIN sales s ON p.product_id = s.product_id);",
+            "D) SELECT p.product_name FROM products p JOIN sales s ON p.product_id = s.product_id ORDER BY SUM(p.price * s.quantity) DESC LIMIT 1;"
+        ],
+        "answer": "B) SELECT p.product_name FROM products p JOIN sales s ON p.product_id = s.product_id GROUP BY p.product_name ORDER BY SUM(p.price * s.quantity) DESC LIMIT 1;",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.9,
+        "param_c": 0.09
+    },
+    {
+        "id": 120,
+        "question": "Given a table `users` with columns `user_id`, `signup_date`, and `country`, which query efficiently calculates the percentage of users who signed up each month, broken down by country?",
+        "options": [
+            "A) SELECT country, DATE_FORMAT(signup_date, '%Y-%m'), COUNT(*) * 100.0 / (SELECT COUNT(*) FROM users) FROM users GROUP BY country, DATE_FORMAT(signup_date, '%Y-%m');",
+            "B) SELECT country, DATE_FORMAT(signup_date, '%Y-%m'), COUNT(*) * 100.0 / SUM(COUNT(*)) OVER () FROM users GROUP BY country, DATE_FORMAT(signup_date, '%Y-%m');",
+            "C) SELECT country, DATE_FORMAT(signup_date, '%Y-%m'), COUNT(*) * 100.0 / (SELECT COUNT(*) FROM users WHERE country = u.country) FROM users u GROUP BY country, DATE_FORMAT(signup_date, '%Y-%m');",
+            "D) SELECT country, DATE_FORMAT(signup_date, '%Y-%m'), (COUNT(*) / (SELECT COUNT(*) FROM users WHERE DATE_FORMAT(signup_date, '%Y-%m') = DATE_FORMAT(u.signup_date, '%Y-%m')) * 100) FROM users u GROUP BY country, DATE_FORMAT(signup_date, '%Y-%m');"
+        ],
+        "answer": "B) SELECT country, DATE_FORMAT(signup_date, '%Y-%m'), COUNT(*) * 100.0 / SUM(COUNT(*)) OVER () FROM users GROUP BY country, DATE_FORMAT(signup_date, '%Y-%m');",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 1.1,
+        "param_c": 0.11
+    },
+    {
+        "id": 121,
+        "question": "You need to calculate the cumulative sales for each product category over time. Which window function, combined with appropriate partitioning and ordering, is the MOST efficient way to achieve this in MySQL?",
+        "options": [
+            "A) RANK() OVER (PARTITION BY category ORDER BY sale_date) * sales_amount",
+            "B) DENSE_RANK() OVER (PARTITION BY category ORDER BY sale_date) * sales_amount",
+            "C) SUM(sales_amount) OVER (PARTITION BY category ORDER BY sale_date)",
+            "D) SUM(sales_amount) OVER (PARTITION BY category ORDER BY sale_date ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)"
+        ],
+        "answer": "D) SUM(sales_amount) OVER (PARTITION BY category ORDER BY sale_date ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 2.1,
+        "param_c": 0.05
+    },
+    {
+        "id": 122,
+        "question": "Given a table `transactions` with columns `transaction_id`, `user_id`, `transaction_date`, and `amount`, how can you efficiently identify users who have made transactions on at least 3 distinct dates within the last month, using only SQL?",
+        "options": [
+            "A) SELECT user_id FROM transactions WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) GROUP BY user_id HAVING COUNT(DISTINCT transaction_date) >= 3",
+            "B) SELECT DISTINCT user_id FROM transactions WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND COUNT(DISTINCT transaction_date) >= 3 GROUP BY user_id",
+            "C) SELECT user_id FROM (SELECT user_id, COUNT(DISTINCT transaction_date) AS distinct_dates FROM transactions WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) GROUP BY user_id) AS subquery WHERE distinct_dates >= 3",
+            "D) SELECT user_id FROM transactions WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) GROUP BY user_id, transaction_date HAVING COUNT(*) >=3"
+        ],
+        "answer": "A) SELECT user_id FROM transactions WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) GROUP BY user_id HAVING COUNT(DISTINCT transaction_date) >= 3",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 123,
+        "question": "You have a table `products` with columns `product_id`, `category`, and `price`. You want to calculate the average price for each category and then identify all products whose price is above the average price of their respective category. Which SQL query achieves this most efficiently?",
+        "options": [
+            "A) SELECT p.product_id FROM products p JOIN (SELECT category, AVG(price) AS avg_price FROM products GROUP BY category) a ON p.category = a.category WHERE p.price > a.avg_price",
+            "B) SELECT product_id FROM products WHERE price > (SELECT AVG(price) FROM products GROUP BY category)",
+            "C) SELECT p.product_id FROM products p WHERE p.price > AVG(p.price) OVER (PARTITION BY p.category)",
+            "D) SELECT product_id FROM products WHERE price > (SELECT AVG(price) FROM products)"
+        ],
+        "answer": "A) SELECT p.product_id FROM products p JOIN (SELECT category, AVG(price) AS avg_price FROM products GROUP BY category) a ON p.category = a.category WHERE p.price > a.avg_price",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.5,
+        "param_c": 0.08
+    },
+    {
+        "id": 124,
+        "question": "A table `orders` contains `order_id`, `customer_id`, and `order_date`. A table `customers` contains `customer_id` and `signup_date`. How would you find the customer who placed their first order the LONGEST time after signing up?",
+        "options": [
+            "A) SELECT c.customer_id FROM customers c JOIN orders o ON c.customer_id = o.customer_id ORDER BY (o.order_date - c.signup_date) DESC LIMIT 1",
+            "B) SELECT c.customer_id FROM customers c JOIN (SELECT customer_id, MIN(order_date) AS first_order FROM orders GROUP BY customer_id) o ON c.customer_id = o.customer_id ORDER BY (first_order - c.signup_date) DESC LIMIT 1",
+            "C) SELECT customer_id, MAX(order_date - signup_date) FROM customers JOIN orders ON customers.customer_id = orders.customer_id",
+            "D) SELECT customer_id FROM orders ORDER BY order_date - (SELECT signup_date FROM customers WHERE customers.customer_id = orders.customer_id) DESC LIMIT 1"
+        ],
+        "answer": "B) SELECT c.customer_id FROM customers c JOIN (SELECT customer_id, MIN(order_date) AS first_order FROM orders GROUP BY customer_id) o ON c.customer_id = o.customer_id ORDER BY (first_order - c.signup_date) DESC LIMIT 1",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.9,
+        "param_c": 0.12
+    },
+    {
+        "id": 125,
+        "question": "Which MySQL feature is MOST suitable for implementing a real-time dashboard that requires frequent updates and aggregations of large datasets?",
+        "options": [
+            "A) Stored Procedures",
+            "B) Views",
+            "C) Materialized Views (if supported by the MySQL version, or a custom implementation using triggers and tables)",
+            "D) Triggers"
+        ],
+        "answer": "C) Materialized Views (if supported by the MySQL version, or a custom implementation using triggers and tables)",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.3,
+        "param_c": 0.07
+    },
+    {
+        "id": 126,
+        "question": "Given a table `page_views` with columns `user_id`, `page_id`, and `view_time`, how would you efficiently determine the most common sequence of three consecutive pages viewed by any user?",
+        "options": [
+            "A) Using three self-joins on the `page_views` table, grouped by `page_id`",
+            "B) Using window functions to create lagged columns for the previous two `page_id` values, then grouping by these three columns and counting occurrences.",
+            "C) Using a stored procedure to iterate through each user's view history and identify sequences.",
+            "D) Using a subquery to find all possible three-page sequences and then joining it back to the `page_views` table."
+        ],
+        "answer": "B) Using window functions to create lagged columns for the previous two `page_id` values, then grouping by these three columns and counting occurrences.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.6,
+        "param_c": 0.09
+    },
+    {
+        "id": 127,
+        "question": "You have a table named 'sales' with columns 'date', 'product_id', and 'revenue'. You need to calculate the 7-day moving average of revenue for each product. Which of the following queries is the MOST efficient and accurate way to achieve this using window functions?",
+        "options": [
+            "A) SELECT date, product_id, AVG(revenue) OVER (ORDER BY date ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_average FROM sales GROUP BY product_id",
+            "B) SELECT date, product_id, AVG(revenue) OVER (PARTITION BY product_id ORDER BY date ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_average FROM sales",
+            "C) SELECT date, product_id, AVG(revenue) OVER (ORDER BY date ASC RANGE BETWEEN INTERVAL 6 DAY PRECEDING AND CURRENT ROW) AS moving_average FROM sales",
+            "D) SELECT date, product_id, AVG(revenue) OVER (PARTITION BY product_id ORDER BY date ASC RANGE BETWEEN INTERVAL 6 DAY PRECEDING AND CURRENT ROW) AS moving_average FROM sales"
+        ],
+        "answer": "D) SELECT date, product_id, AVG(revenue) OVER (PARTITION BY product_id ORDER BY date ASC RANGE BETWEEN INTERVAL 6 DAY PRECEDING AND CURRENT ROW) AS moving_average FROM sales",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 2.0,
+        "param_c": 0.06
+    },
+    {
+        "id": 128,
+        "question": "In MySQL, which approach is generally the MOST efficient for handling slowly changing dimensions (SCDs) Type 2, given a large fact table and the need for historical analysis?",
+        "options": [
+            "A) Using triggers to automatically update the dimension table whenever a change occurs in the source system.",
+            "B) Implementing a stored procedure that periodically compares the dimension table with the source system and updates the dimension table accordingly.",
+            "C) Using a combination of INSERT and UPDATE statements within a single SQL query to manage the dimension table.",
+            "D) Employing a data integration tool (ETL) to handle the SCD Type 2 logic and load data into the dimension table."
+        ],
+        "answer": "D) Employing a data integration tool (ETL) to handle the SCD Type 2 logic and load data into the dimension table.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 1.7,
+        "param_c": 0.11
+    },
+    {
+        "id": 129,
+        "question": "You have a table `sessions` with `user_id`, `start_time`, and `end_time`. How can you find the average session duration for users whose sessions overlap with at least one other session?",
+        "options": [
+            "A) Use a self-join to find overlapping sessions, calculate the duration of each session, and then average the durations.",
+            "B) Use window functions to identify overlapping sessions and calculate the average duration.",
+            "C) Create a temporary table to store all possible session pairs, then filter for overlaps and calculate the average duration.",
+            "D) This cannot be done efficiently in SQL without procedural extensions."
+        ],
+        "answer": "A) Use a self-join to find overlapping sessions, calculate the duration of each session, and then average the durations.",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 1.4,
+        "param_c": 0.04
+    },
+    {
+        "id": 130,
+        "question": "When designing a data warehouse schema in MySQL for business intelligence, which star schema optimization technique is MOST effective in reducing the size of the fact table and improving query performance, assuming that some dimension attributes are often queried together?",
+        "options": [
+            "A) Denormalizing all dimension tables into a single large dimension table.",
+            "B) Using surrogate keys for all dimension tables.",
+            "C) Creating snowflake schemas by normalizing the dimension tables further.",
+            "D) Employing aggregate tables to pre-calculate common aggregations."
+        ],
+        "answer": "D) Employing aggregate tables to pre-calculate common aggregations.",
+        "difficulty": "Hard",
+        "param_a": 1.4,
+        "param_b": 2.4,
+        "param_c": 0.13
+    },
+    {
+        "id": 131,
+        "question": "You have a table `sales` with columns `product_id`, `sale_date`, and `revenue`. Which query most efficiently calculates the cumulative revenue for each product over time, ordering by sale date?",
+        "options": [
+            "A) SELECT product_id, sale_date, SUM(revenue) OVER (PARTITION BY product_id ORDER BY sale_date) AS cumulative_revenue FROM sales;",
+            "B) SELECT product_id, sale_date, SUM(revenue) OVER (ORDER BY sale_date) AS cumulative_revenue FROM sales GROUP BY product_id;",
+            "C) SELECT product_id, sale_date, SUM(revenue) FROM sales GROUP BY product_id, sale_date WITH ROLLUP;",
+            "D) SELECT s1.product_id, s1.sale_date, (SELECT SUM(s2.revenue) FROM sales s2 WHERE s2.product_id = s1.product_id AND s2.sale_date <= s1.sale_date) AS cumulative_revenue FROM sales s1;"
+        ],
+        "answer": "A) SELECT product_id, sale_date, SUM(revenue) OVER (PARTITION BY product_id ORDER BY sale_date) AS cumulative_revenue FROM sales;",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 1.5,
+        "param_c": 0.05
+    },
+    {
+        "id": 132,
+        "question": "Consider a table `customers` with columns `customer_id`, `signup_date`, and `country`. You need to identify customers who signed up within the last 30 days in each country and rank them based on their signup date (most recent first) within their respective country. Which SQL query achieves this most efficiently?",
+        "options": [
+            "A) SELECT customer_id, signup_date, country, RANK() OVER (PARTITION BY country ORDER BY signup_date DESC) AS signup_rank FROM customers WHERE signup_date BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE();",
+            "B) SELECT customer_id, signup_date, country, DENSE_RANK() OVER (PARTITION BY country ORDER BY signup_date DESC) AS signup_rank FROM customers WHERE signup_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY);",
+            "C) SELECT customer_id, signup_date, country, ROW_NUMBER() OVER (PARTITION BY country ORDER BY signup_date DESC) AS signup_rank FROM customers WHERE signup_date >= CURDATE() - INTERVAL 30 DAY;",
+            "D) SELECT customer_id, signup_date, country, RANK() OVER (ORDER BY signup_date DESC) AS signup_rank FROM customers WHERE signup_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) GROUP BY country;"
+        ],
+        "answer": "B) SELECT customer_id, signup_date, country, DENSE_RANK() OVER (PARTITION BY country ORDER BY signup_date DESC) AS signup_rank FROM customers WHERE signup_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY);",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 133,
+        "question": "You have two tables: `orders` (order_id, customer_id, order_date, total_amount) and `customers` (customer_id, customer_name, city).  You need to find the top 5 cities with the highest average order amount for orders placed in the last quarter. Which query is most efficient?",
+        "options": [
+            "A) SELECT c.city, AVG(o.total_amount) AS avg_order_amount FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH) GROUP BY c.city ORDER BY avg_order_amount DESC LIMIT 5;",
+            "B) SELECT c.city, (SELECT AVG(total_amount) FROM orders WHERE customer_id = c.customer_id AND order_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)) AS avg_order_amount FROM customers c ORDER BY avg_order_amount DESC LIMIT 5;",
+            "C) SELECT city, AVG(total_amount) AS avg_order_amount FROM (SELECT c.city, o.total_amount FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)) AS subquery GROUP BY city ORDER BY avg_order_amount DESC LIMIT 5;",
+            "D) SELECT c.city, AVG(o.total_amount) AS avg_order_amount FROM orders o, customers c WHERE o.customer_id = c.customer_id AND o.order_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH) GROUP BY c.city ORDER BY avg_order_amount DESC LIMIT 5;"
+        ],
+        "answer": "A) SELECT c.city, AVG(o.total_amount) AS avg_order_amount FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH) GROUP BY c.city ORDER BY avg_order_amount DESC LIMIT 5;",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 2.0,
+        "param_c": 0.0
+    },
+    {
+        "id": 134,
+        "question": "You have a table `website_visits` with columns `visit_id`, `user_id`, `visit_date`, and `page_url`. How can you efficiently determine the number of unique users who visited at least 3 distinct pages on a given day?",
+        "options": [
+            "A) SELECT COUNT(DISTINCT user_id) FROM website_visits GROUP BY user_id, visit_date HAVING COUNT(DISTINCT page_url) >= 3;",
+            "B) SELECT COUNT(DISTINCT user_id) FROM (SELECT user_id, visit_date FROM website_visits GROUP BY user_id, visit_date HAVING COUNT(DISTINCT page_url) >= 3) AS subquery;",
+            "C) SELECT COUNT(DISTINCT user_id) FROM website_visits WHERE (SELECT COUNT(DISTINCT page_url) FROM website_visits WHERE user_id = website_visits.user_id AND visit_date = website_visits.visit_date) >= 3;",
+            "D) SELECT COUNT(*) FROM (SELECT user_id, visit_date FROM website_visits GROUP BY user_id, visit_date, page_url) AS subquery GROUP BY user_id, visit_date HAVING COUNT(*) >= 3;"
+        ],
+        "answer": "B) SELECT COUNT(DISTINCT user_id) FROM (SELECT user_id, visit_date FROM website_visits GROUP BY user_id, visit_date HAVING COUNT(DISTINCT page_url) >= 3) AS subquery;",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.2,
+        "param_c": 0.12
+    },
+    {
+        "id": 135,
+        "question": "Given a table `transactions` with columns `transaction_id`, `user_id`, `transaction_date`, and `amount`, which SQL query most efficiently calculates the moving average of transaction amounts for each user over a 7-day window?",
+        "options": [
+            "A) SELECT user_id, transaction_date, AVG(amount) OVER (PARTITION BY user_id ORDER BY transaction_date ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_average FROM transactions;",
+            "B) SELECT user_id, transaction_date, AVG(amount) OVER (ORDER BY transaction_date ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_average FROM transactions GROUP BY user_id;",
+            "C) SELECT user_id, transaction_date, AVG(amount) FROM transactions GROUP BY user_id, transaction_date WITH ROLLUP;",
+            "D) SELECT t1.user_id, t1.transaction_date, (SELECT AVG(t2.amount) FROM transactions t2 WHERE t2.user_id = t1.user_id AND t2.transaction_date BETWEEN DATE_SUB(t1.transaction_date, INTERVAL 6 DAY) AND t1.transaction_date) AS moving_average FROM transactions t1;"
+        ],
+        "answer": "A) SELECT user_id, transaction_date, AVG(amount) OVER (PARTITION BY user_id ORDER BY transaction_date ASC ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_average FROM transactions;",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.7,
+        "param_c": 0.08
+    },
+    {
+        "id": 136,
+        "question": "You have a table `products` with columns `product_id`, `category`, and `price`.  You need to find the difference between the price of each product and the average price of its category. Which query is most efficient?",
+        "options": [
+            "A) SELECT product_id, price - (SELECT AVG(price) FROM products p2 WHERE p2.category = p1.category) AS price_difference FROM products p1;",
+            "B) SELECT product_id, price - AVG(price) OVER (PARTITION BY category) AS price_difference FROM products;",
+            "C) SELECT product_id, price - AVG(price) FROM products GROUP BY category;",
+            "D) SELECT p1.product_id, p1.price - p2.avg_price FROM products p1 JOIN (SELECT category, AVG(price) AS avg_price FROM products GROUP BY category) p2 ON p1.category = p2.category;"
+        ],
+        "answer": "B) SELECT product_id, price - AVG(price) OVER (PARTITION BY category) AS price_difference FROM products;",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.3,
+        "param_c": 0.02
+    },
+    {
+        "id": 137,
+        "question": "Consider a table `sessions` with columns `session_id`, `user_id`, `start_time`, and `end_time`.  How would you efficiently identify users whose sessions overlap with each other?",
+        "options": [
+            "A) SELECT DISTINCT s1.user_id, s2.user_id FROM sessions s1 JOIN sessions s2 ON s1.user_id != s2.user_id AND s1.start_time < s2.end_time AND s1.end_time > s2.start_time;",
+            "B) SELECT DISTINCT s1.user_id, s2.user_id FROM sessions s1, sessions s2 WHERE s1.user_id <> s2.user_id AND s1.start_time <= s2.end_time AND s1.end_time >= s2.start_time;",
+            "C) SELECT DISTINCT s1.user_id, s2.user_id FROM sessions s1 JOIN sessions s2 ON s1.user_id = s2.user_id AND s1.start_time < s2.end_time AND s1.end_time > s2.start_time;",
+            "D) SELECT user_id, COUNT(*) FROM sessions GROUP BY user_id HAVING COUNT(*) > 1;"
+        ],
+        "answer": "A) SELECT DISTINCT s1.user_id, s2.user_id FROM sessions s1 JOIN sessions s2 ON s1.user_id != s2.user_id AND s1.start_time < s2.end_time AND s1.end_time > s2.start_time;",
+        "difficulty": "Hard",
+        "param_a": 2.4,
+        "param_b": 1.9,
+        "param_c": 0.15
+    },
+    {
+        "id": 138,
+        "question": "You have a table `events` with columns `event_id`, `user_id`, `event_time`, and `event_type`.  How can you efficiently find the time difference between the first and last event for each user?",
+        "options": [
+            "A) SELECT user_id, MAX(event_time) - MIN(event_time) AS time_difference FROM events GROUP BY user_id;",
+            "B) SELECT user_id, TIMESTAMPDIFF(SECOND, MIN(event_time), MAX(event_time)) AS time_difference FROM events GROUP BY user_id;",
+            "C) SELECT user_id, (SELECT MAX(event_time) FROM events WHERE user_id = e.user_id) - (SELECT MIN(event_time) FROM events WHERE user_id = e.user_id) AS time_difference FROM events e GROUP BY user_id;",
+            "D) SELECT user_id, MAX(event_time) - MIN(event_time) OVER (PARTITION BY user_id) AS time_difference FROM events;"
+        ],
+        "answer": "B) SELECT user_id, TIMESTAMPDIFF(SECOND, MIN(event_time), MAX(event_time)) AS time_difference FROM events GROUP BY user_id;",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 2.1,
+        "param_c": 0.07
+    },
+    {
+        "id": 139,
+        "question": "Given a table `products` with columns `product_id`, `name`, and `price`, and a table `sales` with columns `sale_id`, `product_id`, and `quantity`, how can you efficiently find the products that have never been sold?",
+        "options": [
+            "A) SELECT product_id FROM products WHERE product_id NOT IN (SELECT product_id FROM sales);",
+            "B) SELECT p.product_id FROM products p LEFT JOIN sales s ON p.product_id = s.product_id WHERE s.product_id IS NULL;",
+            "C) SELECT product_id FROM products WHERE NOT EXISTS (SELECT 1 FROM sales WHERE sales.product_id = products.product_id);",
+            "D) All of the above are equally efficient.",
+            "E) A and B are equally efficient."
+        ],
+        "answer": "B) SELECT p.product_id FROM products p LEFT JOIN sales s ON p.product_id = s.product_id WHERE s.product_id IS NULL;",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.3,
+        "param_c": 0.1
+    },
+    {
+        "id": 140,
+        "question": "You have a table `logins` with columns `user_id` and `login_time`. You want to identify users who logged in consecutively within a 5-minute window. Which SQL query is the most efficient?",
+        "options": [
+            "A) SELECT DISTINCT l1.user_id FROM logins l1 JOIN logins l2 ON l1.user_id = l2.user_id AND l1.login_time < l2.login_time AND TIMESTAMPDIFF(MINUTE, l1.login_time, l2.login_time) <= 5;",
+            "B) SELECT DISTINCT l1.user_id FROM logins l1 JOIN logins l2 ON l1.user_id = l2.user_id WHERE l2.login_time BETWEEN l1.login_time AND DATE_ADD(l1.login_time, INTERVAL 5 MINUTE);",
+            "C) SELECT user_id FROM logins GROUP BY user_id HAVING COUNT(*) > 1;",
+            "D) SELECT DISTINCT l1.user_id FROM logins l1, logins l2 WHERE l1.user_id = l2.user_id AND l1.login_time < l2.login_time AND TIMEDIFF(l2.login_time, l1.login_time) <= '00:05:00';"
+        ],
+        "answer": "A) SELECT DISTINCT l1.user_id FROM logins l1 JOIN logins l2 ON l1.user_id = l2.user_id AND l1.login_time < l2.login_time AND TIMESTAMPDIFF(MINUTE, l1.login_time, l2.login_time) <= 5;",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 2.4,
+        "param_c": 0.03
+    },
+    {
+        "id": 141,
+        "question": "You have a table `sales` with columns `product_id`, `sale_date`, and `revenue`. Which of the following queries most efficiently calculates the cumulative revenue for each product over time, ordered by sale date?",
+        "options": [
+            "A: SELECT product_id, sale_date, SUM(revenue) OVER (PARTITION BY product_id ORDER BY sale_date) AS cumulative_revenue FROM sales;",
+            "B: SELECT product_id, sale_date, SUM(revenue) OVER (ORDER BY sale_date) AS cumulative_revenue FROM sales GROUP BY product_id;",
+            "C: SELECT product_id, sale_date, SUM(revenue) OVER (PARTITION BY product_id) AS cumulative_revenue FROM sales ORDER BY sale_date;",
+            "D: SELECT product_id, sale_date, SUM(revenue) FROM sales GROUP BY product_id, sale_date WITH ROLLUP;"
+        ],
+        "answer": "A: SELECT product_id, sale_date, SUM(revenue) OVER (PARTITION BY product_id ORDER BY sale_date) AS cumulative_revenue FROM sales;",
+        "difficulty": "Hard",
+        "param_a": 1.8,
+        "param_b": 1.5,
+        "param_c": 0.05
+    },
+    {
+        "id": 142,
+        "question": "Given a table `customer_orders` with columns `customer_id`, `order_date`, and `order_amount`, which query identifies customers who placed orders on at least 3 distinct dates within the last 30 days?",
+        "options": [
+            "A: SELECT customer_id FROM customer_orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) GROUP BY customer_id HAVING COUNT(DISTINCT order_date) >= 3;",
+            "B: SELECT customer_id FROM (SELECT customer_id, COUNT(DISTINCT order_date) AS distinct_dates FROM customer_orders WHERE order_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND CURDATE() GROUP BY customer_id) AS subquery WHERE distinct_dates >= 3;",
+            "C: SELECT customer_id FROM customer_orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) GROUP BY customer_id, order_date HAVING COUNT(*) >= 3;",
+            "D: SELECT DISTINCT customer_id FROM customer_orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND COUNT(DISTINCT order_date) OVER (PARTITION BY customer_id) >= 3;"
+        ],
+        "answer": "B: SELECT customer_id FROM (SELECT customer_id, COUNT(DISTINCT order_date) AS distinct_dates FROM customer_orders WHERE order_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND CURDATE() GROUP BY customer_id) AS subquery WHERE distinct_dates >= 3;",
+        "difficulty": "Hard",
+        "param_a": 2.2,
+        "param_b": 1.8,
+        "param_c": 0.1
+    },
+    {
+        "id": 143,
+        "question": "You have two tables: `products` (product_id, product_name, category_id) and `categories` (category_id, category_name). You want to retrieve all products and their corresponding category names, including products that don't belong to any category. Which join type is most appropriate and efficient for this scenario?",
+        "options": [
+            "A: INNER JOIN",
+            "B: LEFT JOIN",
+            "C: RIGHT JOIN",
+            "D: FULL OUTER JOIN"
+        ],
+        "answer": "B: LEFT JOIN",
+        "difficulty": "Hard",
+        "param_a": 1.5,
+        "param_b": 1.2,
+        "param_c": 0.08
+    },
+    {
+        "id": 144,
+        "question": "Which MySQL feature is most suitable for creating a materialized view that automatically updates when the underlying tables change, minimizing query latency for complex aggregations?",
+        "options": [
+            "A: Stored Procedure",
+            "B: Trigger",
+            "C: Generated Column",
+            "D: Event Scheduler"
+        ],
+        "answer": "C: Generated Column",
+        "difficulty": "Hard",
+        "param_a": 2.0,
+        "param_b": 2.0,
+        "param_c": 0.12
+    },
+    {
+        "id": 145,
+        "question": "You have a table `user_activity` with columns `user_id`, `activity_date`, and `activity_type`. How can you efficiently calculate the rolling 7-day average of a specific activity type (e.g., 'login') for each user?",
+        "options": [
+            "A: Using a correlated subquery that calculates the average for each date.",
+            "B: Using a window function with a range frame specification.",
+            "C: Using a self-join to calculate the average for each date.",
+            "D: Using a stored procedure with a loop to calculate the average for each date."
+        ],
+        "answer": "B: Using a window function with a range frame specification.",
+        "difficulty": "Hard",
+        "param_a": 1.7,
+        "param_b": 1.9,
+        "param_c": 0.03
+    },
+    {
+        "id": 146,
+        "question": "Which MySQL feature allows you to create a user-defined function (UDF) that can be used directly within SQL queries to perform custom data transformations or calculations?",
+        "options": [
+            "A: Stored Procedure",
+            "B: Trigger",
+            "C: User-Defined Variable",
+            "D: Loadable Function"
+        ],
+        "answer": "D: Loadable Function",
+        "difficulty": "Hard",
+        "param_a": 2.3,
+        "param_b": 2.2,
+        "param_c": 0.09
+    },
+    {
+        "id": 147,
+        "question": "Given a table `website_visits` with columns `visit_date` and `page_views`, how would you use SQL to identify days where the number of page views significantly exceeded the average page views for the preceding week (excluding the current day)?",
+        "options": [
+            "A: Using a subquery to calculate the weekly average and comparing it to the current day's page views.",
+            "B: Using a window function to calculate the weekly average and comparing it to the current day's page views.",
+            "C: Using a self-join to calculate the weekly average and comparing it to the current day's page views.",
+            "D: Using a correlated subquery to calculate the weekly average and comparing it to the current day's page views."
+        ],
+        "answer": "B: Using a window function to calculate the weekly average and comparing it to the current day's page views.",
+        "difficulty": "Hard",
+        "param_a": 1.9,
+        "param_b": 1.6,
+        "param_c": 0.11
+    },
+    {
+        "id": 148,
+        "question": "You need to optimize a complex query that joins multiple large tables. Which of the following strategies would likely provide the most significant performance improvement in MySQL?",
+        "options": [
+            "A: Adding indexes to all columns used in the WHERE clause.",
+            "B: Rewriting the query to use subqueries instead of joins.",
+            "C: Analyzing the query execution plan and optimizing the join order.",
+            "D: Increasing the `max_allowed_packet` size."
+        ],
+        "answer": "C: Analyzing the query execution plan and optimizing the join order.",
+        "difficulty": "Hard",
+        "param_a": 1.6,
+        "param_b": 2.4,
+        "param_c": 0.07
+    },
+    {
+        "id": 149,
+        "question": "What is the primary advantage of using Common Table Expressions (CTEs) in complex SQL queries for data analytics?",
+        "options": [
+            "A: CTEs always improve query performance compared to subqueries.",
+            "B: CTEs allow you to define temporary tables that persist across multiple queries.",
+            "C: CTEs improve query readability and maintainability by breaking down complex logic into smaller, named units.",
+            "D: CTEs automatically optimize the query execution plan."
+        ],
+        "answer": "C: CTEs improve query readability and maintainability by breaking down complex logic into smaller, named units.",
+        "difficulty": "Hard",
+        "param_a": 1.3,
+        "param_b": 1.1,
+        "param_c": 0.14
+    },
+    {
+        "id": 150,
+        "question": "In MySQL, how can you efficiently determine the percentage of total sales contributed by each product category, given tables `sales` (sale_id, product_id, sale_amount) and `products` (product_id, category_id)?",
+        "options": [
+            "A: Using a correlated subquery to calculate the total sales for each category and dividing by the total sales across all categories.",
+            "B: Using a window function to calculate the total sales across all categories and dividing each category's sales by this total.",
+            "C: Using a self-join on the `sales` table to calculate the total sales across all categories.",
+            "D: Using a stored procedure to iterate through each category and calculate the percentage of total sales."
+        ],
+        "answer": "B: Using a window function to calculate the total sales across all categories and dividing each category's sales by this total.",
+        "difficulty": "Hard",
+        "param_a": 2.1,
+        "param_b": 1.3,
+        "param_c": 0.06
+    }
+]

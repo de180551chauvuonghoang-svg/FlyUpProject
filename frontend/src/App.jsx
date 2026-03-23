@@ -26,11 +26,14 @@ import InstructorEditCoursePage from './pages/InstructorEditCoursePage';
 import QuestionBankListPage from './pages/QuestionBankListPage';
 import InstructorRoute from './components/Auth/InstructorRoute';
 //finish for question bank module
-import CourseLessonPage from './pages/CourseLessonPage';
 import QuestionBankDetailPage from './pages/QuestionBankDetailPage';
 import CreateAssignmentFromBankPage from './pages/CreateAssignmentFromBankPage';
 import AssignmentSnapshotPreviewPage from './pages/AssignmentSnapshotPreviewPage';
-
+import InstructorPreviewPage from './pages/InstructorPreviewPage';
+import CourseLessonPage from './pages/CourseLessonPage';
+import InstructorStudentsPage from './pages/InstructorStudentsPage';
+import InstructorCommunicationPage from './pages/InstructorCommunicationPage';
+import InstructorToolsPage from './pages/InstructorToolsPage';
 
 
 function App() {
@@ -38,7 +41,61 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <Router>
-          <Toaster position="top-center" reverseOrder={false} />
+          <Toaster
+            position="top-right"
+            reverseOrder={false}
+            gutter={8}
+            containerStyle={{ top: 75 }}
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#1A1333',
+                color: '#fff',
+                padding: '16px 24px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)',
+                fontSize: '15px',
+                fontWeight: '500',
+                letterSpacing: '0.02em',
+                maxWidth: '400px',
+                zIndex: 9999
+              },
+              success: {
+                iconTheme: {
+                  primary: '#fff',
+                  secondary: '#065f46',
+                },
+                style: {
+                  background: '#065f46', // Emerald 800
+                  color: '#fff',
+                  border: '1px solid #10b981', // Emerald 500
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#fff',
+                  secondary: '#991b1b',
+                },
+                style: {
+                  background: '#991b1b', // Red 800
+                  color: '#fff',
+                  border: '1px solid #ef4444', // Red 500
+                },
+              },
+              loading: {
+                iconTheme: {
+                  primary: '#fff',
+                  secondary: '#5b21b6',
+                },
+                style: {
+                  background: '#5b21b6', // Violet 800
+                  color: '#fff',
+                  border: '1px solid #8b5cf6', // Violet 500
+                },
+              },
+            }}
+          />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -58,6 +115,10 @@ function App() {
             <Route path="/instructor/create-course/review" element={<InstructorCourseReviewPage />} />
             <Route path="/instructor/upload" element={<InstructorUploadPage />} />
             <Route path="/edit-course/:id" element={<InstructorEditCoursePage />} />
+            <Route path="/instructor/preview/:id" element={<InstructorPreviewPage />} />
+            <Route path="/instructor/students" element={<InstructorStudentsPage />} />
+            <Route path="/instructor/communication" element={<InstructorCommunicationPage />} />
+            <Route path="/instructor/tools" element={<InstructorToolsPage />} />
             <Route path="/learning/:courseId" element={<CourseLessonPage />} />
             <Route path="/learning/:courseId/lesson/:lessonId" element={<CourseLessonPage />} />
             <Route
@@ -99,7 +160,4 @@ function App() {
     </AuthProvider>
   );
 }
-
 export default App;
-
-

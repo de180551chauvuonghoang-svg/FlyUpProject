@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -6,12 +6,14 @@ import useAuth from '../../hooks/useAuth';
 import useCart from '../../hooks/useCart';
 import { getImageUrl } from '../../utils/imageUtils';
 import { toggleWishlist, getWishlist } from '../../services/wishlistService';
+import { createCheckout } from '../../services/checkoutService';
 
 const CourseCard = ({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price, showWishlist = true }) => {
     const navigate = useNavigate();
     const { addToCart, cart } = useCart();
     const { user } = useAuth();
     const queryClient = useQueryClient();
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
 
     // Check if course is already in cart
     const isInCart = cart.some(item => item.id === id);
@@ -78,6 +80,40 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
             if (previousWishlist) {
                 queryClient.setQueryData(['wishlist'], previousWishlist);
             }
+        }
+    };
+
+    const handleEnrollNow = async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (isCheckingOut) return;
+
+        if (!user) {
+            toast.error('Vui lòng đăng nhập để đăng ký', {
+                icon: '🔒',
+            });
+            navigate('/login');
+            return;
+        }
+
+        setIsCheckingOut(true);
+        try {
+            toast.loading('Đang chuẩn bị thanh toán...');
+            const res = await createCheckout({
+                courseIds: [id],
+                totalAmount: price
+            });
+            
+            toast.dismiss();
+            if (res.success) {
+                navigate(`/checkout/${res.data.checkoutId}`);
+            }
+        } catch (error) {
+            toast.dismiss();
+            toast.error(error.message || 'Checkout failed');
+        } finally {
+            setIsCheckingOut(false);
         }
     };
 
@@ -164,23 +200,33 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
 
                 </div>
 
-                <button 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (isInCart) return;
-                        addToCart({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price });
-                    }}
-                    className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer ${
-                        isInCart 
-                            ? 'bg-green-600/80 shadow-green-500/30 cursor-default hover:shadow-green-500/30 hover:brightness-100' 
-                            : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110'
-                    }`}
-                >
-                    <span>{isInCart ? 'In Cart' : 'Add to Cart'}</span>
-                    <span className="material-symbols-outlined text-[18px]">
-                        {isInCart ? 'check_circle' : 'add_shopping_cart'}
-                    </span>
-                </button>
+                <div className="mt-4 flex w-full items-center justify-between gap-2">
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (isInCart) return;
+                            addToCart({ id, image, category, level, rating, reviews, duration, title, desc, instructorName, instructorRole, price });
+                        }}
+                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer ${
+                            isInCart 
+                                ? 'bg-green-600/80 shadow-green-500/30 cursor-default hover:shadow-green-500/30 hover:brightness-100' 
+                                : 'bg-[#1A1333] border border-white/20 hover:bg-white/5 shadow-white/5'
+                        }`}
+                        title={isInCart ? 'In Cart' : 'Add to Cart'}
+                    >
+                        <span className="material-symbols-outlined text-[18px]">
+                            {isInCart ? 'check_circle' : 'add_shopping_cart'}
+                        </span>
+                    </button>
+                    <button 
+                        onClick={handleEnrollNow}
+                        disabled={isCheckingOut}
+                        className={`flex flex-[2] items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-lg transition-all cursor-pointer bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110 ${isCheckingOut ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
+                        <span>{isCheckingOut ? 'Processing...' : 'Enroll Now'}</span>
+                        <span className="material-symbols-outlined text-[18px]">{isCheckingOut ? 'hourglass_top' : 'bolt'}</span>
+                    </button>
+                </div>
             </div>
         </div>
     );

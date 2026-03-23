@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "../hooks/useAuth";
 import Quiz from "../components/Quiz";
+import toast from "react-hot-toast";
 import {
   fetchCourseLessons,
   fetchEnrollmentProgress,
@@ -11,6 +12,14 @@ import { fetchAssignmentsByCourse } from "../services/quizService";
 import QuizPreTestPage from "./QuizPreTestPage";
 import QuizPage from "./QuizPage";
 import QuizResultPage from "./QuizResultPage";
+import * as mammoth from "mammoth";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+
+// Set pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Mock data for demonstration
 const MOCK_COURSE = {
@@ -79,6 +88,7 @@ export default function CourseLessonPage() {
     lessonId || "lecture-003",
   );
   const [isInstructorPreview, setIsInstructorPreview] = useState(false);
+  const [videoLoadFailed, setVideoLoadFailed] = useState(false);
   const [, setIsVideoPlaying] = useState(false);
 
   // Quiz overlay state
@@ -86,6 +96,61 @@ export default function CourseLessonPage() {
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [quizQuestionCount, setQuizQuestionCount] = useState(50);
   const [quizResult, setQuizResult] = useState(null);
+
+  // AI Assistant states
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [aiSummary, setAiSummary] = useState("");
+  const [summaryLang, setSummaryLang] = useState("vi");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const cloudAudioRef = useRef(null);
+
+  // File upload state for AI
+  const [customFileText, setCustomFileText] = useState("");
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const normalizeLectureAssets = (lecture) => {
+    const transformedMaterials = Array.isArray(lecture?.Materials)
+      ? lecture.Materials
+      : [];
+    const rawMaterials = Array.isArray(lecture?.LectureMaterial)
+      ? lecture.LectureMaterial
+      : [];
+
+    const latestRawVideo = rawMaterials
+      .filter((m) => (m?.Type || m?.type || "").toLowerCase() === "video")
+      .sort((a, b) =>
+        Number(a?.Id || a?.id || 0) > Number(b?.Id || b?.id || 0) ? 1 : -1,
+      )
+      .at(-1);
+
+    const normalizedMaterials =
+      transformedMaterials.length > 0
+        ? transformedMaterials.map((m, index) => ({
+          Id: m?.Id ?? m?.id ?? index,
+          Type: (m?.Type || m?.type || "document").toLowerCase(),
+          Url: m?.Url || m?.url || "",
+          Name: m?.Name || m?.name || null,
+        }))
+        : rawMaterials
+          .filter((m) => (m?.Type || m?.type || "").toLowerCase() !== "video")
+          .map((m, index) => ({
+            Id: m?.Id ?? m?.id ?? index,
+            Type: (m?.Type || m?.type || "document").toLowerCase(),
+            Url: m?.Url || m?.url || "",
+            Name: m?.Name || m?.name || null,
+          }));
+
+    return {
+      videoUrl:
+        lecture?.VideoUrl ||
+        lecture?.videoUrl ||
+        latestRawVideo?.Url ||
+        latestRawVideo?.url ||
+        null,
+      materials: normalizedMaterials.filter((m) => m.Url),
+    };
+  };
 
   // Check if this is instructor preview mode
   // NEVER use instructor preview in CourseLessonPage - it's for enrolled students only
@@ -164,20 +229,155 @@ export default function CourseLessonPage() {
     console.log("[CourseLessonPage] user:", user);
   }, [course, enrollment, courseId, user]);
 
+  // File Upload Handler
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setCustomFileText("");
+
+    try {
+      const fileType = file.name.split(".").pop().toLowerCase();
+
+      if (fileType === "txt") {
+        const reader = new FileReader();
+        reader.onload = (event) => setCustomFileText(event.target.result);
+        reader.readAsText(file);
+      } else if (fileType === "docx") {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        setCustomFileText(result.value);
+      } else if (fileType === "pdf") {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let text = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          text += textContent.items.map((item) => item.str).join(" ") + " ";
+        }
+        setCustomFileText(text);
+        toast.success("Trích xuất PDF thành công.");
+      } else {
+        toast.error("Vui lòng tải lên file định dạng: txt, docx, pdf");
+      }
+    } catch (error) {
+      console.error("File upload error:", error);
+      toast.error("Có lỗi xảy ra khi đọc file");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  // AI Function handlers
+  const handleSummarize = async () => {
+    const contentToSummarize = customFileText || currentLesson?.Content;
+    if (!contentToSummarize) {
+      toast.error("Không có nội dung bài học hoặc file để tóm tắt");
+      return;
+    }
+    setIsSummarizing(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_URL}/chatbot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          message: `Please provide a concise summary of the following text. The summary MUST be in ${summaryLang === 'vi' ? 'Vietnamese' : 'English'}. Focus on the key points and main ideas:\n\n${contentToSummarize}`,
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiSummary(data.response || "Không có tóm tắt nào.");
+        toast.success("Tóm tắt thành công!");
+      } else {
+        toast.error("Không thể tóm tắt bài học");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi kết nối bộ AI");
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  const handleSpeak = async () => {
+    const textToSpeak = aiSummary || customFileText || currentLesson?.Content;
+    if (!textToSpeak) return;
+
+    if (cloudAudioRef.current) {
+      cloudAudioRef.current.pause();
+      cloudAudioRef.current = null;
+    }
+
+    setIsSpeaking(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_URL}/chatbot/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: textToSpeak, lang: summaryLang })
+      });
+      if (!res.ok) throw new Error("API error");
+      const { urls } = await res.json();
+
+      if (!urls || urls.length === 0) {
+        setIsSpeaking(false);
+        return;
+      }
+
+      let index = 0;
+      const playNext = () => {
+        if (index >= urls.length) {
+          setIsSpeaking(false);
+          cloudAudioRef.current = null;
+          return;
+        }
+        const chunk = urls[index];
+        const audio = new Audio("data:audio/mp3;base64," + (chunk.base64 || chunk.url));
+        cloudAudioRef.current = audio;
+        audio.onended = () => {
+          index++;
+          playNext();
+        };
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          cloudAudioRef.current = null;
+        };
+        audio.play().catch((e) => {
+          console.error(e);
+          setIsSpeaking(false);
+        });
+      };
+      playNext();
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi kết nối bộ đọc Cloud TTS");
+      setIsSpeaking(false);
+    }
+  };
+
+  const handleStop = () => {
+    if (cloudAudioRef.current) {
+      cloudAudioRef.current.pause();
+      cloudAudioRef.current = null;
+    }
+    setIsSpeaking(false);
+  };
+
+  useEffect(() => {
+    return () => handleStop();
+  }, []);
+
   // Find the current lesson from sections
   const findLessonInSections = (sections, lectureId) => {
     if (!sections) return null;
     for (const section of sections) {
       const lecture = section.Lectures?.find((l) => l.Id === lectureId);
       if (lecture) {
-        // Extract video URL from lecture materials
-        const videoMaterial = lecture.LectureMaterial?.find(
-          (m) => m.Type === "video",
-        );
-
-        // Get all materials for resources tab
-        const materials = lecture.LectureMaterial || [];
-
+        const assets = normalizeLectureAssets(lecture);
         return {
           Id: lecture.Id,
           Title: lecture.Title,
@@ -185,8 +385,8 @@ export default function CourseLessonPage() {
             lecture.Content || "No content available for this lesson yet.",
           IsPreviewable: lecture.IsPreviewable,
           SectionTitle: section.Title,
-          VideoUrl: videoMaterial?.Url || null,
-          Materials: materials, // Include all materials
+          VideoUrl: assets.videoUrl,
+          Materials: assets.materials,
         };
       }
     }
@@ -198,13 +398,17 @@ export default function CourseLessonPage() {
     if (!lessonId && course?.Sections && course.Sections.length > 0) {
       const firstLecture = course.Sections[0]?.Lectures?.[0];
       if (firstLecture?.Id) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedLessonId(firstLecture.Id);
       }
     }
   }, [course?.Sections, lessonId]);
 
   const currentLesson = findLessonInSections(course?.Sections, currentLessonId);
+
+  useEffect(() => {
+    // Reset video error state when changing lesson/video URL
+    setVideoLoadFailed(false);
+  }, [currentLessonId, currentLesson?.VideoUrl]);
 
   // Calculate progress
   const calculateProgress = () => {
@@ -349,25 +553,27 @@ export default function CourseLessonPage() {
   // Loading state
   if (courseLoading) {
     return (
-      <div className="flex h-screen w-full bg-background-light dark:bg-background-dark items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-white">Loading course...</p>
-          <div className="mt-4 p-4 bg-slate-900/50 rounded-lg border border-slate-700 max-w-md">
-            <p className="text-xs text-slate-400 mb-2">Debug Info:</p>
-            <pre className="text-xs text-slate-300">
-              {JSON.stringify(
-                {
-                  courseId,
-                  isInstructorPreview,
-                  userRole: user?.role,
-                  hasInstructor: !!user?.instructor,
-                  lessonId,
-                },
-                null,
-                2,
-              )}
-            </pre>
+      <div className="flex h-screen w-full bg-[#0a0a14] items-center justify-center relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div className="flex flex-col items-center gap-6 p-8 relative z-10">
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            <div className="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
+            <span className="material-symbols-outlined text-primary text-2xl animate-pulse">
+              menu_book
+            </span>
+          </div>
+          <div className="flex flex-col items-center text-center max-w-sm">
+            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
+              Đang tải bài học...
+            </h3>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Vui lòng đợi trong giây lát, hệ thống đang chuẩn bị nội dung khóa
+              học cho bạn.
+            </p>
           </div>
         </div>
       </div>
@@ -376,26 +582,44 @@ export default function CourseLessonPage() {
 
   if (courseError) {
     return (
-      <div className="flex h-screen w-full bg-background-light dark:bg-background-dark items-center justify-center">
-        <div className="flex flex-col items-center gap-4 p-8 bg-slate-900/50 rounded-lg border border-red-500/20 max-w-md">
-          <span className="material-symbols-outlined text-4xl text-red-500">
-            error
-          </span>
-          <p className="text-white font-bold">Failed to load course</p>
-          <p className="text-slate-400 text-sm text-center">
-            {courseError.message}
-          </p>
-          <div className="text-xs text-slate-500 max-h-24 overflow-auto bg-slate-950 p-2 rounded w-full">
-            <pre>
-              {JSON.stringify({ courseId, error: courseError }, null, 2)}
-            </pre>
+      <div className="flex h-screen w-full bg-[#0a0a14] items-center justify-center relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <div className="flex flex-col items-center gap-6 p-8 bg-[#130d1a]/80 backdrop-blur-xl rounded-3xl border border-red-500/20 max-w-md text-center shadow-2xl relative z-10 w-full mx-4">
+          <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-2 ring-8 ring-red-500/5">
+            <span className="material-symbols-outlined text-5xl text-red-500">
+              error_outline
+            </span>
           </div>
-          <button
-            onClick={() => navigate("/my-learning")}
-            className="px-6 py-2 rounded-lg bg-primary text-white font-bold hover:bg-purple-600"
-          >
-            Back to My Learning
-          </button>
+          <div>
+            <h3 className="text-white text-2xl font-bold mb-3 tracking-tight">
+              Không thể tải khóa học
+            </h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-8 px-4">
+              Đã xảy ra lỗi khi tải dữ liệu khóa học. Vui lòng thử lại sau hoặc
+              quay về trang My Learning.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <button
+              onClick={() => window.location.reload()}
+              className="flex-1 py-3.5 rounded-xl bg-slate-800 text-white font-semibold hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                refresh
+              </span>
+              Thử lại
+            </button>
+            <button
+              onClick={() => navigate("/my-learning")}
+              className="flex-1 py-3.5 rounded-xl bg-primary text-white font-semibold hover:bg-purple-600 transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                arrow_back
+              </span>
+              Quay về
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -462,18 +686,24 @@ export default function CourseLessonPage() {
           <div className="flex items-center justify-between mb-6">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="h-8 w-auto">
-                <img src="/FlyUpTeam.png" alt="FlyUp Logo" className="h-full w-auto object-contain transition-transform group-hover:scale-105" />
+                <img
+                  src="/FlyUpTeam.png"
+                  alt="FlyUp Logo"
+                  className="h-full w-auto object-contain transition-transform group-hover:scale-105"
+                />
               </div>
               <h2 className="text-white text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
                 FlyUp
               </h2>
             </Link>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="size-8 rounded-full bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
               title="Back to Home"
             >
-              <span className="material-symbols-outlined text-[18px]">home</span>
+              <span className="material-symbols-outlined text-[18px]">
+                home
+              </span>
             </button>
           </div>
           <h3 className="text-white text-xl font-bold leading-tight mb-3">
@@ -672,7 +902,7 @@ export default function CourseLessonPage() {
             onMouseEnter={() => setIsVideoPlaying(true)}
             onMouseLeave={() => setIsVideoPlaying(false)}
           >
-            {currentLesson?.VideoUrl ? (
+            {currentLesson?.VideoUrl && !videoLoadFailed ? (
               <>
                 {/* HTML5 Video Player */}
                 <video
@@ -687,6 +917,7 @@ export default function CourseLessonPage() {
                     console.error("Video error:", e);
                     console.error("Failed URL:", currentLesson.VideoUrl);
                     console.error("Error details:", e.target.error);
+                    setVideoLoadFailed(true);
                   }}
                   onLoadedMetadata={() => {
                     console.log(
@@ -698,7 +929,7 @@ export default function CourseLessonPage() {
                     console.log("Video can play");
                   }}
                 >
-                  <source src={currentLesson.VideoUrl} type="video/mp4" />
+                  <source src={currentLesson.VideoUrl} />
                   Your browser does not support the video tag.
                 </video>
               </>
@@ -797,6 +1028,16 @@ export default function CourseLessonPage() {
                   }`}
               >
                 Notes
+              </button>
+              <button
+                onClick={() => setActiveTab("ai")}
+                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${activeTab === "ai"
+                  ? "text-purple-400 border-purple-400"
+                  : "text-slate-400 hover:text-purple-300 border-transparent"
+                  }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                AI Assistant
               </button>
             </div>
 
@@ -988,6 +1229,119 @@ export default function CourseLessonPage() {
                   placeholder="Add your notes here..."
                   rows="6"
                 ></textarea>
+              </div>
+            )}
+
+            {activeTab === "ai" && (
+              <div className="glass-panel rounded-xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+
+                <div className="flex items-center justify-between mb-6 relative z-10">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-purple-400">auto_awesome</span>
+                      Trợ lý AI
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      Tóm tắt nhanh kiến thức và đọc bài giảng cho bạn
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 bg-slate-900/50 p-1.5 rounded-lg border border-glass-border">
+                    <button
+                      onClick={() => setSummaryLang("vi")}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${summaryLang === "vi" ? "bg-purple-500/20 text-purple-400" : "text-slate-400 hover:text-white"
+                        }`}
+                    >
+                      Tiếng Việt
+                    </button>
+                    <button
+                      onClick={() => setSummaryLang("en")}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${summaryLang === "en" ? "bg-purple-500/20 text-purple-400" : "text-slate-400 hover:text-white"
+                        }`}
+                    >
+                      English
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 relative z-10">
+                  {customFileText && (
+                    <div className="px-4 py-3 bg-indigo-500/20 text-indigo-300 text-sm rounded-lg border border-indigo-500/30 flex items-start gap-3 relative">
+                      <span className="material-symbols-outlined mt-0.5 text-indigo-400">description</span>
+                      <div className="flex-1">
+                        <p className="font-medium mb-1">Đang sử dụng tài liệu tùy chỉnh ({customFileText.length} ký tự)</p>
+                        <button onClick={() => setCustomFileText("")} className="text-xs text-indigo-400 underline font-bold hover:text-white transition-colors">Hủy bỏ và trở lại dùng nội dung khóa học</button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      accept=".txt,.pdf,.docx"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold border border-glass-border flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        upload_file
+                      </span>
+                      {isUploading ? "Đang đọc..." : "Upload tài liệu"}
+                    </button>
+
+                    <button
+                      onClick={handleSummarize}
+                      disabled={isSummarizing || (!currentLesson?.Content && !customFileText)}
+                      className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        {isSummarizing ? "hourglass_empty" : "auto_awesome"}
+                      </span>
+                      {isSummarizing ? "Đang tóm tắt..." : "Tóm tắt"}
+                    </button>
+
+                    {!isSpeaking ? (
+                      <button
+                        onClick={handleSpeak}
+                        disabled={!currentLesson?.Content && !customFileText && !aiSummary}
+                        className="px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        <span className="material-symbols-outlined text-[20px] text-cyan-400">
+                          volume_up
+                        </span>
+                        Nghe bài học
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleStop}
+                        className="px-6 py-3 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold border border-red-500/30 transition-all flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">
+                          stop_circle
+                        </span>
+                        Dừng phát
+                      </button>
+                    )}
+                  </div>
+
+                  {aiSummary && (
+                    <div className="mt-4 p-6 rounded-xl bg-slate-900/60 border border-purple-500/20">
+                      <h4 className="text-sm font-bold text-purple-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                        Bản tóm tắt AI
+                      </h4>
+                      <div className="prose prose-sm prose-invert max-w-none text-slate-300 whitespace-pre-wrap leading-relaxed">
+                        {aiSummary}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

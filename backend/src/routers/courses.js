@@ -1,19 +1,76 @@
-import express from 'express';
-import * as courseController from '../controllers/courseController.js';
-import { authenticateJWT } from '../middleware/authMiddleware.js';
+import express from "express";
+import * as courseController from "../controllers/courseController.js";
+import { authenticateJWT, optionalAuthenticateJWT } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Instructor-specific routes (must be BEFORE /:id to avoid conflicts)
-router.get('/instructor/stats', authenticateJWT, courseController.getInstructorStats);
-router.get('/instructor/courses', authenticateJWT, courseController.getInstructorCourses);
+router.get(
+  "/instructor/stats",
+  authenticateJWT,
+  courseController.getInstructorStats,
+);
+router.get(
+  "/instructor/courses",
+  authenticateJWT,
+  courseController.getInstructorCourses,
+);
+router.get(
+  "/instructor/students",
+  authenticateJWT,
+  courseController.getInstructorStudents,
+);
+router.get(
+  "/instructor/students/export",
+  authenticateJWT,
+  courseController.exportStudentResults,
+);
+router.get(
+  "/instructor/communication",
+  authenticateJWT,
+  courseController.getInstructorCommunication,
+);
+
+// Section management routes (must be BEFORE /:id to avoid conflicts)
+router.post(
+  "/:courseId/sections",
+  authenticateJWT,
+  courseController.createSection,
+);
+router.put(
+  "/sections/:sectionId",
+  authenticateJWT,
+  courseController.updateSection,
+);
+router.delete(
+  "/sections/:sectionId",
+  authenticateJWT,
+  courseController.deleteSection,
+);
+
+// Lecture management routes
+router.post(
+  "/sections/:sectionId/lectures",
+  authenticateJWT,
+  courseController.createLecture,
+);
+router.put(
+  "/lectures/:lectureId",
+  authenticateJWT,
+  courseController.updateLecture,
+);
+router.delete(
+  "/lectures/:lectureId",
+  authenticateJWT,
+  courseController.deleteLecture,
+);
 
 // Course CRUD routes
-router.post('/', authenticateJWT, courseController.createCourse);
-router.put('/:id/publish', authenticateJWT, courseController.publishCourse);
-router.put('/:id/unpublish', authenticateJWT, courseController.unpublishCourse);
-router.put('/:id', authenticateJWT, courseController.updateCourse);
-router.delete('/:id', authenticateJWT, courseController.deleteCourse);
+router.post("/", authenticateJWT, courseController.createCourse);
+router.put("/:id/publish", authenticateJWT, courseController.publishCourse);
+router.put("/:id/unpublish", authenticateJWT, courseController.unpublishCourse);
+router.put("/:id", authenticateJWT, courseController.updateCourse);
+router.delete("/:id", authenticateJWT, courseController.deleteCourse);
 
 /**
  * @swagger
@@ -55,7 +112,7 @@ router.delete('/:id', authenticateJWT, courseController.deleteCourse);
  *       400:
  *         description: Invalid input
  */
-router.post('/:id/reviews', authenticateJWT, courseController.addReview);
+router.post("/:id/reviews", authenticateJWT, courseController.addReview);
 
 /**
  * @swagger
@@ -73,7 +130,7 @@ router.post('/:id/reviews', authenticateJWT, courseController.addReview);
  *       200:
  *         description: List of reviews
  */
-router.get('/:id/reviews', courseController.getReviews);
+router.get("/:id/reviews", courseController.getReviews);
 
 /**
  * @swagger
@@ -85,7 +142,7 @@ router.get('/:id/reviews', courseController.getReviews);
  *       200:
  *         description: List of categories
  */
-router.get('/categories', courseController.getCategories);
+router.get("/categories", courseController.getCategories);
 
 /**
  * @swagger
@@ -126,7 +183,7 @@ router.get('/categories', courseController.getCategories);
  *       200:
  *         description: List of courses
  */
-router.get('/', courseController.getCourses);
+router.get("/", courseController.getCourses);
 
 /**
  * @swagger
@@ -146,6 +203,6 @@ router.get('/', courseController.getCourses);
  *       404:
  *         description: Course not found
  */
-router.get('/:id', courseController.getCourseById);
+router.get("/:id", optionalAuthenticateJWT, courseController.getCourseById);
 
 export default router;

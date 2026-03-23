@@ -18,7 +18,7 @@ const COLOR_MAP = {
 
 const TIMER_SECONDS = 45;
 
-const QuizPage = ({ assignmentId, courseId, userId, questionCount, onFinish, onBack }) => {
+const QuizPage = ({ assignmentId, courseId, questionCount, onFinish, onBack }) => {
     const { accessToken, loading: authLoading } = useAuth();
 
     const [phase, setPhase] = useState('loading'); // loading | quiz | submitting
@@ -87,25 +87,6 @@ const QuizPage = ({ assignmentId, courseId, userId, questionCount, onFinish, onB
         loadInitialQuestion();
     }, [authLoading, accessToken, loadInitialQuestion]);
 
-    useEffect(() => {
-        if (phase !== 'quiz') return;
-
-        clearInterval(timerRef.current);
-
-        timerRef.current = setInterval(() => {
-            setTimeLeft((t) => {
-                if (t <= 1) {
-                    clearInterval(timerRef.current);
-                    handleNext(true);
-                    return 0;
-                }
-                return t - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(timerRef.current);
-    }, [phase, questionIndex]);
-
     const handleNext = useCallback(async (timedOut = false) => {
         if (!currentQuestion || isLoadingNext) return;
         if (!accessToken) {
@@ -145,7 +126,7 @@ const QuizPage = ({ assignmentId, courseId, userId, questionCount, onFinish, onB
             const updatedAnsweredQuestions = answerData.answeredQuestions ?? [];
             const updatedResponses = answerData.responses ?? [];
             const updatedTheta = answerData.tempTheta ?? currentTheta;
-            const updatedQuestionHistory = [...questionHistory, historyEntry];
+            const updatedQuestionHistory = [...questionHistory, { ...historyEntry, isCorrect: answerData.isCorrect ?? false }];
             const updatedSelectedChoiceIds = [...selectedChoiceIds, selectedId];
 
             setAnsweredQuestions(updatedAnsweredQuestions);
@@ -212,6 +193,25 @@ const QuizPage = ({ assignmentId, courseId, userId, questionCount, onFinish, onB
         selectedChoiceIds,
         onFinish,
     ]);
+
+    useEffect(() => {
+        if (phase !== 'quiz') return;
+
+        clearInterval(timerRef.current);
+
+        timerRef.current = setInterval(() => {
+            setTimeLeft((t) => {
+                if (t <= 1) {
+                    clearInterval(timerRef.current);
+                    handleNext(true);
+                    return 0;
+                }
+                return t - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timerRef.current);
+    }, [phase, questionIndex, handleNext]);
 
     const timerPercent = (timeLeft / TIMER_SECONDS) * 100;
     const timerColor = timeLeft > 15 ? '#7f13ec' : timeLeft > 7 ? '#d69e2e' : '#e53e3e';

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchSubmissionHistory } from '../services/quizService';
 
-const QuizPreTestPage = ({ assignment, userId, courseId, onStart, onBack }) => {
+const QuizPreTestPage = ({ assignment, userId, onStart, onBack }) => {
     const [questionCount, setQuestionCount] = useState(50);
 
     const { data: submissions = [], isLoading: submissionsLoading } = useQuery({
@@ -140,8 +140,8 @@ const QuizPreTestPage = ({ assignment, userId, courseId, onStart, onBack }) => {
                                                 <td className="py-3 text-center font-bold text-white">{sub.Mark?.toFixed(1)}</td>
                                                 <td className="py-3 text-center">
                                                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${passed
-                                                            ? 'bg-green-500/10 border-green-500/20 text-green-400'
-                                                            : 'bg-red-500/10 border-red-500/20 text-red-400'
+                                                        ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                                                        : 'bg-red-500/10 border-red-500/20 text-red-400'
                                                         }`}>
                                                         <span className={`size-1.5 rounded-full ${passed ? 'bg-green-400' : 'bg-red-400'}`}></span>
                                                         {passed ? 'Passed' : 'Failed'}

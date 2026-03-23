@@ -98,8 +98,19 @@ export const loginUser = async ({ email, password }) => {
     throw new Error('Invalid login credentials');
   }
 
+  // Social accounts may not have a local password hash.
+  if (!user.Password) {
+    const provider = user.LoginProvider || 'social provider';
+    throw new Error(`This account uses ${provider} login. Please sign in with ${provider}.`);
+  }
+
   // Compare password
-  const isMatch = await bcrypt.compare(password, user.Password);
+  let isMatch = false;
+  try {
+    isMatch = await bcrypt.compare(password, user.Password);
+  } catch {
+    throw new Error('Invalid login credentials');
+  }
   if (!isMatch) {
     throw new Error('Invalid login credentials');
   }
