@@ -9,6 +9,7 @@ generator erd {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Articles {
