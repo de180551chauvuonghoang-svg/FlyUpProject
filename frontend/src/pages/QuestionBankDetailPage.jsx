@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import QuestionEditorModal from '../components/QuetionBank/QuestionEditorModal';
 import toast from 'react-hot-toast';
@@ -71,7 +71,7 @@ const QuestionBankDetailPage = () => {
     const [linkedAssignments, setLinkedAssignments] = useState([]);
     const [loadingAssignments, setLoadingAssignments] = useState(false);
 
-    const loadLinkedAssignments = async () => {
+    const loadLinkedAssignments = useCallback(async () => {
         setLoadingAssignments(true);
         try {
             const data = await fetchAssignmentsByQuestionBank(id);
@@ -81,7 +81,7 @@ const QuestionBankDetailPage = () => {
         } finally {
             setLoadingAssignments(false);
         }
-    };
+    }, [id]);
 
     const handleDeleteQuestion = async (questionId) => {
         const toastId = toast.loading('Deleting question...');
@@ -121,7 +121,7 @@ const QuestionBankDetailPage = () => {
         }
     };
 
-    const loadBank = async () => {
+    const loadBank = useCallback(async () => {
         setLoadingBank(true);
         try {
             const data = await fetchQuestionBankDetail(id);
@@ -131,9 +131,9 @@ const QuestionBankDetailPage = () => {
         } finally {
             setLoadingBank(false);
         }
-    };
+    }, [id]);
 
-    const loadQuestions = async () => {
+    const loadQuestions = useCallback(async () => {
         setLoadingQuestions(true);
         try {
             const data = await fetchQuestionBankQuestions(id);
@@ -143,17 +143,17 @@ const QuestionBankDetailPage = () => {
         } finally {
             setLoadingQuestions(false);
         }
-    };
+    }, [id]);
 
     useEffect(() => {
         loadBank();
         loadQuestions();
-    }, [id]);
+    }, [loadBank, loadQuestions]);
 
     useEffect(() => {
         if (!id) return;
         loadLinkedAssignments();
-    }, [id]);
+    }, [id, loadLinkedAssignments]);
 
     if (loadingBank) {
         return (
