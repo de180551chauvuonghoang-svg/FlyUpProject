@@ -64,6 +64,11 @@ router.delete(
   authenticateJWT,
   courseController.deleteLecture,
 );
+router.post(
+  "/lectures/:lectureId/complete",
+  authenticateJWT,
+  courseController.markLectureComplete,
+);
 
 // Course CRUD routes
 router.post("/", authenticateJWT, courseController.createCourse);

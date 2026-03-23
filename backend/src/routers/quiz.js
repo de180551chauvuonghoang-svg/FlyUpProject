@@ -7,6 +7,11 @@ const router = express.Router();
 // Get list of assignments for a course
 router.get("/course/:courseId/assignments", quizController.getAssignmentsByCourse);
 
+// Assignment CRUD
+router.post("/", authenticateJWT, quizController.createAssignment);
+router.put("/:id", authenticateJWT, quizController.updateAssignment);
+router.delete("/:id", authenticateJWT, quizController.deleteAssignment);
+
 // Get submission history for user + assignment
 router.get("/assignment/:assignmentId/submissions", quizController.getSubmissionHistory);
 

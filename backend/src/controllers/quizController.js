@@ -21,9 +21,10 @@ export const getAssignmentsByCourse = async (req, res) => {
 
     const assignments = await prisma.assignments.findMany({
       where: {
-        Sections: {
-          CourseId: courseId,
-        },
+        OR: [
+          { Sections: { CourseId: courseId } },
+          { CourseId: courseId }
+        ]
       },
       select: {
         Id: true,
@@ -32,11 +33,17 @@ export const getAssignmentsByCourse = async (req, res) => {
         QuestionCount: true,
         GradeToPass: true,
         SectionId: true,
+        CourseId: true,
         Sections: {
           select: {
             Title: true,
           },
         },
+        McqQuestions: {
+          include: {
+            McqChoices: true
+          }
+        }
       },
       orderBy: {
         Sections: {
@@ -105,6 +112,138 @@ export const getSubmissionHistory = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch submission history",
+    });
+  }
+};
+
+/**
+ * Create a new assignment
+ */
+export const createAssignment = async (req, res) => {
+  try {
+    const { name, duration, gradeToPass, sectionId, courseId, questions } = req.body;
+    const userId = req.user?.userId;
+
+    console.log(`[QuizController] Creating assignment: ${name}`);
+
+    const result = await prisma.assignments.create({
+      data: {
+        Name: name,
+        Duration: parseInt(duration) || 30,
+        GradeToPass: parseFloat(gradeToPass) || 8,
+        SectionId: sectionId || null,
+        CourseId: courseId || null,
+        CreatorId: userId,
+        QuestionCount: questions?.length || 0,
+        McqQuestions: {
+          create: questions?.map((q) => ({
+            Content: q.content,
+            Difficulty: q.difficulty || "Medium",
+            McqChoices: {
+              create: q.choices.map((c) => ({
+                Content: c.content,
+                IsCorrect: c.isCorrect,
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        McqQuestions: {
+          include: { McqChoices: true },
+        },
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Create assignment error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to create assignment",
+    });
+  }
+};
+
+/**
+ * Update an existing assignment
+ */
+export const updateAssignment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, duration, gradeToPass, questions } = req.body;
+
+    console.log(`[QuizController] Updating assignment: ${id}`);
+
+    // First, delete old questions (cascade will handle choices)
+    await prisma.mcqQuestions.deleteMany({
+      where: { AssignmentId: id },
+    });
+
+    const result = await prisma.assignments.update({
+      where: { Id: id },
+      data: {
+        Name: name,
+        Duration: parseInt(duration) || 30,
+        GradeToPass: parseFloat(gradeToPass) || 8,
+        QuestionCount: questions?.length || 0,
+        McqQuestions: {
+          create: questions?.map((q) => ({
+            Content: q.content,
+            Difficulty: q.difficulty || "Medium",
+            McqChoices: {
+              create: q.choices.map((c) => ({
+                Content: c.content,
+                IsCorrect: c.isCorrect,
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        McqQuestions: {
+          include: { McqChoices: true },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Update assignment error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update assignment",
+    });
+  }
+};
+
+/**
+ * Delete an assignment
+ */
+export const deleteAssignment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`[QuizController] Deleting assignment: ${id}`);
+
+    await prisma.assignments.delete({
+      where: { Id: id },
+    });
+
+    res.json({
+      success: true,
+      message: "Assignment deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete assignment error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete assignment",
     });
   }
 };

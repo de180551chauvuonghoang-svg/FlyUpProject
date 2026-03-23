@@ -1348,3 +1348,64 @@ export const getInstructorCommunication = async (req, res) => {
       .json({ success: false, error: "Failed to fetch communication data" });
   }
 };
+
+// ─── MARK LECTURE COMPLETE ──────────────────────────────────────────────────
+export const markLectureComplete = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { lectureId } = req.params;
+    const prisma = (await import("../lib/prisma.js")).default;
+
+    // Verify lecture exists and get its CourseId
+    const lecture = await prisma.lectures.findUnique({
+      where: { Id: lectureId },
+      include: { Sections: true },
+    });
+
+    if (!lecture)
+      return res.status(404).json({ success: false, error: "Lecture not found" });
+
+    const courseId = lecture.Sections.CourseId;
+
+    // Find the user's enrollment for this course
+    const enrollment = await prisma.enrollments.findFirst({
+      where: { CreatorId: userId, CourseId: courseId },
+    });
+
+    if (!enrollment)
+      return res.status(404).json({ success: false, error: "You are not enrolled in this course" });
+
+    // Update LectureMilestones
+    let milestones = [];
+    try {
+      milestones = JSON.parse(enrollment.LectureMilestones || "[]");
+    } catch (e) {
+      milestones = [];
+    }
+
+    if (!milestones.includes(lectureId)) {
+      milestones.push(lectureId);
+      
+      await prisma.$transaction(async (tx) => {
+        // Update Enrollment
+        await tx.enrollments.update({
+          where: { CreatorId_CourseId: { CreatorId: userId, CourseId: courseId } },
+          data: { LectureMilestones: JSON.stringify(milestones) },
+        });
+
+        // Track in LectureCompletions for analytics
+        await tx.lectureCompletions.create({
+          data: {
+            UserId: userId,
+            LectureId: lectureId,
+          }
+        });
+      });
+    }
+
+    res.json({ success: true, message: "Lecture marked as complete" });
+  } catch (error) {
+    console.error("Mark lecture complete error:", error);
+    res.status(500).json({ success: false, error: "Failed to mark lecture complete" });
+  }
+};

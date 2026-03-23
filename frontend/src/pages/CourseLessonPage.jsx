@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuth from "../hooks/useAuth";
 import Quiz from "../components/Quiz";
 import toast from "react-hot-toast";
 import {
   fetchCourseLessons,
   fetchEnrollmentProgress,
+  markLectureComplete,
 } from "../services/lessonService";
 import { fetchAssignmentsByCourse } from "../services/quizService";
 import QuizPreTestPage from "./QuizPreTestPage";
@@ -83,6 +84,7 @@ export default function CourseLessonPage() {
   const { courseId, lessonId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedLessonId, setSelectedLessonId] = useState(
     lessonId || "lecture-003",
@@ -108,6 +110,13 @@ export default function CourseLessonPage() {
   const [customFileText, setCustomFileText] = useState("");
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Video tracking & UI states
+  const maxTimePlayed = useRef(0);
+  const [isLessonCompleted, setIsLessonCompleted] = useState(false);
+  const [lastUpdateText, setLastUpdateText] = useState("Last updated recently");
+
+
 
   const normalizeLectureAssets = (lecture) => {
     const transformedMaterials = Array.isArray(lecture?.Materials)
@@ -272,13 +281,81 @@ export default function CourseLessonPage() {
 
   // AI Function handlers
   const handleSummarize = async () => {
-    const contentToSummarize = customFileText || currentLesson?.Content;
-    if (!contentToSummarize) {
-      toast.error("Không có nội dung bài học hoặc file để tóm tắt");
-      return;
-    }
     setIsSummarizing(true);
     try {
+      let contentToSummarize = customFileText || "";
+      
+      // If no custom file is uploaded, we combine video transcript + materials + description
+      if (!customFileText) {
+        contentToSummarize = currentLesson?.Content ? `Lesson Description:\n${currentLesson.Content}\n\n` : "";
+        
+        // 1. Extract materials
+        if (currentLesson?.Materials?.length > 0) {
+          toast.success("Đang đọc và trích xuất tài liệu đính kèm...");
+          for (const material of currentLesson.Materials) {
+             try {
+                const res = await fetch(material.Url);
+                const arrayBuffer = await res.arrayBuffer();
+                const fileType = material.Type?.toLowerCase();
+                
+                let text = "";
+                if (fileType === "txt") {
+                  const decoder = new TextDecoder();
+                  text = decoder.decode(arrayBuffer);
+                } else if (fileType === "docx" || fileType === "doc") {
+                  const result = await mammoth.extractRawText({ arrayBuffer });
+                  text = result.value;
+                } else if (fileType === "pdf") {
+                  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                  for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    text += textContent.items.map((item) => item.str).join(" ") + " ";
+                  }
+                }
+                
+                if (text) {
+                   contentToSummarize += `--- Document: ${material.Name || material.Url.split('/').pop()} ---\n${text}\n\n`;
+                }
+             } catch (err) {
+                console.error("Failed to extract material:", material.Url, err);
+             }
+          }
+        }
+        
+        // 2. Extract video transcript via backend
+        if (currentLesson?.VideoUrl) {
+          toast.success("Đang nghe và trích xuất giọng nói từ video...");
+          try {
+             const token = localStorage.getItem("accessToken");
+             const transcribeRes = await fetch(`${API_URL}/chatbot/transcribe`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ videoUrl: currentLesson.VideoUrl }),
+             });
+             if (transcribeRes.ok) {
+                const { text } = await transcribeRes.json();
+                if (text && text.text) {
+                   contentToSummarize += `--- Video Transcript ---\n${text.text}\n\n`;
+                } else if (typeof text === 'string') {
+                   contentToSummarize += `--- Video Transcript ---\n${text}\n\n`;
+                }
+             } else {
+                console.warn("Transcription API returned error");
+             }
+          } catch (err) {
+             console.error("Failed to transcribe video", err);
+          }
+        }
+      }
+
+      if (!contentToSummarize || contentToSummarize.trim() === "") {
+        toast.error("Không có nội dung bài học hoặc file để tóm tắt");
+        setIsSummarizing(false);
+        return;
+      }
+      
+      toast.success("Đang tạo bản tóm tắt...");
       const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_URL}/chatbot`, {
         method: "POST",
@@ -403,6 +480,35 @@ export default function CourseLessonPage() {
   }, [course?.Sections, lessonId]);
 
   const currentLesson = findLessonInSections(course?.Sections, currentLessonId);
+
+  useEffect(() => {
+    let completed = false;
+    if (enrollment) {
+      try {
+        const completedLectures = JSON.parse(enrollment.LectureMilestones || "[]");
+        completed = Array.isArray(completedLectures) ? completedLectures.includes(currentLessonId) : false;
+      } catch {
+        completed = false;
+      }
+    }
+    setIsLessonCompleted(completed);
+    maxTimePlayed.current = 0;
+  }, [currentLessonId, enrollment]);
+
+  useEffect(() => {
+    const dateToUse = currentLesson?.LastModificationTime || course?.LastModificationTime;
+    if (dateToUse) {
+      const date = new Date(dateToUse);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) setLastUpdateText("Last updated today");
+      else if (diffDays === 1) setLastUpdateText("Last updated yesterday");
+      else if (diffDays < 30) setLastUpdateText(`Last updated ${diffDays} days ago`);
+      else setLastUpdateText(`Last updated ${date.toLocaleDateString('vi-VN')}`);
+    }
+  }, [currentLesson, course]);
 
   useEffect(() => {
     // Reset video error state when changing lesson/video URL
@@ -676,6 +782,58 @@ export default function CourseLessonPage() {
     currentLessonId,
   );
 
+  const handleNextLecture = () => {
+    if (!isLessonCompleted) {
+      toast.error("Vui lòng xem hết video để qua bài tiếp theo!");
+      return;
+    }
+
+    let foundCurrent = false;
+    for (const section of sections) {
+      for (const item of section.items) {
+        if (foundCurrent) {
+          if (item.status === 'locked' && !isLessonCompleted) {
+            toast.warning("Bài giảng tiếp theo chưa được mở khóa!");
+            return;
+          }
+          setSelectedLessonId(item.id);
+          return;
+        }
+        if (item.id === currentLessonId) {
+          foundCurrent = true;
+        }
+      }
+    }
+    toast.success("Bạn đã hoàn thành bài giảng cuối cùng!");
+  };
+
+  const handleCompleteLesson = async () => {
+    if (isLessonCompleted || courseId === "demo") {
+      setIsLessonCompleted(true);
+      return;
+    }
+    
+    try {
+      await markLectureComplete(currentLessonId);
+      setIsLessonCompleted(true);
+      
+      // Invalidate queries to trigger real-time updates!
+      if (user?.id) {
+        queryClient.invalidateQueries({ queryKey: ["enrollmentProgress", courseId, user.id] });
+        queryClient.invalidateQueries({ queryKey: ["userEnrollments", user.id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["enrollmentProgress"] });
+        queryClient.invalidateQueries({ queryKey: ["userEnrollments"] });
+      }
+      
+      toast.success("Tiến trình học đã được tự động lưu!", { id: "progress-saved" });
+    } catch (error) {
+      console.error("Failed to mark complete:", error);
+      // Fallback visually if offline/error
+      setIsLessonCompleted(true);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full bg-background-light dark:bg-background-dark">
       {/* Left Sidebar */}
@@ -912,23 +1070,64 @@ export default function CourseLessonPage() {
                   preload="auto"
                   autoPlay
                   muted
+                  onTimeUpdate={(e) => {
+                    const video = e.target;
+                    if (!video.seeking && video.currentTime > maxTimePlayed.current) {
+                      maxTimePlayed.current = video.currentTime;
+                    }
+                    if (user?.id && currentLessonId) {
+                      const cacheKey = `flyup_video_progress_${user.id}_${currentLessonId}`;
+                      localStorage.setItem(cacheKey, JSON.stringify({
+                        currentTime: video.currentTime,
+                        maxTime: maxTimePlayed.current
+                      }));
+                    }
+                  }}
+                  onSeeking={(e) => {
+                    if (isLessonCompleted) return;
+                    if (e.target.currentTime > maxTimePlayed.current + 1) {
+                      e.target.currentTime = maxTimePlayed.current;
+                      toast.error("Bạn không thể tua qua phần chưa xem!", { id: 'seek-warning' });
+                    }
+                  }}
+                  onEnded={() => {
+                    handleCompleteLesson();
+                  }}
                   onError={(e) => {
                     console.error("Video error:", e);
                     console.error("Failed URL:", currentLesson.VideoUrl);
                     console.error("Error details:", e.target.error);
                     setVideoLoadFailed(true);
                   }}
-                  onLoadedMetadata={() => {
+                  onLoadedMetadata={(e) => {
                     console.log(
                       "Video loaded successfully:",
                       currentLesson.VideoUrl,
                     );
+                    const video = e.target;
+                    if (user?.id && currentLessonId) {
+                      const cacheKey = `flyup_video_progress_${user.id}_${currentLessonId}`;
+                      const savedData = localStorage.getItem(cacheKey);
+                      if (savedData) {
+                        try {
+                          const { currentTime, maxTime } = JSON.parse(savedData);
+                          // Only restore if valid
+                          if (currentTime > 0 && currentTime < video.duration) {
+                            video.currentTime = currentTime;
+                            maxTimePlayed.current = maxTime || currentTime;
+                            toast("Khôi phục tiến độ học...", { icon: "⏱️", id: "resume-toast" });
+                          }
+                        } catch {
+                          console.warn("Could not parse saved video progress");
+                        }
+                      }
+                    }
                   }}
                   onCanPlay={() => {
                     console.log("Video can play");
                   }}
                 >
-                  <source src={currentLesson.VideoUrl} />
+                  <source src={currentLesson.VideoUrl} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               </>
@@ -964,16 +1163,32 @@ export default function CourseLessonPage() {
               <h1 className="text-2xl font-bold text-white mb-1">
                 {currentLesson?.Title || "Lesson"}
               </h1>
-              <p className="text-slate-400 text-sm">Last updated 2 days ago</p>
+              <p className="text-slate-400 text-sm">{lastUpdateText}</p>
             </div>
             <div className="flex gap-3 w-full md:w-auto">
-              <button className="flex-1 md:flex-none h-11 px-6 rounded-lg border border-slate-600 text-white font-medium hover:bg-white/5 hover:border-slate-500 transition-all flex items-center justify-center gap-2">
+              <button 
+                onClick={() => {
+                  if (!isLessonCompleted) handleCompleteLesson();
+                }}
+                className={`flex-1 md:flex-none h-11 px-6 rounded-lg border transition-all flex items-center justify-center gap-2 font-medium ${
+                  isLessonCompleted 
+                    ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]" 
+                    : "border-slate-600 text-white hover:bg-white/5 hover:border-slate-500"
+                }`}
+              >
                 <span className="material-symbols-outlined text-[20px]">
                   check_circle
                 </span>
-                Mark as Complete
+                {isLessonCompleted ? "Completed" : "Mark as Complete"}
               </button>
-              <button className="flex-1 md:flex-none h-11 px-6 rounded-lg bg-primary text-white font-bold hover:bg-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center gap-2">
+              <button 
+                onClick={handleNextLecture}
+                className={`flex-1 md:flex-none h-11 px-6 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
+                  isLessonCompleted
+                    ? "bg-primary text-white hover:bg-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                    : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                }`}
+              >
                 Next Lecture
                 <span className="material-symbols-outlined text-[20px]">
                   arrow_forward

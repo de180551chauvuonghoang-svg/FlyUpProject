@@ -9,6 +9,9 @@ import {
   FileText,
   Video,
   X,
+  ClipboardList,
+  Clock,
+  Target,
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
@@ -34,8 +37,14 @@ export default function InstructorEditCoursePage() {
 
   // Curriculum management
   const [sections, setSections] = useState([]);
+  const [finalAssignment, setFinalAssignment] = useState(null);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [expandedSectionId, setExpandedSectionId] = useState(null);
+
+  // Assignment Modal State
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+  const [currentAssignment, setCurrentAssignment] = useState(null);
+  const [assignmentTarget, setAssignmentTarget] = useState({ type: null, id: null });
 
   const fetchCourseData = async () => {
     try {
@@ -60,14 +69,36 @@ export default function InstructorEditCoursePage() {
         level: course.Level || "Beginner",
       });
 
+      // Fetch assignments for this course
+      const assignRes = await fetch(`${API_URL}/quiz/course/${id}/assignments`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const assignData = await assignRes.json();
+      const allAssignments = assignData.data || [];
+
       // Set sections and lectures
-      // Handle both raw LectureMaterial format and transformed VideoUrl/Materials format
       const sectionsData = (course.Sections || []).map((section) => ({
         id: section.Id,
         title: section.Title,
         isExisting: true,
+        assignments: allAssignments.filter(a => a.SectionId === section.Id).map(a => ({
+          id: a.Id,
+          name: a.Name,
+          duration: a.Duration,
+          gradeToPass: a.GradeToPass,
+          questions: a.McqQuestions?.map(q => ({
+            id: q.Id,
+            content: q.Content,
+            difficulty: q.Difficulty,
+            choices: q.McqChoices?.map(c => ({
+              id: c.Id,
+              content: c.Content,
+              isCorrect: c.IsCorrect
+            }))
+          })) || [],
+          isExisting: true
+        })),
         lectures: (section.Lectures || []).map((lecture) => {
-          // Support both formats from backend
           const hasRawMaterial = Array.isArray(lecture.LectureMaterial) && lecture.LectureMaterial.length > 0;
           const videoUrl = hasRawMaterial
             ? lecture.LectureMaterial.find((m) => m.Type === "video")?.Url
@@ -92,8 +123,33 @@ export default function InstructorEditCoursePage() {
         }),
       }));
 
+      // Set final course assignment
+      const finalAssign = allAssignments.find(a => a.CourseId === id && !a.SectionId);
+      if (finalAssign) {
+        setFinalAssignment({
+          id: finalAssign.Id,
+          name: finalAssign.Name,
+          duration: finalAssign.Duration,
+          gradeToPass: finalAssign.GradeToPass,
+          questions: finalAssign.McqQuestions?.map(q => ({
+            id: q.Id,
+            content: q.Content,
+            difficulty: q.Difficulty,
+            choices: q.McqChoices?.map(c => ({
+              id: c.Id,
+              content: c.Content,
+              isCorrect: c.IsCorrect
+            }))
+          })) || [],
+          isExisting: true
+        });
+      } else {
+        setFinalAssignment(null);
+      }
+
       setSections(sectionsData);
-    } catch {
+    } catch (err) {
+      console.error("Fetch error:", err);
       toast.error("Failed to load course");
       navigate("/instructor/dashboard");
     } finally {
@@ -166,6 +222,88 @@ export default function InstructorEditCoursePage() {
           : sec,
       ),
     );
+  };
+
+  // Assignment management
+  const openAssignmentModal = (targetType, targetId, assignment = null) => {
+    setAssignmentTarget({ type: targetType, id: targetId });
+    if (assignment) {
+      setCurrentAssignment(JSON.parse(JSON.stringify(assignment))); // Deep copy
+    } else {
+      setCurrentAssignment({
+        id: `temp-assign-${Date.now()}`,
+        name: "",
+        duration: 30,
+        gradeToPass: 8,
+        questions: [],
+        isExisting: false
+      });
+    }
+    setIsAssignmentModalOpen(true);
+  };
+
+  const closeAssignmentModal = () => {
+    setIsAssignmentModalOpen(false);
+    setCurrentAssignment(null);
+  };
+
+  const saveAssignment = (updatedAssignment) => {
+    if (assignmentTarget.type === "section") {
+      setSections(sections.map(sec => {
+        if (sec.id === assignmentTarget.id) {
+          const _isNew = !updatedAssignment.isExisting;
+          const existingAssignments = sec.assignments || [];
+          let newAssignments;
+          
+          if (existingAssignments.some(a => a.id === updatedAssignment.id)) {
+            newAssignments = existingAssignments.map(a => a.id === updatedAssignment.id ? { ...updatedAssignment, isModified: true } : a);
+          } else {
+            newAssignments = [...existingAssignments, { ...updatedAssignment, isModified: true }];
+          }
+          
+          return { ...sec, assignments: newAssignments, isModified: true };
+        }
+        return sec;
+      }));
+    } else if (assignmentTarget.type === "course") {
+      setFinalAssignment({ ...updatedAssignment, isModified: true });
+    }
+    
+    closeAssignmentModal();
+    toast.success("Assignment updated in curriculum!");
+  };
+
+  const removeAssignment = async (targetType, targetId, assignmentId) => {
+    if (!confirm("Are you sure you want to delete this assignment?")) return;
+
+    if (assignmentId && !assignmentId.toString().startsWith("temp-")) {
+      try {
+        const res = await fetch(`${API_URL}/quiz/${assignmentId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (!res.ok) throw new Error("Failed to delete assignment from server");
+      } catch (err) {
+        toast.error(err.message);
+        return;
+      }
+    }
+
+    if (targetType === "section") {
+      setSections(sections.map(sec => {
+        if (sec.id === targetId) {
+          return {
+            ...sec,
+            assignments: (sec.assignments || []).filter(a => a.id !== assignmentId),
+            isModified: true
+          };
+        }
+        return sec;
+      }));
+    } else {
+      setFinalAssignment(null);
+    }
+    toast.success("Assignment removed");
   };
 
   // Lecture management
@@ -407,33 +545,14 @@ export default function InstructorEditCoursePage() {
         }),
       });
 
-      if (!basicInfoRes.ok) {
-        throw new Error("Failed to update basic course info");
-      }
-
+      if (!basicInfoRes.ok) throw new Error("Failed to update basic course info");
       console.log("✅ Course info updated");
 
-      // Step 2: Process sections (only new or modified)
-      const sectionsToProcess = sections.filter(
-        (s) => !s.isExisting || s.isModified,
-      );
-      const lecturesToProcess = sections.flatMap((s) =>
-        s.lectures.filter((l) => !l.isExisting || l.isModified),
-      );
-      const filesToUpload = sections.flatMap((s) =>
-        s.lectures.filter(
-          (l) => l.videoFile || l.materials?.some((m) => m.isNew),
-        ),
-      );
-
-      console.log(
-        `📦 Processing: ${sectionsToProcess.length} sections, ${lecturesToProcess.length} lectures, ${filesToUpload.length} file uploads`,
-      );
-
+      // Step 2-5: Process sections, lectures, and assignments
       for (const section of sections) {
         let sectionId = section.id;
 
-        // Create new section
+        // Create or update section
         if (!section.isExisting) {
           const sectionRes = await fetch(`${API_URL}/courses/${id}/sections`, {
             method: "POST",
@@ -443,147 +562,123 @@ export default function InstructorEditCoursePage() {
             },
             body: JSON.stringify({ title: section.title }),
           });
-
-          if (!sectionRes.ok)
-            throw new Error(`Failed to create section: ${section.title}`);
-
+          if (!sectionRes.ok) throw new Error(`Failed to create section: ${section.title}`);
           const sectionData = await sectionRes.json();
           sectionId = sectionData.data.Id;
+        } else if (section.isModified) {
+          const updateRes = await fetch(`${API_URL}/courses/sections/${sectionId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ title: section.title }),
+          });
+          if (!updateRes.ok) throw new Error(`Failed to update section: ${section.title}`);
         }
-        // Update existing section ONLY if modified
-        else if (section.isModified) {
-          const updateRes = await fetch(
-            `${API_URL}/courses/sections/${sectionId}`,
-            {
+
+        // Process lectures
+        for (const lecture of section.lectures) {
+          let lectureId = lecture.id;
+          if (!lecture.isExisting) {
+            const lectureRes = await fetch(`${API_URL}/courses/sections/${sectionId}/lectures`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ title: lecture.title, content: lecture.content || "" }),
+            });
+            if (!lectureRes.ok) throw new Error(`Failed to create lecture: ${lecture.title}`);
+            const lectureData = await lectureRes.json();
+            lectureId = lectureData.data.Id;
+          } else if (lecture.isModified) {
+            const updateRes = await fetch(`${API_URL}/courses/lectures/${lectureId}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
               },
-              body: JSON.stringify({ title: section.title }),
-            },
-          );
-
-          if (!updateRes.ok)
-            throw new Error(`Failed to update section: ${section.title}`);
-        }
-
-        // Step 3: Process lectures in this section (only new or modified)
-        for (const lecture of section.lectures) {
-          let lectureId = lecture.id;
-
-          // Create new lecture
-          if (!lecture.isExisting) {
-            const lectureRes = await fetch(
-              `${API_URL}/courses/sections/${sectionId}/lectures`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({
-                  title: lecture.title,
-                  content: lecture.content || "",
-                }),
-              },
-            );
-
-            if (!lectureRes.ok)
-              throw new Error(`Failed to create lecture: ${lecture.title}`);
-
-            const lectureData = await lectureRes.json();
-            lectureId = lectureData.data.Id;
-          }
-          // Update existing lecture ONLY if modified
-          else if (lecture.isModified) {
-            const updateRes = await fetch(
-              `${API_URL}/courses/lectures/${lectureId}`,
-              {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({
-                  title: lecture.title,
-                  content: lecture.content || "",
-                }),
-              },
-            );
-
-            if (!updateRes.ok)
-              throw new Error(`Failed to update lecture: ${lecture.title}`);
+              body: JSON.stringify({ title: lecture.title, content: lecture.content || "" }),
+            });
+            if (!updateRes.ok) throw new Error(`Failed to update lecture: ${lecture.title}`);
           }
 
-          // Step 4: Upload video if new video file
+          // Handle Video Upload
           if (lecture.videoFile) {
-            console.log(`📹 Uploading video for: ${lecture.title}`);
             const videoFormData = new FormData();
             videoFormData.append("file", lecture.videoFile);
             videoFormData.append("lectureId", lectureId);
-
             const videoRes = await fetch(`${API_URL}/upload/video`, {
               method: "POST",
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
+              headers: { Authorization: `Bearer ${accessToken}` },
               body: videoFormData,
             });
-
-            if (!videoRes.ok) {
-              let uploadError = "Failed to upload video";
-              try {
-                const errorData = await videoRes.json();
-                uploadError =
-                  errorData?.error || errorData?.message || uploadError;
-              } catch {
-                // Keep default error message if response body is not JSON
-              }
-              throw new Error(`${uploadError} for lecture: ${lecture.title}`);
-            } else {
-              console.log(`✅ Video uploaded for: ${lecture.title}`);
-            }
+            if (!videoRes.ok) throw new Error(`Failed to upload video for: ${lecture.title}`);
           }
 
-          // Step 5: Upload new materials
-          const newMaterials = (lecture.materials || []).filter(
-            (m) => m.isNew && m.file,
-          );
-          if (newMaterials.length > 0) {
-            console.log(
-              `📄 Uploading ${newMaterials.length} material(s) for: ${lecture.title}`,
-            );
-          }
-
+          // Handle Materials Upload
+          const newMaterials = (lecture.materials || []).filter(m => m.isNew && m.file);
           for (const material of newMaterials) {
             const matFormData = new FormData();
             matFormData.append("file", material.file);
             matFormData.append("lectureId", lectureId);
-
             const matRes = await fetch(`${API_URL}/upload/document`, {
               method: "POST",
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
+              headers: { Authorization: `Bearer ${accessToken}` },
               body: matFormData,
             });
-
-            if (!matRes.ok) {
-              let uploadError = "Failed to upload material";
-              try {
-                const errorData = await matRes.json();
-                uploadError =
-                  errorData?.error || errorData?.message || uploadError;
-              } catch {
-                // Keep default error message if response body is not JSON
-              }
-              throw new Error(`${uploadError}: ${material.Name}`);
-            } else {
-              console.log(`✅ Material uploaded: ${material.Name}`);
-            }
+            if (!matRes.ok) throw new Error(`Failed to upload material: ${material.Name}`);
           }
         }
+
+        // Process Section Assignments
+        for (const assignment of (section.assignments || [])) {
+          if (!assignment.isExisting || assignment.isModified) {
+            const isNew = !assignment.isExisting || assignment.id.toString().startsWith("temp-");
+            const url = isNew ? `${API_URL}/quiz` : `${API_URL}/quiz/${assignment.id}`;
+            const method = isNew ? "POST" : "PUT";
+            const res = await fetch(url, {
+              method,
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                name: assignment.name,
+                duration: assignment.duration,
+                gradeToPass: assignment.gradeToPass,
+                sectionId: sectionId,
+                courseId: id,
+                questions: assignment.questions
+              }),
+            });
+            if (!res.ok) throw new Error(`Failed to save assignment: ${assignment.name}`);
+          }
+        }
+      }
+
+      // Step 6: Process Final Course Assignment
+      if (finalAssignment && (finalAssignment.isModified || !finalAssignment.isExisting)) {
+        const isNew = !finalAssignment.isExisting || finalAssignment.id.toString().startsWith("temp-");
+        const url = isNew ? `${API_URL}/quiz` : `${API_URL}/quiz/${finalAssignment.id}`;
+        const method = isNew ? "POST" : "PUT";
+        const res = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            name: finalAssignment.name,
+            duration: finalAssignment.duration,
+            gradeToPass: finalAssignment.gradeToPass,
+            courseId: id,
+            sectionId: null,
+            questions: finalAssignment.questions
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to save final assignment");
       }
 
       console.log("✅ All changes saved successfully!");
@@ -595,6 +690,223 @@ export default function InstructorEditCoursePage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const _renderAssignmentModal = () => {
+    if (!isAssignmentModalOpen || !currentAssignment) return null;
+
+    const addQuestion = () => {
+      setCurrentAssignment({
+        ...currentAssignment,
+        questions: [
+          ...currentAssignment.questions,
+          {
+            id: `temp-q-${Date.now()}`,
+            content: "",
+            difficulty: "Medium",
+            choices: [
+              { id: `temp-c1-${Date.now()}`, content: "", isCorrect: true },
+              { id: `temp-c2-${Date.now()}`, content: "", isCorrect: false },
+              { id: `temp-c3-${Date.now()}`, content: "", isCorrect: false },
+              { id: `temp-c4-${Date.now()}`, content: "", isCorrect: false },
+            ]
+          }
+        ]
+      });
+    };
+
+    const removeQuestion = (qId) => {
+      setCurrentAssignment({
+        ...currentAssignment,
+        questions: currentAssignment.questions.filter(q => q.id !== qId)
+      });
+    };
+
+    const updateQuestion = (qId, field, value) => {
+      setCurrentAssignment({
+        ...currentAssignment,
+        questions: currentAssignment.questions.map(q => 
+          q.id === qId ? { ...q, [field]: value } : q
+        )
+      });
+    };
+
+    const updateChoice = (qId, cId, field, value) => {
+      setCurrentAssignment({
+        ...currentAssignment,
+        questions: currentAssignment.questions.map(q => {
+          if (q.id === qId) {
+            return {
+              ...q,
+              choices: q.choices.map(c => {
+                if (c.id === cId) {
+                  return { ...c, [field]: value };
+                }
+                if (field === "isCorrect" && value === true) {
+                  return { ...c, isCorrect: false }; // Only one correct answer
+                }
+                return c;
+              })
+            };
+          }
+          return q;
+        })
+      });
+    };
+
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
+        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
+          {/* Modal Header */}
+          <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50 sticky top-0 z-10 rounded-t-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
+                <ClipboardList size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">
+                  {currentAssignment.isExisting ? "Edit Assignment" : "Add New Assignment"}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {assignmentTarget.type === "section" ? "Section Quiz" : "Course Final Exam"}
+                </p>
+              </div>
+            </div>
+            <button onClick={closeAssignmentModal} className="text-slate-400 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg">
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Modal Body */}
+          <div className="p-6 overflow-y-auto flex-1 space-y-8">
+            {/* Basic Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Assign. Name</label>
+                <input
+                  type="text"
+                  value={currentAssignment.name}
+                  onChange={(e) => setCurrentAssignment({...currentAssignment, name: e.target.value})}
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:border-purple-500 outline-none transition-colors"
+                  placeholder="e.g., Mid-term Quiz"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
+                  <Clock size={14} className="text-purple-400"/> Duration (min)
+                </label>
+                <input
+                  type="number"
+                  value={currentAssignment.duration}
+                  onChange={(e) => setCurrentAssignment({...currentAssignment, duration: e.target.value})}
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:border-purple-500 outline-none transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
+                  <Target size={14} className="text-purple-400"/> Grade to Pass
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={currentAssignment.gradeToPass}
+                  onChange={(e) => setCurrentAssignment({...currentAssignment, gradeToPass: e.target.value})}
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:border-purple-500 outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Questions Header */}
+            <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+              <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                Questions ({currentAssignment.questions.length})
+              </h4>
+              <button
+                onClick={addQuestion}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all text-sm font-bold"
+              >
+                <Plus size={16} /> Add Question
+              </button>
+            </div>
+
+            {/* Questions List */}
+            <div className="space-y-6 pb-6">
+              {currentAssignment.questions.length === 0 ? (
+                <div className="text-center py-12 bg-slate-800/20 rounded-xl border border-dashed border-slate-700">
+                  <p className="text-slate-500">No questions added yet. Click "+ Add Question" to start.</p>
+                </div>
+              ) : (
+                currentAssignment.questions.map((q, qIdx) => (
+                  <div key={q.id} className="bg-slate-800/40 border border-slate-700 rounded-xl p-5 relative group">
+                    <button 
+                      onClick={() => removeQuestion(q.id)}
+                      className="absolute top-4 right-4 text-slate-500 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                    
+                    <div className="flex items-start gap-4 mb-4">
+                      <span className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-300">
+                        {qIdx + 1}
+                      </span>
+                      <div className="flex-1">
+                        <textarea
+                          value={q.content}
+                          onChange={(e) => updateQuestion(q.id, "content", e.target.value)}
+                          placeholder="Type your question here..."
+                          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-purple-500 outline-none transition-colors resize-none"
+                          rows="2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-12">
+                      {q.choices.map((choice, cIdx) => (
+                        <div key={choice.id} className="flex items-center gap-3 bg-slate-900/30 p-3 rounded-lg border border-slate-800 focus-within:border-purple-500/50 transition-all">
+                          <button
+                            onClick={() => updateChoice(q.id, choice.id, "isCorrect", true)}
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${choice.isCorrect ? "bg-green-500 border-green-500 text-white" : "border-slate-600 hover:border-slate-400"}`}
+                          >
+                            {choice.isCorrect && <span className="text-[10px]">✓</span>}
+                          </button>
+                          <input
+                            type="text"
+                            value={choice.content}
+                            onChange={(e) => updateChoice(q.id, choice.id, "content", e.target.value)}
+                            placeholder={`Choice ${String.fromCharCode(65 + cIdx)}`}
+                            className="bg-transparent border-none outline-none text-white text-sm flex-1"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="p-6 border-t border-slate-800 flex justify-end gap-3 bg-slate-900/50 rounded-b-2xl sticky bottom-0 z-10">
+            <button
+              onClick={closeAssignmentModal}
+              className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (!currentAssignment.name) return toast.error("Name is required");
+                if (currentAssignment.questions.length === 0) return toast.error("Add at least one question");
+                saveAssignment(currentAssignment);
+              }}
+              className="px-8 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg shadow-purple-500/20 transition-all"
+            >
+              Confirm Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -821,6 +1133,16 @@ export default function InstructorEditCoursePage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              openAssignmentModal("section", section.id);
+                            }}
+                            className="p-2 text-purple-500 hover:text-purple-400 transition-colors"
+                            title="Add assignment"
+                          >
+                            <ClipboardList size={18} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
                               removeSection(section.id);
                             }}
                             className="p-2 text-red-500 hover:text-red-400 transition-colors"
@@ -1004,11 +1326,101 @@ export default function InstructorEditCoursePage() {
                             </div>
                           ))
                         )}
+
+                        {/* Assignments List */}
+                        {section.assignments && section.assignments.length > 0 && (
+                          <div className="pt-2">
+                            <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">Assignments</h5>
+                            <div className="space-y-2">
+                              {section.assignments.map((assignment) => (
+                                <div key={assignment.id} className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 flex items-center justify-between group">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                      <ClipboardList size={16} />
+                                    </div>
+                                    <div>
+                                      <h6 className="text-white font-medium text-sm">{assignment.name}</h6>
+                                      <p className="text-[10px] text-slate-400">{assignment.questions.length} questions • {assignment.duration} min</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button 
+                                      onClick={() => openAssignmentModal("section", section.id, assignment)}
+                                      className="p-1.5 text-slate-400 hover:text-white"
+                                    >
+                                      <Upload size={14} />
+                                    </button>
+                                    <button 
+                                      onClick={() => removeAssignment("section", section.id, assignment.id)}
+                                      className="p-1.5 text-slate-400 hover:text-red-500"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 ))
               )}
+
+              {/* Final Assignment Section */}
+              <div className="pt-8 border-t border-slate-800">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400">
+                      <Target size={20} />
+                    </div>
+                    Final Course Assignment
+                  </h3>
+                  {!finalAssignment && (
+                    <button
+                      onClick={() => openAssignmentModal("course", id)}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-all text-sm font-bold flex items-center gap-2"
+                    >
+                      <Plus size={16} /> Add Final Exam
+                    </button>
+                  )}
+                </div>
+
+                {finalAssignment ? (
+                  <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-5 flex items-center justify-between group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400">
+                        <ClipboardList size={24} />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold">{finalAssignment.name}</h4>
+                        <p className="text-sm text-slate-400">
+                          {finalAssignment.questions.length} questions • {finalAssignment.duration} minutes • Pass grade: {finalAssignment.gradeToPass}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                       <button 
+                        onClick={() => openAssignmentModal("course", id, finalAssignment)}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm rounded-lg transition-colors border border-slate-700"
+                      >
+                        Edit Exam
+                      </button>
+                      <button 
+                        onClick={() => removeAssignment("course", id, finalAssignment.id)}
+                        className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-8 bg-slate-800/10 rounded-xl border border-dashed border-slate-700 text-center">
+                    <p className="text-slate-500 text-sm">Add a comprehensive exam that learners must pass to complete the course.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

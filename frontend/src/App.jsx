@@ -17,9 +17,7 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import ChatbotWidget from './components/Chatbot/ChatbotWidget';
 import InstructorDashboard from './pages/InstructorDashboard';
-import InstructorCourseBasicsPage from './pages/InstructorCourseBasicsPage';
-import InstructorCourseCurriculumPage from './pages/InstructorCourseCurriculumPage';
-import InstructorCourseReviewPage from './pages/InstructorCourseReviewPage';
+import InstructorCreateCoursePage from './pages/InstructorCreateCoursePage';
 import InstructorUploadPage from './pages/InstructorUploadPage';
 import InstructorEditCoursePage from './pages/InstructorEditCoursePage';
 import InstructorPreviewPage from './pages/InstructorPreviewPage';
@@ -119,9 +117,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-          <Route path="/instructor/create-course" element={<InstructorCourseBasicsPage />} />
-          <Route path="/instructor/create-course/curriculum" element={<InstructorCourseCurriculumPage />} />
-          <Route path="/instructor/create-course/review" element={<InstructorCourseReviewPage />} />
+          <Route path="/instructor/create-course" element={<InstructorCreateCoursePage />} />
           <Route path="/instructor/upload" element={<InstructorUploadPage />} />
           <Route path="/edit-course/:id" element={<InstructorEditCoursePage />} />
           <Route path="/instructor/preview/:id" element={<InstructorPreviewPage />} />
