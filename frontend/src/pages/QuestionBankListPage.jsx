@@ -157,7 +157,7 @@ const CreateQuestionBankModal = ({
                             value={form.name}
                             onChange={handleChange}
                             placeholder="e.g. Java OOP Bank"
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                         />
                     </div>
 
@@ -169,7 +169,7 @@ const CreateQuestionBankModal = ({
                             name="courseId"
                             value={form.courseId}
                             onChange={handleChange}
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400"
                         >
                             <option value="">Select a course</option>
                             {courses.map((course) => (
@@ -190,7 +190,7 @@ const CreateQuestionBankModal = ({
                             onChange={handleChange}
                             rows={4}
                             placeholder="Short description for this question bank"
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none resize-none focus:ring-2 focus:ring-violet-400"
+                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none resize-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                         />
                     </div>
 
@@ -341,7 +341,7 @@ const QuestionBankListPage = () => {
                                     search
                                 </span>
                                 <input
-                                    className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-400 outline-none"
+                                    className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-violet-400 outline-none placeholder:text-slate-400"
                                     placeholder="Search question banks..."
                                     type="text"
                                     value={search}
@@ -352,7 +352,7 @@ const QuestionBankListPage = () => {
                             <select
                                 value={courseId}
                                 onChange={(e) => setCourseId(e.target.value)}
-                                className="min-w-[220px] rounded-xl border border-slate-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                className="min-w-[220px] rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400"
                             >
                                 <option value="">All courses</option>
                                 {courses.map((course) => (

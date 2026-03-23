@@ -191,7 +191,7 @@ const CreateAssignmentFromBankPage = () => {
                                                 name="courseId"
                                                 value={form.courseId}
                                                 onChange={handleChange}
-                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm bg-white outline-none focus:ring-2 focus:ring-violet-400"
+                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 bg-white outline-none focus:ring-2 focus:ring-violet-400"
                                             >
                                                 <option value="">Select course</option>
                                                 {courses.map((course) => (
@@ -211,7 +211,7 @@ const CreateAssignmentFromBankPage = () => {
                                                 value={form.sectionId}
                                                 onChange={handleChange}
                                                 disabled={!form.courseId || loadingSections}
-                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm bg-white outline-none focus:ring-2 focus:ring-violet-400 disabled:bg-slate-100"
+                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 bg-white outline-none focus:ring-2 focus:ring-violet-400 disabled:bg-slate-100"
                                             >
                                                 <option value="">
                                                     {loadingSections ? 'Loading sections...' : 'Select section'}
@@ -234,7 +234,7 @@ const CreateAssignmentFromBankPage = () => {
                                             value={form.name}
                                             onChange={handleChange}
                                             placeholder="e.g. Java OOP Quiz 01"
-                                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                                         />
                                     </div>
 
@@ -249,7 +249,7 @@ const CreateAssignmentFromBankPage = () => {
                                                 min="1"
                                                 value={form.duration}
                                                 onChange={handleChange}
-                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400"
                                             />
                                         </div>
 
@@ -265,7 +265,7 @@ const CreateAssignmentFromBankPage = () => {
                                                 step="0.1"
                                                 value={form.gradeToPass}
                                                 onChange={handleChange}
-                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400"
                                             />
                                         </div>
                                     </div>
@@ -279,7 +279,7 @@ const CreateAssignmentFromBankPage = () => {
                                             value={form.sourceQuestionBankId}
                                             onChange={handleChange}
                                             disabled={!form.courseId || loadingBanks}
-                                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm bg-white outline-none focus:ring-2 focus:ring-violet-400 disabled:bg-slate-100"
+                                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 bg-white outline-none focus:ring-2 focus:ring-violet-400 disabled:bg-slate-100"
                                         >
                                             <option value="">
                                                 {loadingBanks ? 'Loading published banks...' : 'Select published question bank'}

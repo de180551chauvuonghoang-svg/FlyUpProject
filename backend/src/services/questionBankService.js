@@ -1,5 +1,12 @@
 import prisma from "../lib/prisma.js";
 
+import {
+    validateQuestionBankMetadata,
+    validateQuestionBankForPublish,
+    validateQuestionBankQuestionDraft,
+    validateQuestionBankChoicesDraft,
+} from "./questionBankValidationService.js";
+
 function normalizeRole(role) {
     return String(role || "").trim().toLowerCase();
 }
@@ -131,29 +138,14 @@ export async function listInstructorCoursesForQuestionBankService({ userId }) {
     return courses;
 }
 
-export async function createQuestionBankService({
-    userId,
-    name,
-    description,
-    courseId,
-}) {
-    const user = await getInstructorUserOrThrow(userId);
+export async function createQuestionBankService({ userId, courseId, name, description }) {
+    await getInstructorUserOrThrow(userId);
+    validateQuestionBankMetadata({ name });
 
-    if (!name?.trim()) {
-        throw new Error("Question bank name is required");
-    }
-
-    if (!courseId) {
-        throw new Error("courseId is required");
-    }
-
-    const course = await prisma.courses.findFirst({
+    const ownedCourse = await prisma.courses.findFirst({
         where: {
             Id: courseId,
-            OR: [
-                { CreatorId: userId },
-                ...(user.InstructorId ? [{ InstructorId: user.InstructorId }] : []),
-            ],
+            CreatorId: userId,
         },
         select: {
             Id: true,
@@ -161,14 +153,14 @@ export async function createQuestionBankService({
         },
     });
 
-    if (!course) {
-        throw new Error("Course not found or you do not have permission");
+    if (!ownedCourse) {
+        throw new Error("Course not found or does not belong to instructor");
     }
 
-    const bank = await prisma.questionBanks.create({
+    const created = await prisma.questionBanks.create({
         data: {
-            Name: name.trim(),
-            Description: description?.trim() || null,
+            Name: String(name).trim(),
+            Description: String(description || "").trim(),
             Status: "Draft",
             IsPublic: false,
             CourseId: courseId,
@@ -198,16 +190,16 @@ export async function createQuestionBankService({
     });
 
     return {
-        Id: bank.Id,
-        Name: bank.Name,
-        Description: bank.Description || "",
-        Status: bank.Status,
-        IsPublic: bank.IsPublic,
-        CourseId: bank.CourseId,
-        CourseTitle: bank.Course?.Title || "",
-        QuestionCount: bank._count?.QuestionBankQuestions || 0,
-        CreationTime: bank.CreationTime,
-        LastModificationTime: bank.LastModificationTime,
+        Id: created.Id,
+        Name: created.Name,
+        Description: created.Description || "",
+        Status: created.Status,
+        IsPublic: created.IsPublic,
+        CourseId: created.CourseId,
+        CourseTitle: created.Course?.Title || "",
+        QuestionCount: created._count?.QuestionBankQuestions || 0,
+        CreationTime: created.CreationTime,
+        LastModificationTime: created.LastModificationTime,
     };
 }
 
@@ -402,6 +394,20 @@ export async function createQuestionBankQuestionService({
         content,
         choices,
     });
+    validateQuestionBankQuestionDraft({
+        Content: content,
+        Difficulty: difficulty,
+        ParamA: paramA,
+        ParamB: paramB,
+        ParamC: paramC,
+    });
+
+    validateQuestionBankChoicesDraft(
+        choices.map((choice) => ({
+            Content: choice.content,
+            IsCorrect: choice.isCorrect,
+        }))
+    );
 
     const createdQuestion = await prisma.$transaction(async (tx) => {
         const question = await tx.questionBankQuestions.create({
@@ -517,6 +523,21 @@ export async function updateQuestionBankQuestionService({
         content,
         choices,
     });
+
+    validateQuestionBankQuestionDraft({
+        Content: content,
+        Difficulty: difficulty,
+        ParamA: paramA,
+        ParamB: paramB,
+        ParamC: paramC,
+    });
+
+    validateQuestionBankChoicesDraft(
+        choices.map((choice) => ({
+            Content: choice.content,
+            IsCorrect: choice.isCorrect,
+        }))
+    );
 
     const updatedQuestion = await prisma.$transaction(async (tx) => {
         await tx.questionBankQuestions.update({
@@ -755,7 +776,39 @@ async function validateQuestionBankPublishable(bankId) {
 
 export async function publishQuestionBankService({ userId, bankId }) {
     await getOwnedQuestionBankOrThrow(userId, bankId);
-    await validateQuestionBankPublishable(bankId);
+
+    const fullBank = await prisma.questionBanks.findFirst({
+        where: {
+            Id: bankId,
+            CreatorId: userId,
+        },
+        select: {
+            Id: true,
+            QuestionBankQuestions: {
+                select: {
+                    Id: true,
+                    Content: true,
+                    Difficulty: true,
+                    ParamA: true,
+                    ParamB: true,
+                    ParamC: true,
+                    QuestionBankChoices: {
+                        select: {
+                            Id: true,
+                            Content: true,
+                            IsCorrect: true,
+                            OrderIndex: true,
+                        },
+                        orderBy: {
+                            OrderIndex: "asc",
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    validateQuestionBankForPublish(fullBank);
 
     const updated = await prisma.questionBanks.update({
         where: {

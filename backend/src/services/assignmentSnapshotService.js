@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import { validateQuestionBankForSnapshot } from "./questionBankValidationService.js";
 
 async function getInstructorUserOrThrow(userId) {
     const user = await prisma.users.findUnique({
@@ -106,37 +107,6 @@ async function getPublishedOwnedQuestionBankOrThrow({ userId, courseId, sourceQu
     return bank;
 }
 
-function validateSnapshotQuestions(questionBank) {
-    const questions = questionBank.QuestionBankQuestions || [];
-
-    if (questions.length === 0) {
-        throw new Error("Cannot create assignment from an empty question bank");
-    }
-
-    for (const question of questions) {
-        if (!String(question.Content || "").trim()) {
-            throw new Error("Question bank contains a question with empty content");
-        }
-
-        const choices = question.QuestionBankChoices || [];
-        if (choices.length < 2) {
-            throw new Error("Each question must have at least 2 choices");
-        }
-
-        const hasEmptyChoice = choices.some((choice) => !String(choice.Content || "").trim());
-        if (hasEmptyChoice) {
-            throw new Error("Question bank contains a choice with empty content");
-        }
-
-        const correctCount = choices.filter((choice) => Boolean(choice.IsCorrect)).length;
-        if (correctCount !== 1) {
-            throw new Error("Each question must have exactly 1 correct answer");
-        }
-    }
-
-    return questions;
-}
-
 export async function createAssignmentFromQuestionBankService({
     userId,
     courseId,
@@ -181,7 +151,8 @@ export async function createAssignmentFromQuestionBankService({
         sourceQuestionBankId,
     });
 
-    const sourceQuestions = validateSnapshotQuestions(questionBank);
+    validateQuestionBankForSnapshot(questionBank);
+    const sourceQuestions = questionBank.QuestionBankQuestions || [];
 
     const result = await prisma.$transaction(async (tx) => {
         const assignment = await tx.assignments.create({

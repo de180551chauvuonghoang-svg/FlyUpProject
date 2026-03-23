@@ -204,7 +204,7 @@ const QuestionEditorModal = ({
                             onChange={handleFormChange}
                             rows={4}
                             placeholder="Enter question content..."
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none resize-none focus:ring-2 focus:ring-violet-400"
+                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none resize-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                         />
                     </div>
 
@@ -218,7 +218,7 @@ const QuestionEditorModal = ({
                                 value={form.difficulty}
                                 onChange={handleFormChange}
                                 placeholder="Easy / Medium / Hard"
-                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                             />
                         </div>
 
@@ -230,7 +230,7 @@ const QuestionEditorModal = ({
                                 name="status"
                                 value={form.status}
                                 onChange={handleFormChange}
-                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400"
                             >
                                 <option value="Draft">Draft</option>
                                 <option value="Published">Published</option>
@@ -251,7 +251,7 @@ const QuestionEditorModal = ({
                                 value={form.paramA}
                                 onChange={handleFormChange}
                                 placeholder="e.g. 1.0"
-                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                             />
                         </div>
 
@@ -266,7 +266,7 @@ const QuestionEditorModal = ({
                                 value={form.paramB}
                                 onChange={handleFormChange}
                                 placeholder="e.g. 0.2"
-                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                             />
                         </div>
 
@@ -281,7 +281,7 @@ const QuestionEditorModal = ({
                                 value={form.paramC}
                                 onChange={handleFormChange}
                                 placeholder="e.g. 0.25"
-                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                             />
                         </div>
                     </div>
@@ -296,7 +296,7 @@ const QuestionEditorModal = ({
                             onChange={handleFormChange}
                             rows={3}
                             placeholder="Optional explanation..."
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none resize-none focus:ring-2 focus:ring-violet-400"
+                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none resize-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                         />
                     </div>
 
@@ -343,7 +343,7 @@ const QuestionEditorModal = ({
                                                 value={choice.content}
                                                 onChange={(e) => handleChoiceChange(idx, e.target.value)}
                                                 placeholder={`Enter choice ${String.fromCharCode(65 + idx)}`}
-                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-400 bg-white"
+                                                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-400 bg-white placeholder:text-slate-400"
                                             />
                                         </div>
                                     </div>

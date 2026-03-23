@@ -1,18 +1,9 @@
-import dns from 'node:dns';
+import './init.js';
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-
-// Force IPv4 for DNS resolution to avoid ENOTFOUND with Gmail API on some networks
-try {
-  dns.setDefaultResultOrder('ipv4first');
-} catch (error) {
-  // Ignore if not supported (older node versions)
-  console.log('Note: dns.setDefaultResultOrder not supported or failed');
-}
 
 // Import routers
 import authRouter from './routers/auth.js';
@@ -33,18 +24,8 @@ import questionBankRouter from './routers/questionBank.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const result = dotenv.config({ path: join(__dirname, '../.env') });
-
-if (result.error) {
-  if (result.error.code !== 'ENOENT') {
-    console.error('DOTENV LOAD ERROR:', result.error);
-  }
-} else {
-  console.log('DOTENV LOADED VARS:', Object.keys(result.parsed));
-
-  // Dynamic import worker after env vars are loaded to ensure Redis connection works
-  import('./workers/emailWorker.js').catch(err => console.error('Failed to start email worker:', err));
-}
+// Dynamic import worker after env vars are loaded to ensure Redis connection works
+import('./workers/emailWorker.js').catch(err => console.error('Failed to start email worker:', err));
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -102,13 +83,12 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
-  console.log(`� Swagger Docs available at http://localhost:${PORT}/api-docs`);
-  console.log(`�📦 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📑 Swagger Docs available at http://localhost:${PORT}/api-docs`);
+  console.log(`📑📦 Environment: ${process.env.NODE_ENV || 'development'}`);
 
   // Warm up cache
   (async () => {
     try {
-      console.log('🔥 Warming up cache...');
       console.log('🔥 Warming up cache...');
       // Run sequentially to avoid DB connection timeout
       await getCategories();
@@ -137,4 +117,3 @@ process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 
 export default app;
-
