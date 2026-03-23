@@ -46,6 +46,11 @@ export async function fetchPublishedQuestionBanksByCourse(courseId) {
     return data.data || [];
 }
 
+export async function fetchQuestionBankQuestions(bankId) {
+    const data = await request(`/question-banks/${bankId}/questions`);
+    return data.data || [];
+}
+
 export async function createAssignmentFromBank(payload) {
     const data = await request("/quiz/assignments/from-bank", {
         method: "POST",

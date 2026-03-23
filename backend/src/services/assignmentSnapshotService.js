@@ -115,6 +115,7 @@ export async function createAssignmentFromQuestionBankService({
     duration,
     gradeToPass,
     sourceQuestionBankId,
+    questionIds = [], // Added questionIds
 }) {
     const normalizedName = String(name || "").trim();
 
@@ -152,7 +153,16 @@ export async function createAssignmentFromQuestionBankService({
     });
 
     validateQuestionBankForSnapshot(questionBank);
-    const sourceQuestions = questionBank.QuestionBankQuestions || [];
+    let sourceQuestions = questionBank.QuestionBankQuestions || [];
+
+    // Filter by questionIds if provided
+    if (Array.isArray(questionIds) && questionIds.length > 0) {
+        sourceQuestions = sourceQuestions.filter(q => questionIds.includes(q.Id));
+        
+        if (sourceQuestions.length === 0) {
+            throw new Error("None of the selected questions were found in the source bank");
+        }
+    }
 
     const result = await prisma.$transaction(async (tx) => {
         const assignment = await tx.assignments.create({

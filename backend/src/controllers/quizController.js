@@ -414,8 +414,9 @@ export const createAssignmentFromBank = async (req, res) => {
       duration,
       gradeToPass,
       sourceQuestionBankId,
+      questionIds,
     } = req.body;
-
+  
     const data = await createAssignmentFromQuestionBankService({
       userId,
       courseId,
@@ -424,8 +425,9 @@ export const createAssignmentFromBank = async (req, res) => {
       duration,
       gradeToPass,
       sourceQuestionBankId,
+      questionIds,
     });
-
+  
     res.status(201).json({
       success: true,
       data,
