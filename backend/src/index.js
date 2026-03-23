@@ -28,6 +28,8 @@ import uploadRouter from "./routers/upload.js";
 import { getCourses, getCategories } from "./services/courseService.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./configs/swagger.js";
+//import routers question bank
+import questionBankRouter from './routers/questionBank.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -84,6 +86,8 @@ app.use("/api/upload", uploadRouter);
 
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Question Bank Routes
+app.use("/api/question-banks", questionBankRouter);
 
 // Error handling middleware
 
@@ -107,8 +111,8 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 FlyUp Backend running on http://localhost:${PORT}`);
-  console.log(`� Swagger Docs available at http://localhost:${PORT}/api-docs`);
-  console.log(`�📦 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`Swagger Docs available at http://localhost:${PORT}/api-docs`);
+  console.log(`📦 Environment: ${process.env.NODE_ENV || "development"}`);
 
   // Warm up cache
   (async () => {

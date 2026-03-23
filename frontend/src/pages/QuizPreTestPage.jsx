@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchSubmissionHistory } from '../services/quizService';
 
-const QuizPreTestPage = ({ assignment, userId, onStart, onBack }) => {
+const QuizPreTestPage = ({ assignment, userId, courseId, onStart, onBack }) => {
     const [questionCount, setQuestionCount] = useState(50);
 
     const { data: submissions = [], isLoading: submissionsLoading } = useQuery({

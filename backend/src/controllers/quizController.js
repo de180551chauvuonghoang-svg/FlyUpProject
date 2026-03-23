@@ -5,6 +5,11 @@ import {
   answerCatQuestionService,
   finishCatQuizService,
 } from "../services/catQuizService.js";
+import {
+  createAssignmentFromQuestionBankService,
+  listAssignmentsByQuestionBankService,
+  getAssignmentSnapshotDetailService,
+} from "../services/assignmentSnapshotService.js";
 
 /**
  * Get list of assignments for a course
@@ -395,5 +400,126 @@ Giải thích súc tích, khích lệ, bằng tiếng Việt:`;
   } catch (err) {
     console.error("explainQuizAnswer error:", err);
     return res.status(500).json({ error: "Lỗi khi gọi AI giải thích" });
+  }
+};
+
+export const createAssignmentFromBank = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+
+    const {
+      courseId,
+      sectionId,
+      name,
+      duration,
+      gradeToPass,
+      sourceQuestionBankId,
+    } = req.body;
+
+    const data = await createAssignmentFromQuestionBankService({
+      userId,
+      courseId,
+      sectionId,
+      name,
+      duration,
+      gradeToPass,
+      sourceQuestionBankId,
+    });
+
+    res.status(201).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("createAssignmentFromBank error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Failed to create assignment from question bank",
+    });
+  }
+};
+
+export const getSectionsByCourseForInstructor = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const userId = req.user?.userId;
+
+    const sections = await prisma.sections.findMany({
+      where: {
+        CourseId: courseId,
+        Courses: {
+          CreatorId: userId,
+        },
+      },
+      select: {
+        Id: true,
+        Title: true,
+        Index: true,
+        CourseId: true,
+      },
+      orderBy: {
+        Index: "asc",
+      },
+    });
+
+    res.json({
+      success: true,
+      data: sections,
+    });
+  } catch (error) {
+    console.error("getSectionsByCourseForInstructor error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Failed to fetch sections",
+    });
+  }
+};
+
+export const getAssignmentsByQuestionBank = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { questionBankId } = req.params;
+
+    const data = await listAssignmentsByQuestionBankService({
+      userId,
+      questionBankId,
+    });
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("getAssignmentsByQuestionBank error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Failed to fetch assignments by question bank",
+    });
+  }
+};
+
+export const getAssignmentSnapshotDetail = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { assignmentId } = req.params;
+
+    console.log("DEBUG: getAssignmentSnapshotDetail Params:", { userId, assignmentId });
+
+    const data = await getAssignmentSnapshotDetailService({
+      userId,
+      assignmentId,
+    });
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("getAssignmentSnapshotDetail error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Failed to fetch assignment detail",
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };

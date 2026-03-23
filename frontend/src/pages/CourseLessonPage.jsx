@@ -151,7 +151,6 @@ export default function CourseLessonPage() {
       materials: normalizedMaterials.filter((m) => m.Url),
     };
   };
-
   // Check if this is instructor preview mode
   // NEVER use instructor preview in CourseLessonPage - it's for enrolled students only
   // Instructors should use the instructor dashboard to preview their courses
