@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
 import InstructorLayout from "../components/InstructorLayout";
@@ -7,9 +7,8 @@ import InstructorLayout from "../components/InstructorLayout";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function InstructorDashboard() {
-  const { user, signOut, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [timeframe, setTimeframe] = useState("6months");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,11 +94,6 @@ export default function InstructorDashboard() {
         topCourse: { title: "Loading...", rating: 0, learners: "0" },
       };
 
-  const handleLogout = async () => {
-    await signOut();
-    toast.success("Logged out successfully");
-    navigate("/login?role=instructor");
-  };
 
   const handlePublish = async (courseId) => {
     try {
@@ -136,7 +130,7 @@ export default function InstructorDashboard() {
       if (!response.ok) throw new Error("Failed to delete course");
       setCourses(courses.filter((c) => c.id !== courseId));
       toast.success("Course deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete course");
     }
   };

@@ -18,7 +18,7 @@ const COLOR_MAP = {
 
 const TIMER_SECONDS = 45;
 
-const QuizPage = ({ assignmentId, courseId, userId, questionCount, onFinish, onBack }) => {
+const QuizPage = ({ assignmentId, courseId, questionCount, onFinish, onBack }) => {
     const { accessToken, loading: authLoading } = useAuth();
 
     const [phase, setPhase] = useState('loading'); // loading | quiz | submitting
@@ -104,7 +104,7 @@ const QuizPage = ({ assignmentId, courseId, userId, questionCount, onFinish, onB
         }, 1000);
 
         return () => clearInterval(timerRef.current);
-    }, [phase, questionIndex]);
+    }, [phase, questionIndex, handleNext]);
 
     const handleNext = useCallback(async (timedOut = false) => {
         if (!currentQuestion || isLoadingNext) return;

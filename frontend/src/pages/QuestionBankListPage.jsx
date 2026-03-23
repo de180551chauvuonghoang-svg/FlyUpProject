@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import useAuth from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import {
     fetchQuestionBanks,
@@ -195,48 +194,37 @@ const CreateQuestionBankModal = ({
 };
 
 const QuestionBankListPage = () => {
-    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('mine');
     const [search, setSearch] = useState('');
     const [courseId, setCourseId] = useState('');
     const [banks, setBanks] = useState([]);
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [coursesLoading, setCoursesLoading] = useState(true);
-    const [error, setError] = useState('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-    const loadBanks = async () => {
+    const loadBanks = useCallback(async () => {
         setLoading(true);
-        setError('');
         try {
             const data = await fetchQuestionBanks({ tab: activeTab, search, courseId });
             setBanks(data);
         } catch (err) {
-            setError(err.message || 'Failed to fetch question banks');
+            console.error('Failed to fetch question banks:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeTab, search, courseId]);
 
-    const loadCourses = async () => {
-        setCoursesLoading(true);
+    const loadCourses = useCallback(async () => {
         try {
             const data = await fetchQuestionBankCourses();
             setCourses(data);
         } catch (err) {
             console.error('Failed to fetch instructor courses:', err);
-        } finally {
-            setCoursesLoading(false);
         }
-    };
+    }, []);
 
-    useEffect(() => { loadCourses(); }, []);
-    useEffect(() => { loadBanks(); }, [activeTab, courseId]);
-    useEffect(() => {
-        const timeout = setTimeout(() => { loadBanks(); }, 350);
-        return () => clearTimeout(timeout);
-    }, [search]);
+    useEffect(() => { loadCourses(); }, [loadCourses]);
+    useEffect(() => { loadBanks(); }, [loadBanks]);
 
     const courseTitleMap = useMemo(() => {
         const map = new Map();
