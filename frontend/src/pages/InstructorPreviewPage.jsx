@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 export default function InstructorPreviewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { accessToken, user } = useAuth();
+  const { accessToken } = useAuth();
   const [course, setCourse] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

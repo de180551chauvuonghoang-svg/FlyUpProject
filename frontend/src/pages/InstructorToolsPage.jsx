@@ -63,7 +63,7 @@ export default function InstructorToolsPage() {
     return () => {
       speechSynthesis.cancel();
     };
-  }, []);
+  }, [selectedVoice]);
 
   // TTS functions
   const handleSpeak = async (text = null, forceLang = null) => {

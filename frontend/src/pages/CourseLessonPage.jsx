@@ -398,7 +398,6 @@ export default function CourseLessonPage() {
     if (!lessonId && course?.Sections && course.Sections.length > 0) {
       const firstLecture = course.Sections[0]?.Lectures?.[0];
       if (firstLecture?.Id) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedLessonId(firstLecture.Id);
       }
     }
