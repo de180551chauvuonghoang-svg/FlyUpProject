@@ -169,10 +169,15 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const isAdmin = String(user?.Role || user?.role || '').trim().toLowerCase() === 'admin';
+  const isAuthenticated = !!user;
+
   const value = {
     user,
     loading,
     accessToken,
+    isAdmin,
+    isAuthenticated,
     signUp,
     signIn,
     signInWithGoogle,

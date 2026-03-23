@@ -26,5 +26,8 @@ router.post("/cat/start", authenticateJWT, quizController.startCatQuiz);
 router.post("/cat/answer", authenticateJWT, quizController.answerCatQuestion);
 router.post("/cat/finish", authenticateJWT, quizController.finishCatQuiz);
 router.post("/cat/explain", authenticateJWT, quizController.explainQuizAnswer);
-
+router.post("/assignments/from-bank", authenticateJWT, quizController.createAssignmentFromBank);
+router.get("/course/:courseId/sections", authenticateJWT, quizController.getSectionsByCourseForInstructor);
+router.get("/question-bank/:questionBankId/assignments", authenticateJWT, quizController.getAssignmentsByQuestionBank);
+router.get("/assignments/:assignmentId/preview", authenticateJWT, quizController.getAssignmentSnapshotDetail);
 export default router;

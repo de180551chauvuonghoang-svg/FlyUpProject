@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import './index.css';
 import AuthProvider from './contexts/AuthContext';
@@ -24,7 +24,26 @@ import InstructorPreviewPage from './pages/InstructorPreviewPage';
 import CourseLessonPage from './pages/CourseLessonPage';
 import InstructorStudentsPage from './pages/InstructorStudentsPage';
 import InstructorCommunicationPage from './pages/InstructorCommunicationPage';
-import InstructorToolsPage from './pages/InstructorToolsPage';function App() {
+import InstructorToolsPage from './pages/InstructorToolsPage';
+// NEW: question bank module
+import QuestionBankListPage from './pages/QuestionBankListPage';
+import InstructorRoute from './components/Auth/InstructorRoute';
+//finish for question bank module
+import QuestionBankDetailPage from './pages/QuestionBankDetailPage';
+import CreateAssignmentFromBankPage from './pages/CreateAssignmentFromBankPage';
+import AssignmentSnapshotPreviewPage from './pages/AssignmentSnapshotPreviewPage';
+// Admin Imports
+import AdminRoute from './components/Auth/AdminRoute';
+import AdminLayout from './components/Admin/layout/Layout';
+import AdminDashboard from './pages/Admin/Dashboard/Dashboard';
+import AdminLearners from './pages/Admin/Learners/Learners';
+import AdminInstructors from './pages/Admin/Instructors/Instructors';
+import AdminCourses from './pages/Admin/Courses/Courses';
+import AdminCourseDetail from './pages/Admin/CourseDetail/CourseDetail';
+import AdminUserDetail from './pages/Admin/UserDetail/UserDetail';
+
+
+function App() {
   return (
     <AuthProvider>
       <CartProvider>
@@ -107,6 +126,58 @@ import InstructorToolsPage from './pages/InstructorToolsPage';function App() {
           <Route path="/instructor/tools" element={<InstructorToolsPage />} />
           <Route path="/learning/:courseId" element={<CourseLessonPage />} />
           <Route path="/learning/:courseId/lesson/:lessonId" element={<CourseLessonPage />} />
+          
+          <Route
+              path="/instructor/question-banks"
+              element={
+                <InstructorRoute>
+                  <QuestionBankListPage />
+                </InstructorRoute>
+              }
+            />
+            <Route
+              path="/instructor/question-banks/:id"
+              element={
+                <InstructorRoute>
+                  <QuestionBankDetailPage />
+                </InstructorRoute>
+              }
+            />
+            <Route
+              path="/instructor/create-assignment-from-bank"
+              element={
+                <InstructorRoute>
+                  <CreateAssignmentFromBankPage />
+                </InstructorRoute>
+              }
+            />
+            <Route
+              path="/instructor/assignments/:assignmentId/preview"
+              element={
+                <InstructorRoute>
+                  <AssignmentSnapshotPreviewPage />
+                </InstructorRoute>
+              }
+            />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="learners" element={<AdminLearners />} />
+            <Route path="learners/:id" element={<AdminUserDetail />} />
+            <Route path="instructors" element={<AdminInstructors />} />
+            <Route path="instructors/:id" element={<AdminUserDetail />} />
+            <Route path="courses" element={<AdminCourses />} />
+            <Route path="courses/:id" element={<AdminCourseDetail />} />
+          </Route>
 
         </Routes>
         <ChatbotWidget />
