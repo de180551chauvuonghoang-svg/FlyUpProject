@@ -37,19 +37,34 @@ export const getAssignmentsByCourse = async (req, res) => {
         Sections: {
           select: {
             Title: true,
+            Index: true
           },
         },
         McqQuestions: {
-          include: {
-            McqChoices: true
+          select: {
+            Id: true,
+            Content: true,
+            Difficulty: true,
+            AssignmentId: true,
+            McqChoices: {
+              select: {
+                Id: true,
+                Content: true,
+                IsCorrect: true
+              }
+            }
           }
         }
       },
-      orderBy: {
-        Sections: {
-          Index: "asc",
-        },
-      },
+    });
+
+    console.log(`[QuizController] Found ${assignments.length} assignments.`);
+
+    // Manually sort by Section Index if needed
+    assignments.sort((a, b) => {
+      const idxA = a.Sections?.Index ?? 0;
+      const idxB = b.Sections?.Index ?? 0;
+      return idxA - idxB;
     });
 
     res.json({
@@ -249,63 +264,110 @@ export const deleteAssignment = async (req, res) => {
 };
 
 /**
- * Get MCQ questions for a course
+ * Get MCQ questions for a course or specific section's assignments
  */
 export const getQuizQuestions = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { limit = 10 } = req.query;
+    const { sectionId, limit = 10 } = req.query;
 
-    console.log(`[QuizController] Fetching quiz for course: ${courseId}`);
+    console.log(`[QuizController] Fetching quiz. Course: ${courseId}, Section: ${sectionId}`);
 
-    const assignments = await prisma.assignments.findMany({
-      where: {
-        Sections: {
-          CourseId: courseId,
+    let questions = [];
+
+    // 1. Try Section-specific Assignments
+    if (sectionId && sectionId !== "undefined") {
+      const sectionAssignmentQuestions = await prisma.mcqQuestions.findMany({
+        where: {
+          Assignments: {
+            SectionId: sectionId
+          }
         },
-      },
-      include: {
-        McqQuestions: {
-          include: {
-            McqChoices: {
-              select: {
-                Id: true,
-                Content: true,
-              },
+        include: { McqChoices: true },
+      });
+
+      if (sectionAssignmentQuestions.length > 0) {
+        console.log(`[QuizController] Found ${sectionAssignmentQuestions.length} questions from section assignments.`);
+        questions = sectionAssignmentQuestions.map((q) => ({
+          id: q.Id,
+          content: q.Content,
+          difficulty: q.Difficulty,
+          type: 'assignment',
+          choices: q.McqChoices.map((c) => ({
+            id: c.Id,
+            content: c.Content,
+          })),
+        }));
+      }
+    }
+
+    // 2. Secondary: If no section questions, try Course-level Assignments
+    if (questions.length === 0) {
+      const courseAssignmentQuestions = await prisma.mcqQuestions.findMany({
+        where: {
+          Assignments: {
+            CourseId: courseId,
+            SectionId: null // Only true course-level assignments
+          }
+        },
+        include: { McqChoices: true },
+      });
+
+      if (courseAssignmentQuestions.length > 0) {
+        console.log(`[QuizController] Found ${courseAssignmentQuestions.length} questions from course assignments.`);
+        questions = courseAssignmentQuestions.map((q) => ({
+          id: q.Id,
+          content: q.Content,
+          difficulty: q.Difficulty,
+          type: 'assignment_course',
+          choices: q.McqChoices.map((c) => ({
+            id: c.Id,
+            content: c.Content,
+          })),
+        }));
+      }
+    }
+
+    // 3. Fallback to Question Bank
+    if (questions.length === 0) {
+      console.log(`[QuizController] No assignment questions found. Falling back to Question Bank.`);
+      const qbQuestions = await prisma.questionBankQuestions.findMany({
+        where: {
+          QuestionBanks: {
+            CourseId: courseId,
+          },
+        },
+        include: {
+          QuestionBankChoices: {
+            select: {
+              Id: true,
+              Content: true,
             },
           },
-          take: parseInt(limit, 10),
         },
-      },
-    });
+      });
 
-    let allQuestions = [];
-    assignments.forEach((assignment) => {
-      if (assignment.McqQuestions) {
-        allQuestions = allQuestions.concat(
-          assignment.McqQuestions.map((q) => ({
-            id: q.Id,
-            content: q.Content,
-            difficulty: q.Difficulty,
-            choices: q.McqChoices
-              ? q.McqChoices.map((c) => ({
-                id: c.Id,
-                content: c.Content,
-              }))
-              : [],
-          }))
-        );
-      }
-    });
+      questions = qbQuestions.map((q) => ({
+        id: q.Id,
+        content: q.Content,
+        difficulty: q.Difficulty,
+        type: 'questionbank',
+        choices: q.QuestionBankChoices.map((c) => ({
+          id: c.Id,
+          content: c.Content,
+        })),
+      }));
+    }
 
-    allQuestions = allQuestions.sort(() => Math.random() - 0.5);
-    allQuestions = allQuestions.slice(0, parseInt(limit, 10));
+    // Randomize and limit to 10
+    questions = questions.sort(() => Math.random() - 0.5);
+    const finalQuestions = questions.slice(0, parseInt(limit, 10));
 
     res.json({
       success: true,
       data: {
-        questions: allQuestions,
-        total: allQuestions.length,
+        questions: finalQuestions,
+        total: finalQuestions.length,
       },
     });
   } catch (error) {
@@ -326,6 +388,8 @@ export const submitQuiz = async (req, res) => {
     const { answers } = req.body;
     const userId = req.user?.userId;
 
+    console.log(`[QuizController] Submitting quiz. User: ${userId}, Course: ${courseId}, Questions: ${Object.keys(answers || {}).length}`);
+
     if (!answers || Object.keys(answers).length === 0) {
       return res.status(400).json({
         success: false,
@@ -333,25 +397,47 @@ export const submitQuiz = async (req, res) => {
       });
     }
 
-    console.log(
-      `[QuizController] Submit quiz for course: ${courseId}, user: ${userId}`
-    );
-
     const questionIds = Object.keys(answers);
 
-    const questions = await prisma.mcqQuestions.findMany({
-      where: {
-        Id: { in: questionIds },
-      },
-      include: {
-        McqChoices: true,
-      },
+    // Try finding in McqQuestions (Assignments) first
+    const mcqQuestions = await prisma.mcqQuestions.findMany({
+      where: { Id: { in: questionIds } },
+      include: { McqChoices: true }
     });
 
+    // Then find in QuestionBankQuestions
+    const qbQuestions = await prisma.questionBankQuestions.findMany({
+      where: { Id: { in: questionIds } },
+      include: { QuestionBankChoices: true }
+    });
+
+    console.log(`[QuizController] Found ${mcqQuestions.length} MCQ questions and ${qbQuestions.length} QB questions.`);
+
+    const allQuestions = [
+      ...mcqQuestions.map(q => ({
+        Id: q.Id,
+        Content: q.Content,
+        choices: q.McqChoices
+      })),
+      ...qbQuestions.map(q => ({
+        Id: q.Id,
+        Content: q.Content,
+        choices: q.QuestionBankChoices
+      }))
+    ];
+
+    if (allQuestions.length === 0) {
+      console.error("[QuizController] No valid questions found for IDs:", questionIds);
+      return res.status(404).json({
+        success: false,
+        error: "Questions not found",
+      });
+    }
+
     let correctCount = 0;
-    const results = questions.map((question) => {
+    const results = allQuestions.map((question) => {
       const userChoiceId = answers[question.Id];
-      const correctChoice = question.McqChoices.find((c) => c.IsCorrect);
+      const correctChoice = question.choices.find((c) => c.IsCorrect);
       const isCorrect = userChoiceId === correctChoice?.Id;
 
       if (isCorrect) correctCount++;
@@ -366,14 +452,15 @@ export const submitQuiz = async (req, res) => {
       };
     });
 
-    const score = Math.round((correctCount / questions.length) * 100);
+    const score = Math.round((correctCount / allQuestions.length) * 100);
+    console.log(`[QuizController] Submit result: ${correctCount}/${allQuestions.length} correct. Score: ${score}%`);
 
     res.json({
       success: true,
       data: {
         score,
         correctCount,
-        totalQuestions: questions.length,
+        totalQuestions: allQuestions.length,
         results,
       },
     });
@@ -382,6 +469,7 @@ export const submitQuiz = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to submit quiz",
+      details: error.message
     });
   }
 };
@@ -498,47 +586,101 @@ export const finishCatQuiz = async (req, res) => {
 
 /**
  * POST /api/quiz/cat/explain
- * Dùng AI (Groq) để giải thích tại sao đáp án đúng/sai
+ * Use AI (Groq) to explain why an answer is correct or incorrect
+ * Also suggests relevant lectures to review
  */
 export const explainQuizAnswer = async (req, res) => {
   try {
-    const { questionContent, choices, selectedChoiceContent, isCorrect } = req.body;
+    const { questionContent, choices, selectedChoiceContent, correctChoiceContent, isCorrect, sectionId } = req.body;
 
-    if (!questionContent || !selectedChoiceContent) {
-      return res.status(400).json({ error: "Thiếu thông tin câu hỏi hoặc đáp án" });
+    console.log("[explainQuizAnswer] Received:", {
+      questionContent: questionContent?.slice(0, 50),
+      selectedChoiceContent,
+      correctChoiceContent,
+      isCorrect,
+      sectionId,
+      choicesCount: choices?.length
+    });
+
+    if (!questionContent) {
+      return res.status(400).json({ error: "Missing question content" });
+    }
+    if (!selectedChoiceContent) {
+      return res.status(400).json({ error: "Missing selected choice content" });
     }
 
     if (!process.env.GROQ_API_KEY) {
-      return res.status(500).json({ error: "AI service chưa được cấu hình" });
+      console.error("[explainQuizAnswer] GROQ_API_KEY not set!");
+      return res.status(500).json({ error: "AI service is not configured" });
     }
 
+    console.log("[explainQuizAnswer] GROQ_API_KEY present, length:", process.env.GROQ_API_KEY.length);
+
+    // Fetch lectures in the section for review suggestions
+    let lectureList = [];
+    if (sectionId) {
+      try {
+        console.log("[explainQuizAnswer] Fetching lectures for section:", sectionId);
+        const lectures = await prisma.lectures.findMany({
+          where: { SectionId: sectionId },
+          select: { Title: true },
+          orderBy: { CreationTime: "asc" },
+        });
+        lectureList = lectures.map((l) => l.Title);
+        console.log("[explainQuizAnswer] Found", lectureList.length, "lectures");
+      } catch (e) {
+        console.warn("[explainQuizAnswer] Could not fetch lectures:", e.message);
+      }
+    }
+
+    console.log("[explainQuizAnswer] Calling Groq API...");
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const choicesStr = (choices ?? []).map((c) => `- ${c.Content || c.content || ''}`).join("\n");
-    const resultLabel = isCorrect ? "ĐÚNG (chính xác)" : "SAI (chưa chính xác)";
+    const lecturesStr = lectureList.length > 0
+      ? `\nAvailable lectures in this section:\n${lectureList.map((t, i) => `${i + 1}. ${t}`).join("\n")}`
+      : "";
 
-    const prompt = `Bạn là trợ lý giáo dục "FlyUp". Hãy giải thích ngắn gọn (tối đa 100 từ) tại sao lựa chọn sau là ${resultLabel} cho câu hỏi Java sau:
+    const prompt = `You are "FlyUp AI Tutor", an encouraging and knowledgeable educational assistant.
 
-Câu hỏi: "${questionContent}"
+A learner just answered a quiz question. Please provide a clear, concise explanation (max 120 words).
 
-Các lựa chọn:
+Question: "${questionContent}"
+
+Choices:
 ${choicesStr}
 
-Người học đã chọn: "${selectedChoiceContent}" → Kết quả: ${resultLabel}
+Learner selected: "${selectedChoiceContent}"
+${!isCorrect && correctChoiceContent ? `Correct answer: "${correctChoiceContent}"` : ""}
+Result: ${isCorrect ? "CORRECT ✓" : "INCORRECT ✗"}
+${lecturesStr}
 
-Giải thích súc tích, khích lệ, bằng tiếng Việt:`;
+Instructions:
+1. ${isCorrect
+      ? "Briefly confirm why this answer is correct. Reinforce the key concept."
+      : "Explain why the selected answer is wrong and why the correct answer is right. Be encouraging, not discouraging."}
+2. ${!isCorrect && lectureList.length > 0
+      ? "Suggest the MOST relevant lecture from the list above that the learner should review. Format: '📚 Suggested review: [lecture name]'"
+      : isCorrect ? "Optionally mention a related concept to deepen understanding." : ""}
+3. Keep the tone friendly, supportive, and educational.
+4. Use English language.`;
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
       model: "llama3-8b-8192",
       temperature: 0.4,
-      max_tokens: 300,
+      max_tokens: 400,
     });
 
-    const explanation = completion.choices[0]?.message?.content?.trim() || "Không thể tạo lời giải thích.";
-    return res.json({ explanation });
+    console.log("[explainQuizAnswer] Groq API success!");
+    const explanation = completion.choices[0]?.message?.content?.trim() || "Unable to generate explanation.";
+    return res.json({ 
+      explanation,
+      suggestedLectures: !isCorrect ? lectureList : [],
+    });
   } catch (err) {
-    console.error("explainQuizAnswer error:", err);
-    return res.status(500).json({ error: "Lỗi khi gọi AI giải thích" });
+    console.error("[explainQuizAnswer] CAUGHT ERROR:", err.message);
+    console.error("[explainQuizAnswer] Stack:", err.stack);
+    return res.status(500).json({ error: "Failed to generate AI explanation", details: err.message });
   }
 };
 

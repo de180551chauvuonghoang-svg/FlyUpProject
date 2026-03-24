@@ -111,10 +111,27 @@ export default function CourseLessonPage() {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Chatbot states
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isChatting, setIsChatting] = useState(false);
+  const chatScrollRef = useRef(null);
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages, isChatting]);
+
   // Video tracking & UI states
   const maxTimePlayed = useRef(0);
   const [isLessonCompleted, setIsLessonCompleted] = useState(false);
   const [lastUpdateText, setLastUpdateText] = useState("Last updated recently");
+
+  // AI Video Popup state
+  const [showAIPopup, setShowAIPopup] = useState(false);
+  const aiPopupTriggeredForLesson = useRef({});
 
 
 
@@ -214,6 +231,7 @@ export default function CourseLessonPage() {
     queryKey: ["enrollmentProgress", courseId, user?.id],
     queryFn: () => fetchEnrollmentProgress(user?.id, courseId),
     enabled: !!courseId && !!user?.id && courseId !== "demo",
+    placeholderData: (prev) => prev,
   });
 
   // Fetch assignments for this course
@@ -461,6 +479,7 @@ export default function CourseLessonPage() {
             lecture.Content || "No content available for this lesson yet.",
           IsPreviewable: lecture.IsPreviewable,
           SectionTitle: section.Title,
+          SectionId: section.Id,
           VideoUrl: assets.videoUrl,
           Materials: assets.materials,
         };
@@ -482,18 +501,20 @@ export default function CourseLessonPage() {
   const currentLesson = findLessonInSections(course?.Sections, currentLessonId);
 
   useEffect(() => {
-    let completed = false;
     if (enrollment) {
       try {
         const completedLectures = JSON.parse(enrollment.LectureMilestones || "[]");
-        completed = Array.isArray(completedLectures) ? completedLectures.includes(currentLessonId) : false;
-      } catch {
-        completed = false;
+        const completed = Array.isArray(completedLectures) ? completedLectures.includes(currentLessonId) : false;
+        setIsLessonCompleted(completed);
+      } catch (e) {
+        setIsLessonCompleted(false);
       }
     }
-    setIsLessonCompleted(completed);
-    maxTimePlayed.current = 0;
   }, [currentLessonId, enrollment]);
+
+  useEffect(() => {
+    maxTimePlayed.current = 0;
+  }, [currentLessonId]);
 
   useEffect(() => {
     const dateToUse = currentLesson?.LastModificationTime || course?.LastModificationTime;
@@ -830,7 +851,60 @@ export default function CourseLessonPage() {
     } catch (error) {
       console.error("Failed to mark complete:", error);
       // Fallback visually if offline/error
-      setIsLessonCompleted(true);
+    }
+  };
+
+  // Handle AI Chat Message
+  const handleSendMessage = async () => {
+    if (!chatInput.trim()) return;
+
+    const userText = chatInput;
+    const newMessage = { role: "user", content: userText };
+    setChatMessages((prev) => [...prev, newMessage]);
+    setChatInput("");
+    setIsChatting(true);
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      
+      // Inject context for the first message
+      let fullMessage = userText;
+      if (chatMessages.length === 0 && currentLesson?.Content) {
+        fullMessage = `[Học viên đang hỏi về bài học: ${currentLesson.Title}]\n${userText}`;
+      }
+
+      const response = await fetch(`${API_URL}/chatbot`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          message: fullMessage,
+          history: chatMessages 
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.response) {
+        setChatMessages((prev) => [...prev, { role: "ai", content: data.response }]);
+      } else {
+        toast.error("Lỗi khi phản hồi: " + (data.error || "Unknown"));
+        setChatMessages((prev) => [...prev, { role: "ai", content: "Xin lỗi, tôi gặp lỗi khi xử lý câu hỏi này." }]);
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      toast.error("Không thể kết nối với AI");
+      setChatMessages((prev) => [...prev, { role: "ai", content: "Xin lỗi, không có kết nối tới AI Tutor." }]);
+    } finally {
+      setIsChatting(false);
+    }
+  };
+
+  const handleChatKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -1072,6 +1146,15 @@ export default function CourseLessonPage() {
                   muted
                   onTimeUpdate={(e) => {
                     const video = e.target;
+                    
+                    // AI Popup Logic: Show at 50%
+                    if (video.duration > 0 && video.currentTime >= video.duration / 2) {
+                      if (!aiPopupTriggeredForLesson.current[currentLessonId]) {
+                        aiPopupTriggeredForLesson.current[currentLessonId] = true;
+                        setShowAIPopup(true);
+                      }
+                    }
+
                     if (!video.seeking && video.currentTime > maxTimePlayed.current) {
                       maxTimePlayed.current = video.currentTime;
                     }
@@ -1130,6 +1213,42 @@ export default function CourseLessonPage() {
                   <source src={currentLesson.VideoUrl} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
+                
+                {/* AI Tutor Popup Overlay */}
+                {showAIPopup && (
+                  <div className="absolute bottom-20 right-4 md:right-8 w-80 bg-slate-900/95 backdrop-blur-md rounded-2xl p-5 border border-purple-500/50 shadow-[0_10px_40px_-10px_rgba(168,85,247,0.4)] z-50 animate-in slide-in-from-bottom-8 fade-in duration-500">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-2 text-purple-400 font-bold">
+                        <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
+                        <span>AI Tutor</span>
+                      </div>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setShowAIPopup(false); }}
+                        className="text-slate-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">close</span>
+                      </button>
+                    </div>
+                    <p className="text-sm text-slate-200 mb-5 leading-relaxed">
+                      Chào bạn! Nửa chặng đường rồi. Bạn có thắc mắc gì về đoạn vừa rồi hay cần giải thích thêm không?
+                    </p>
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowAIPopup(false);
+                          setActiveTab("ai");
+                          // Scroll down exactly 500px or into view using window
+                          window.scrollBy({ top: 300, behavior: "smooth" });
+                        }}
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-purple-500/20"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">chat</span>
+                        Hỏi AI Tutor ngay
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -1229,10 +1348,7 @@ export default function CourseLessonPage() {
                   : "text-slate-400 hover:text-white border-transparent"
                   }`}
               >
-                Q&A{" "}
-                <span className="bg-slate-800 text-xs px-1.5 rounded-sm">
-                  12
-                </span>
+                Quiz
               </button>
               <button
                 onClick={() => setActiveTab("notes")}
@@ -1417,10 +1533,10 @@ export default function CourseLessonPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-white mb-2">
-                      Course Quiz
+                      Practice Quiz
                     </h3>
                     <p className="text-slate-400 text-sm">
-                      Test your knowledge with these practice questions
+                      Quick practice with 10 random questions from this section's assignments.
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-4xl text-purple-500">
@@ -1429,6 +1545,7 @@ export default function CourseLessonPage() {
                 </div>
                 <Quiz
                   courseId={courseId}
+                  sectionId={currentLesson?.SectionId}
                   onClose={() => setActiveTab("overview")}
                 />
               </div>
@@ -1558,6 +1675,75 @@ export default function CourseLessonPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* AI Chat Interface */}
+                  <div className="mt-8 flex flex-col h-[500px] bg-slate-900/40 border border-glass-border rounded-xl overflow-hidden shadow-inner">
+                    <div className="bg-slate-900/80 px-4 py-3 border-b border-glass-border flex items-center gap-2">
+                      <span className="material-symbols-outlined text-purple-400 text-[20px]">forum</span>
+                      <h4 className="text-sm font-bold text-white tracking-wide">Trò chuyện với AI Tutor</h4>
+                    </div>
+                    
+                    {/* Chat Messages */}
+                    <div 
+                      ref={chatScrollRef}
+                      className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6"
+                    >
+                      {chatMessages.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
+                          <span className="material-symbols-outlined text-5xl text-purple-400 mb-4">chat_bubble</span>
+                          <p className="text-slate-300">Chưa có tin nhắn nào.<br/>Hãy đặt câu hỏi về bài học này!</p>
+                        </div>
+                      ) : (
+                        chatMessages.map((msg, idx) => (
+                          <div key={idx} className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                            <div className={`shrink-0 size-8 rounded-full flex items-center justify-center ${msg.role === "user" ? "bg-indigo-500/20 text-indigo-300" : "bg-purple-500/20 text-purple-400"}`}>
+                              <span className="material-symbols-outlined text-[18px]">
+                                {msg.role === "user" ? "person" : "smart_toy"}
+                              </span>
+                            </div>
+                            <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === "user" ? "bg-indigo-600/20 border border-indigo-500/20 text-indigo-100 rounded-tr-sm" : "bg-slate-800/60 border border-glass-border text-slate-200 rounded-tl-sm"}`}>
+                              <div className="prose prose-sm prose-invert max-w-none whitespace-pre-wrap">
+                                {msg.content}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                      {isChatting && (
+                        <div className="flex gap-4 flex-row">
+                          <div className="shrink-0 size-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[18px]">smart_toy</span>
+                          </div>
+                          <div className="max-w-[80%] rounded-2xl p-4 bg-slate-800/60 border border-glass-border text-slate-200 rounded-tl-sm flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce"></div>
+                            <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce delay-100"></div>
+                            <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce delay-200"></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Chat Input */}
+                    <div className="p-4 bg-slate-900/80 border-t border-glass-border">
+                      <div className="relative">
+                        <textarea
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          onKeyDown={handleChatKeyDown}
+                          placeholder="Hỏi AI về bài học này... (Nhấn Enter để gửi)"
+                          className="w-full bg-slate-950 border border-slate-700 rounded-xl py-3 pl-4 pr-14 text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none h-14 custom-scrollbar transition-all"
+                          rows={1}
+                        />
+                        <button
+                          onClick={handleSendMessage}
+                          disabled={isChatting || !chatInput.trim()}
+                          className="absolute right-2 top-2 bottom-2 aspect-square rounded-lg bg-purple-600 hover:bg-purple-500 disabled:bg-slate-800 disabled:text-slate-500 text-white flex items-center justify-center transition-all shadow-lg"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">send</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
