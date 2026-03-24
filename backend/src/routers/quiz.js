@@ -25,4 +25,6 @@ router.post("/assignments/from-bank", authenticateJWT, quizController.createAssi
 router.get("/course/:courseId/sections", authenticateJWT, quizController.getSectionsByCourseForInstructor);
 router.get("/question-bank/:questionBankId/assignments", authenticateJWT, quizController.getAssignmentsByQuestionBank);
 router.get("/assignments/:assignmentId/preview", authenticateJWT, quizController.getAssignmentSnapshotDetail);
+router.put("/assignments/:assignmentId", authenticateJWT, quizController.updateAssignmentSnapshot);
+router.delete("/assignments/:assignmentId", authenticateJWT, quizController.deleteAssignmentSnapshot);
 export default router;

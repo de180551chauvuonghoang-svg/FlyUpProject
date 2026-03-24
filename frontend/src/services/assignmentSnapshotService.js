@@ -68,3 +68,21 @@ export async function fetchAssignmentSnapshotDetail(assignmentId) {
     const data = await request(`/quiz/assignments/${assignmentId}/preview`);
     return data.data;
 }
+
+export async function updateAssignmentSnapshot(assignmentId, payload) {
+    const data = await request(`/quiz/assignments/${assignmentId}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+    });
+    return data.data;
+}
+
+export async function deleteAssignmentSnapshot(assignmentId) {
+    const data = await request(`/quiz/assignments/${assignmentId}`, {
+        method: "DELETE",
+    });
+    return data.data;
+}
+
+
+
