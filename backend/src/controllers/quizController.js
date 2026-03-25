@@ -21,10 +21,7 @@ export const getAssignmentsByCourse = async (req, res) => {
 
     const assignments = await prisma.assignments.findMany({
       where: {
-        OR: [
-          { Sections: { CourseId: courseId } },
-          { CourseId: courseId }
-        ]
+        Sections: { CourseId: courseId }
       },
       select: {
         Id: true,
@@ -33,7 +30,6 @@ export const getAssignmentsByCourse = async (req, res) => {
         QuestionCount: true,
         GradeToPass: true,
         SectionId: true,
-        CourseId: true,
         Sections: {
           select: {
             Title: true,
@@ -121,7 +117,7 @@ export const getSubmissionHistory = async (req, res) => {
  */
 export const createAssignment = async (req, res) => {
   try {
-    const { name, duration, gradeToPass, sectionId, courseId, questions } = req.body;
+    const { name, duration, gradeToPass, sectionId, questions } = req.body;
     const userId = req.user?.userId;
 
     console.log(`[QuizController] Creating assignment: ${name}`);
@@ -132,7 +128,6 @@ export const createAssignment = async (req, res) => {
         Duration: parseInt(duration) || 30,
         GradeToPass: parseFloat(gradeToPass) || 8,
         SectionId: sectionId || null,
-        CourseId: courseId || null,
         CreatorId: userId,
         QuestionCount: questions?.length || 0,
         McqQuestions: {
@@ -587,7 +582,6 @@ export const createAssignmentFromBank = async (req, res) => {
     const userId = req.user?.userId;
 
     const {
-      courseId,
       sectionId,
       name,
       duration,
@@ -598,7 +592,6 @@ export const createAssignmentFromBank = async (req, res) => {
   
     const data = await createAssignmentFromQuestionBankService({
       userId,
-      courseId,
       sectionId,
       name,
       duration,

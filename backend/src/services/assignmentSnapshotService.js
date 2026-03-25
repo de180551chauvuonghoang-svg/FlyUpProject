@@ -22,11 +22,10 @@ async function getInstructorUserOrThrow(userId) {
     return user;
 }
 
-async function getOwnedSectionOrThrow({ userId, instructorId, courseId, sectionId }) {
+async function getOwnedSectionOrThrow({ userId, instructorId, sectionId }) {
     const section = await prisma.sections.findFirst({
         where: {
             Id: sectionId,
-            CourseId: courseId,
             Courses: {
                 OR: [
                     { CreatorId: userId },
@@ -109,7 +108,6 @@ async function getPublishedOwnedQuestionBankOrThrow({ userId, courseId, sourceQu
 
 export async function createAssignmentFromQuestionBankService({
     userId,
-    courseId,
     sectionId,
     name,
     duration,
@@ -133,22 +131,21 @@ export async function createAssignmentFromQuestionBankService({
         throw new Error("GradeToPass must be between 0 and 10");
     }
 
-    if (!courseId || !sectionId || !sourceQuestionBankId) {
-        throw new Error("courseId, sectionId, and sourceQuestionBankId are required");
+    if (!sectionId || !sourceQuestionBankId) {
+        throw new Error("sectionId and sourceQuestionBankId are required");
     }
 
     const instructorUser = await getInstructorUserOrThrow(userId);
 
-    await getOwnedSectionOrThrow({
+    const section = await getOwnedSectionOrThrow({
         userId,
         instructorId: instructorUser.InstructorId,
-        courseId,
         sectionId,
     });
 
     const questionBank = await getPublishedOwnedQuestionBankOrThrow({
         userId,
-        courseId,
+        courseId: section.CourseId,
         sourceQuestionBankId,
     });
 
