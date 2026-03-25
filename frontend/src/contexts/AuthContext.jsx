@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AuthContext } from './authContextDef.js';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:5000/api';
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -166,10 +169,15 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const isAdmin = String(user?.Role || user?.role || '').trim().toLowerCase() === 'admin';
+  const isAuthenticated = !!user;
+
   const value = {
     user,
     loading,
     accessToken,
+    isAdmin,
+    isAuthenticated,
     signUp,
     signIn,
     signInWithGoogle,

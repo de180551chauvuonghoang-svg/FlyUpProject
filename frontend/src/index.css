@@ -7,7 +7,16 @@
   --color-surface-dark: #16161e;
   --color-surface-light: #16161e;
 
+  /* Quiz-specific colors */
+  --color-quiz-bg-dark: #0d0618;
+  --color-quiz-primary: #7f13ec;
+  --color-quiz-answer-red: #e53e3e;
+  --color-quiz-answer-blue: #3182ce;
+  --color-quiz-answer-yellow: #d69e2e;
+  --color-quiz-answer-green: #38a169;
+
   --font-family-display: "Spline Sans", sans-serif;
+  --font-family-quiz: "Inter", sans-serif;
 
   --radius-DEFAULT: 1rem;
   --radius-lg: 1.5rem;
@@ -57,6 +66,7 @@ body {
 
 /* Animation keyframes */
 @keyframes ping {
+
   75%,
   100% {
     transform: scale(2);
@@ -69,10 +79,12 @@ body {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -87,6 +99,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -102,6 +115,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -113,10 +127,12 @@ body {
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -177,6 +193,7 @@ body {
 
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -185,4 +202,50 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ============================================================
+   Quiz-specific Styles
+   ============================================================ */
+.font-quiz {
+  font-family: "Inter", "Spline Sans", sans-serif;
+}
+
+.glass-card {
+  background: rgba(13, 6, 24, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nebula-glow {
+  background: radial-gradient(circle, rgba(127, 19, 236, 0.35) 0%, transparent 70%);
+  filter: blur(60px);
+}
+
+.nebula-glow-purple {
+  background: radial-gradient(circle, rgba(127, 19, 236, 0.4) 0%, transparent 70%);
+  filter: blur(80px);
+}
+
+.nebula-glow-fuchsia {
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.35) 0%, transparent 70%);
+  filter: blur(80px);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(127, 19, 236, 0.4);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(127, 19, 236, 0.7);
 }

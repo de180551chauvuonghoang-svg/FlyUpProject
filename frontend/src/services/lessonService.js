@@ -45,7 +45,7 @@ export const fetchLessonDetails = async (lessonId) => {
 export const markLectureComplete = async (lectureId) => {
   try {
     console.log("[lessonService] Marking lecture complete:", lectureId);
-    const data = await apiCall(`/lectures/${lectureId}/complete`, {
+    const data = await apiCall(`/courses/lectures/${lectureId}/complete`, {
       method: "POST",
     });
     return data.data || data;

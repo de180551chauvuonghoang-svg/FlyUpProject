@@ -2,11 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
+import InstructorLayout from "../components/InstructorLayout";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function InstructorDashboard() {
-  const { user, signOut, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [timeframe, setTimeframe] = useState("6months");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -16,18 +17,15 @@ export default function InstructorDashboard() {
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // ... (auth and fetch logic kept same)
   // Check if user is logged in and is an instructor
   useEffect(() => {
-    // Wait for auth to finish loading before checking
     if (loading) return;
-
     if (!user) {
       toast.error("Please login as an instructor");
       navigate("/login?role=instructor");
       return;
     }
-
-    // Check for instructor field or instructorId or role (both cases: uppercase and lowercase)
     const roleValue = (user.role || user.Role || "").trim().toLowerCase();
     if (!user.instructor && !user.instructorId && roleValue !== "instructor") {
       toast.error("You do not have instructor privileges");
@@ -36,15 +34,11 @@ export default function InstructorDashboard() {
     }
   }, [user, loading, navigate]);
 
-  // Fetch instructor stats and courses
   useEffect(() => {
     if (!user) return;
-
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-
-        // Fetch stats
         const statsRes = await fetch(`${API_URL}/courses/instructor/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -52,56 +46,19 @@ export default function InstructorDashboard() {
           const statsData = await statsRes.json();
           setStats(statsData.data);
         }
-
-        // Fetch courses based on view mode
         let coursesRes;
         if (viewMode === "my") {
-          // Fetch instructor's own courses
           coursesRes = await fetch(
             `${API_URL}/courses/instructor/courses?status=${statusFilter}`,
             { headers: { Authorization: `Bearer ${token}` } },
           );
         } else {
-          // Fetch all courses (public API)
           coursesRes = await fetch(`${API_URL}/courses?limit=1000`);
         }
-
         if (coursesRes.ok) {
           const coursesData = await coursesRes.json();
-          console.log("[InstructorDashboard] Courses response:", coursesData);
-          console.log("[InstructorDashboard] Courses data:", coursesData.data);
-
-          // Handle different response formats
-          let coursesArray = [];
-          if (viewMode === "all") {
-            coursesArray = coursesData.data?.courses || coursesData.data || [];
-          } else {
-            coursesArray = coursesData.data || [];
-          }
-
-          console.log(
-            "[InstructorDashboard] Parsed courses array:",
-            coursesArray,
-          );
-          console.log(
-            "[InstructorDashboard] Courses count:",
-            coursesArray.length,
-          );
-          if (coursesArray.length > 0) {
-            console.log(
-              "[InstructorDashboard] First course sample:",
-              coursesArray[0],
-            );
-          }
-
+          let coursesArray = viewMode === "all" ? (coursesData.data?.courses || coursesData.data || []) : (coursesData.data || []);
           setCourses(coursesArray);
-        } else {
-          console.error(
-            "[InstructorDashboard] Failed to fetch courses:",
-            coursesRes.status,
-            await coursesRes.text(),
-          );
-          toast.error("Failed to fetch courses");
         }
       } catch (error) {
         console.error("Failed to fetch instructor data:", error);
@@ -110,11 +67,9 @@ export default function InstructorDashboard() {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, [user, statusFilter, viewMode]);
 
-  // Fallback stats if API fails
   const dashboardStats = stats
     ? {
         totalStudents: stats.totalStudents.toLocaleString(),
@@ -139,292 +94,68 @@ export default function InstructorDashboard() {
         topCourse: { title: "Loading...", rating: 0, learners: "0" },
       };
 
-  const handleLogout = async () => {
-    await signOut();
-    toast.success("Logged out successfully");
-    navigate("/login?role=instructor");
-  };
 
   const handlePublish = async (courseId) => {
     try {
       const token = localStorage.getItem("accessToken");
-
-      // Get current course to determine action
       const course = courses.find((c) => c.id === courseId);
-      const isPublished =
-        course?.status === "Ongoing" || course?.status === "published";
-
+      const isPublished = course?.status === "Ongoing" || course?.status === "published";
       const endpoint = isPublished ? "unpublish" : "publish";
-      const response = await fetch(
-        `${API_URL}/courses/${courseId}/${endpoint}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
+      const response = await fetch(`${API_URL}/courses/${courseId}/${endpoint}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to update course");
       }
-
       const data = await response.json();
-
-      // Update local state
-      setCourses(
-        courses.map((c) =>
-          c.id === courseId
-            ? { ...c, status: isPublished ? "Draft" : "Ongoing" }
-            : c,
-        ),
-      );
-
-      toast.success(
-        data.message ||
-          (isPublished
-            ? "Course unpublished"
-            : "Course published successfully!"),
-      );
+      setCourses(courses.map((c) => c.id === courseId ? { ...c, status: isPublished ? "Draft" : "Ongoing" } : c));
+      toast.success(data.message || (isPublished ? "Course unpublished" : "Course published successfully!"));
     } catch (error) {
-      console.error("Publish error:", error);
       toast.error(error.message || "Failed to update course");
     }
   };
 
-  const handleEdit = (id) => {
-    navigate(`/edit-course/${id}`);
-  };
-
-  const handleView = (id) => {
-    // Navigate to course preview (as learner view)
-    navigate(`/course/${id}`);
-  };
-
+  const handleEdit = (id) => navigate(`/edit-course/${id}`);
+  const handleView = (id) => navigate(`/instructor/preview/${id}`);
   const handleDelete = async (courseId) => {
-    if (!window.confirm("Are you sure you want to delete this course?")) {
-      return;
-    }
-
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(`${API_URL}/courses/${courseId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete course");
-      }
-
+      if (!response.ok) throw new Error("Failed to delete course");
       setCourses(courses.filter((c) => c.id !== courseId));
       toast.success("Course deleted successfully");
-    } catch (error) {
-      console.error("Delete error:", error);
+    } catch {
       toast.error("Failed to delete course");
     }
   };
+  const handleCreateCourse = () => navigate("/instructor/create-course");
 
-  const handleCreateCourse = () => {
-    navigate("/instructor/create-course");
-  };
-
-  // Filter courses based on search query
   const filteredCourses = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return courses;
-    }
-
+    if (!searchQuery.trim()) return courses;
     const query = searchQuery.toLowerCase().trim();
     return courses.filter((course) => {
-      // Support both camelCase and PascalCase field names
       const title = (course.title || course.Title || "").toLowerCase();
-      const description = (
-        course.description ||
-        course.Description ||
-        ""
-      ).toLowerCase();
-      const categoryName = (
-        course.categoryName ||
-        course.CategoryName ||
-        ""
-      ).toLowerCase();
-
-      return (
-        title.includes(query) ||
-        description.includes(query) ||
-        categoryName.includes(query)
-      );
+      const description = (course.description || course.Description || "").toLowerCase();
+      const categoryName = (course.categoryName || course.CategoryName || "").toLowerCase();
+      return title.includes(query) || description.includes(query) || categoryName.includes(query);
     });
   }, [courses, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-display overflow-x-hidden">
-      {/* Animated Background Gradients */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/20 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/20 blur-3xl"></div>
-      </div>
-
-      {/* Fixed Sidebar - Desktop */}
-      <aside className="hidden lg:fixed left-0 top-0 w-64 h-screen z-50 lg:flex flex-col bg-slate-900/80 backdrop-blur-xl border-r border-white/5 p-6">
-        {/* Logo */}
-        <div
-          className="mb-12 flex items-center gap-3 cursor-pointer group"
-          onClick={() => navigate("/")}
-        >
-          <div className="h-10 w-auto">
-            <img
-              src="/FlyUpTeam.png"
-              alt="FlyUp Logo"
-              className="h-full w-auto object-contain transition-transform group-hover:scale-110"
-            />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-lg font-black tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent leading-tight">
-              FlyUp
-            </h1>
-            <p className="text-xs font-semibold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent leading-tight tracking-wide">
-              Edu & Tech
-            </p>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 space-y-2">
-          {[
-            { icon: "dashboard", label: "Dashboard", active: true },
-            { icon: "layers", label: "Courses" },
-            { icon: "group", label: "Students" },
-            { icon: "trending_up", label: "Analytics" },
-            { icon: "wallet", label: "Earnings" },
-          ].map((item) => (
-            <a
-              key={item.label}
-              href="#"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                item.active
-                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm">
-                {item.icon}
-              </span>
-              <span className="text-sm font-medium">{item.label}</span>
-            </a>
-          ))}
-        </nav>
-
-        {/* User Profile */}
-        <div className="border-t border-white/10 pt-4 mt-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <img
-              src={
-                user?.avatar ||
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuDXE54T7SHzGeKbXXXlUxacKM7rFAAcrgZVpdd_-2TAuAz9Ux1K211OsyMyrlnV02DzXeuR3UqebcbQh48zeyPWIC0vk_SEj8mWfVnBhEaDAfpvmgpu-tfoqhf1sZy8MwHSNSQoPveBoK-PmRL90gzW18t7OHAEnHhoX0CrSXHdwoZs0DwW0pUhSRR8ZfcGKI8rYQE6eARtf3WUO9zVrR4VvcBTy-HKGmDcSPufUImWl52N8-ODbbGsWsJ_P4pmAXI0ykRDwvcrCGg"
-              }
-              alt="User"
-              className="w-10 h-10 rounded-full border-2 border-purple-500/50 object-cover"
-            />
-            <div className="overflow-hidden flex-1">
-              <p className="text-sm font-bold text-white truncate">
-                {user?.name || "Instructor"}
-              </p>
-              <p className="text-xs text-slate-400">
-                {user?.email || "instructor@flyup.com"}
-              </p>
-            </div>
-          </div>
-          
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleLogout();
-            }}
-            className="w-full relative z-[100] flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-all cursor-pointer pointer-events-auto shadow-lg"
-          >
-            <span className="material-symbols-outlined text-[18px]">logout</span>
-            Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="lg:ml-64 min-h-screen">
-        {/* Top Navigation */}
-        <header className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/5 bg-slate-950/40">
-          <div className="px-6 lg:px-10 py-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex-1">
-              <h1 className="text-4xl font-bold text-white">
-                Teaching Dashboard
-              </h1>
-              <p className="text-slate-400 mt-1">
-                Manage your courses and student progress
-              </p>
-
-              {/* Mobile Search */}
-              <div className="relative md:hidden mt-4">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-                  search
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search courses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500/50 transition-all"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-sm">
-                      close
-                    </span>
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="relative hidden md:block">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-                  search
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search courses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500/50 transition-all w-64"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-sm">
-                      close
-                    </span>
-                  </button>
-                )}
-              </div>
-              <button className="p-2 hover:bg-white/5 rounded-lg transition-all relative">
-                <span className="material-symbols-outlined">notifications</span>
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <div className="px-6 lg:px-10 py-8 space-y-8">
+    <InstructorLayout
+      title="Teaching Dashboard"
+      subtitle="Manage your courses and student progress"
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      placeholder="Search courses..."
+    >
+      <div className="space-y-8">
           {/* Stats Cards */}
           <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {/* Total Students */}
@@ -682,8 +413,9 @@ export default function InstructorDashboard() {
                     <div className="relative h-48 overflow-hidden bg-linear-to-br from-purple-900 to-blue-900">
                       <img
                         src={
-                          course.thumbnailUrl ||
-                          "https://via.placeholder.com/400x300?text=No+Image"
+                          course.thumbnail ||
+                            course.thumbnailUrl ||
+                            "https://placehold.co/400x300?text=No+Image"
                         }
                         alt={course.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -725,13 +457,13 @@ export default function InstructorDashboard() {
                           <span className="material-symbols-outlined text-sm">
                             people
                           </span>
-                          {course.studentCount || 0} Learners
+                          {course.students || course.studentCount || 0} Learners
                         </span>
                         <span className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-sm">
                             video_library
                           </span>
-                          {course.lectureCount || 0} Lectures
+                          {course.lectures || course.lectureCount || 0} Lectures
                         </span>
                       </div>
 
@@ -806,35 +538,6 @@ export default function InstructorDashboard() {
             )}
           </section>
         </div>
-      </main>
-
-      {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/5 backdrop-blur-xl border-t border-white/10 px-4 py-3 flex justify-between items-center z-40">
-        <button className="text-purple-400">
-          <span className="material-symbols-outlined">dashboard</span>
-        </button>
-        <button className="text-slate-400">
-          <span className="material-symbols-outlined">layers</span>
-        </button>
-        <button
-          onClick={handleCreateCourse}
-          className="w-12 h-12 -mt-6 rounded-full bg-purple-500 flex items-center justify-center text-white"
-        >
-          <span className="material-symbols-outlined">add</span>
-        </button>
-        <button className="text-slate-400">
-          <span className="material-symbols-outlined">trending_up</span>
-        </button>
-        <button className="text-slate-400">
-          <span className="material-symbols-outlined">person</span>
-        </button>
-      </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-      `}</style>
-    </div>
+    </InstructorLayout>
   );
 }

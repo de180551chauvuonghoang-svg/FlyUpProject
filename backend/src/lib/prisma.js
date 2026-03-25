@@ -1,18 +1,15 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const prismaClientSingleton = () => {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString || typeof connectionString !== 'string' || connectionString.trim() === '') {
+  if (!process.env.DATABASE_URL || process.env.DATABASE_URL.trim() === '') {
     console.error('❌ Error: DATABASE_URL is missing or invalid in environment variables.');
     process.exit(1);
   }
 
-  const pool = new pg.Pool({ 
-    connectionString, 
-    max: 10 // Transaction Mode supports more connections
-  });
+  // Define postgres pool and prisma pg adapter
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
   const adapter = new PrismaPg(pool);
 
   return new PrismaClient({

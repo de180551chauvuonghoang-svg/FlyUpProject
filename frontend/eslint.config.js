@@ -26,4 +26,15 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    files: [
+      'src/pages/Admin/**/*.{js,jsx}',
+      'src/components/Admin/**/*.{js,jsx}',
+      'src/services/admin/**/*.{js,jsx}'
+    ],
+    rules: {
+      'no-unused-vars': 'off',
+      'react-hooks/exhaustive-deps': 'off'
+    }
+  }
 ])

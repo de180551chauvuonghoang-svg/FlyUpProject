@@ -154,6 +154,12 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
+    if (error.message.includes('uses') && error.message.includes('login')) {
+      return res.status(400).json({
+        error: error.message,
+        message: error.message,
+      });
+    }
     if (error.message === 'Invalid login credentials' || error.message.includes('Invalid credentials')) {
       return res.status(401).json({
         error: error.message,

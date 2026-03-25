@@ -1,5 +1,10 @@
 import Groq from "groq-sdk";
 import prisma from '../lib/prisma.js';
+import * as googleTTS from 'google-tts-api';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 export const chat = async (req, res) => {
   try {
@@ -75,8 +80,8 @@ export const chat = async (req, res) => {
     }).join("\n");
 
     // 2. Construct the prompt
-    // Use openai/gpt-oss-20b on Groq (Latest supported model)
-    const model = "openai/gpt-oss-20b";
+    // Use llama-3.3-70b-versatile on Groq
+    const model = "llama-3.3-70b-versatile";
 
     const prompt = `
     You are "FlyUp", a professional and concise Academic Counselor.
@@ -120,5 +125,70 @@ export const chat = async (req, res) => {
   } catch (error) {
     console.error("Chatbot Error:", error);
     return res.status(500).json({ error: "Failed to generate response" });
+  }
+};
+
+export const tts = async (req, res) => {
+  try {
+    const { text, lang = 'vi' } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: "Text is required" });
+    }
+    const results = await googleTTS.getAllAudioBase64(text, {
+      lang: lang,
+      slow: false,
+      host: 'https://translate.google.com',
+      splitPunct: ',.?:;'
+    });
+    return res.status(200).json({ urls: results });
+  } catch (error) {
+    console.error("TTS Error:", error);
+    return res.status(500).json({ error: "Failed to generate TTS audio URLs" });
+  }
+};
+
+export const transcribeVideo = async (req, res) => {
+  try {
+    const { videoUrl } = req.body;
+    if (!videoUrl) return res.status(400).json({ error: "videoUrl is required" });
+
+    const groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY
+    });
+
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ error: "GROQ_API_KEY missing" });
+    }
+
+    const tempFilePath = path.join(os.tmpdir(), `${uuidv4()}.mp4`);
+    
+    console.log(`[TRANSCRIBE] Downloading video from ${videoUrl}`);
+    const response = await fetch(videoUrl);
+    if (!response.ok) throw new Error("Failed to download video from URL");
+    
+    const arrayBuffer = await response.arrayBuffer();
+    fs.writeFileSync(tempFilePath, Buffer.from(arrayBuffer));
+    console.log(`[TRANSCRIBE] Saved video to ${tempFilePath}`);
+
+    console.log(`[TRANSCRIBE] Sending to Groq Whisper...`);
+    const transcription = await groq.audio.transcriptions.create({
+      file: fs.createReadStream(tempFilePath),
+      model: "whisper-large-v3",
+      prompt: "Bài giảng học thuật",
+      response_format: "text",
+      language: "vi",
+    });
+
+    try {
+        fs.unlinkSync(tempFilePath);
+    } catch (e) {
+        console.error("Failed to delete temp file:", e);
+    }
+
+    console.log(`[TRANSCRIBE] Transcription success`);
+    return res.status(200).json({ text: transcription });
+  } catch (error) {
+    console.error("Transcription Error:", error);
+    return res.status(500).json({ error: "Failed to transcribe video" });
   }
 };

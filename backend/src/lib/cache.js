@@ -1,9 +1,9 @@
-import NodeCache from 'node-cache';
+import NodeCache from "node-cache";
 
 // Initialize NodeCache (5 minute default TTL)
 const nodeCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
-console.log('✅ In-memory Cache initialized (Replacing Redis)');
+console.log("✅ In-memory Cache initialized (Replacing Redis)");
 
 // Store for rate limiting since NodeCache doesn't have an atomic 'incr' that works exactly like Redis
 const rateLimitStore = new Map();
@@ -32,7 +32,7 @@ const redis = {
   ttl: async (key) => {
     // In a simple Map-based store, we don't easily track TTL
     // Returning a default or estimated value
-    return 60; 
+    return 60;
   },
 
   // Mock 'get' for general usage
@@ -40,8 +40,8 @@ const redis = {
 
   // Mock 'set' for general usage
   set: async (key, value, mode, duration) => {
-    if (mode === 'EX' || mode === 'PX') {
-      const ttl = mode === 'EX' ? duration : Math.ceil(duration / 1000);
+    if (mode === "EX" || mode === "PX") {
+      const ttl = mode === "EX" ? duration : Math.ceil(duration / 1000);
       return nodeCache.set(key, value, ttl);
     }
     return nodeCache.set(key, value);
@@ -49,12 +49,12 @@ const redis = {
 
   // EventEmitter mocks to prevent errors on event listeners
   on: (event, callback) => {
-    if (event === 'connect') {
+    if (event === "connect") {
       // simulate async connect for consistency
       setTimeout(() => callback(), 0);
     }
     // Ignore error/other event listeners
-  }
+  },
 };
 
 /**
@@ -74,13 +74,24 @@ export const safeGet = async (key) => {
  */
 export const safeSet = async (key, value, mode, duration) => {
   try {
-    if (mode === 'EX') {
+    if (mode === "EX") {
       nodeCache.set(key, value, duration);
     } else {
       nodeCache.set(key, value);
     }
   } catch (error) {
     // Ignore cache set failures
+  }
+};
+
+/**
+ * Helper to delete cache keys
+ */
+export const safeDel = async (key) => {
+  try {
+    return nodeCache.del(key);
+  } catch (error) {
+    return 0;
   }
 };
 

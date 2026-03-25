@@ -43,18 +43,23 @@ model Assignments {
   Name                  String                  @db.VarChar(255)
   Duration              Int                     @default(30)
   QuestionCount         Int                     @default(0)
-  SectionId             String                  @db.Uuid
+  SectionId             String?                 @db.Uuid
+  CourseId              String?                 @db.Uuid
   CreatorId             String                  @db.Uuid
   GradeToPass           Float                   @default(8)
+  SourceQuestionBankId  String?                 @db.Uuid
   AssignmentCompletions AssignmentCompletions[]
-  Sections              Sections                @relation(fields: [SectionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Assignments_Sections")
+  Sections              Sections?                @relation(fields: [SectionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Assignments_Sections")
+  Courses               Courses?                 @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Assignments_Courses")
   Users                 Users                   @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Assignments_Users")
+  SourceQuestionBank    QuestionBanks?          @relation(fields: [SourceQuestionBankId], references: [Id], onUpdate: NoAction, map: "FK_Assignments_QuestionBanks")
   CAT_Logs              CAT_Logs[]
   CAT_Results           CAT_Results[]
   McqQuestions          McqQuestions[]
   Submissions           Submissions[]
 
   @@index([SectionId], map: "IX_Assignments_SectionId")
+  @@index([SourceQuestionBankId], map: "IX_Assignments_SourceQuestionBankId")
 }
 
 model Bills {
@@ -139,7 +144,7 @@ model CartCheckout {
 model Coupons {
   Id            String         @id(map: "PK_Coupons") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   Code          String         @unique @db.VarChar(50)
-  DiscountType  String         @default("PERCENTAGE") @db.VarChar(20) // PERCENTAGE or FIXED
+  DiscountType  String         @default("PERCENTAGE") @db.VarChar(20)
   DiscountValue Float          @default(0)
   MaxUses       Int?
   UsedCount     Int            @default(0)
@@ -318,11 +323,13 @@ model Courses {
   CourseMeta           CourseMeta[]
   CourseNotifications  CourseNotifications[]
   CourseReviews        CourseReviews[]
+  QuestionBanks        QuestionBanks[]
   Categories           Categories            @relation(fields: [LeafCategoryId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Categories")
   Instructors          Instructors           @relation(fields: [InstructorId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Instructors")
   Users                Users                 @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Users_Creator")
   Enrollments          Enrollments[]
   Sections             Sections[]
+  Assignments          Assignments[]
   UserAbilities        UserAbilities[]
 
   @@index([InstructorId], map: "IX_Courses_InstructorId")
@@ -406,29 +413,35 @@ model Lectures {
 }
 
 model McqChoices {
-  Id            String          @id(map: "PK_McqChoices") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Content       String?
-  IsCorrect     Boolean         @default(false)
-  McqQuestionId String?         @db.Uuid
-  McqQuestions  McqQuestions?   @relation(fields: [McqQuestionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqChoices_McqQuestions")
-  McqUserAnswer McqUserAnswer[]
+  Id                         String               @id(map: "PK_McqChoices") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  Content                    String?
+  IsCorrect                  Boolean              @default(false)
+  McqQuestionId              String?              @db.Uuid
+  SourceQuestionBankChoiceId String?              @db.Uuid
+  McqQuestions               McqQuestions?        @relation(fields: [McqQuestionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqChoices_McqQuestions")
+  SourceQuestionBankChoice   QuestionBankChoices? @relation(fields: [SourceQuestionBankChoiceId], references: [Id], onUpdate: NoAction, map: "FK_McqChoices_QuestionBankChoices")
+  McqUserAnswer              McqUserAnswer[]
 
   @@index([McqQuestionId], map: "IX_McqChoices_McqQuestionId")
+  @@index([SourceQuestionBankChoiceId], map: "IX_McqChoices_SourceQuestionBankChoiceId")
 }
 
 model McqQuestions {
-  Id           String       @id(map: "PK_McqQuestions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  Content      String       @db.VarChar(500)
-  AssignmentId String       @db.Uuid
-  ParamA       Float?
-  ParamB       Float?
-  ParamC       Float?
-  Difficulty   String?      @db.VarChar(50)
-  CAT_Logs     CAT_Logs[]
-  McqChoices   McqChoices[]
-  Assignments  Assignments  @relation(fields: [AssignmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqQuestions_Assignments")
+  Id                           String                 @id(map: "PK_McqQuestions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  Content                      String                 @db.VarChar(500)
+  AssignmentId                 String                 @db.Uuid
+  ParamA                       Float?
+  ParamB                       Float?
+  ParamC                       Float?
+  Difficulty                   String?                @db.VarChar(50)
+  SourceQuestionBankQuestionId String?                @db.Uuid
+  CAT_Logs                     CAT_Logs[]
+  McqChoices                   McqChoices[]
+  Assignments                  Assignments            @relation(fields: [AssignmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_McqQuestions_Assignments")
+  SourceQuestionBankQuestion   QuestionBankQuestions? @relation(fields: [SourceQuestionBankQuestionId], references: [Id], onUpdate: NoAction, map: "FK_McqQuestions_QuestionBankQuestions")
 
   @@index([AssignmentId], map: "IX_McqQuestions_AssignmentId")
+  @@index([SourceQuestionBankQuestionId], map: "IX_McqQuestions_SourceQuestionBankQuestionId")
 }
 
 model McqUserAnswer {
@@ -472,6 +485,71 @@ model PrivateMessages {
   sent_at              DateTime             @default(now()) @db.Timestamp(6)
   is_read              Boolean              @default(false)
   PrivateConversations PrivateConversations @relation(fields: [conversation_id], references: [conversation_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_PrivateMessages_PrivateConversations")
+}
+
+model QuestionBanks {
+  Id                                        String                  @id(map: "PK_QuestionBanks") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  Name                                      String                  @db.VarChar(255)
+  Description                               String?                 @db.VarChar(1000)
+  Status                                    String                  @default("Draft") @db.VarChar(45)
+  IsPublic                                  Boolean                 @default(false)
+  CourseId                                  String                  @db.Uuid
+  CreatorId                                 String                  @db.Uuid
+  LastModifierId                            String                  @db.Uuid
+  CreationTime                              DateTime                @default(now()) @db.Timestamp(6)
+  LastModificationTime                      DateTime                @default(now()) @db.Timestamp(6)
+  Course                                    Courses                 @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_QuestionBanks_Courses")
+  Users_QuestionBanks_CreatorIdToUsers      Users                   @relation("QuestionBanks_CreatorIdToUsers", fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_QuestionBanks_Users_Creator")
+  Users_QuestionBanks_LastModifierIdToUsers Users                   @relation("QuestionBanks_LastModifierIdToUsers", fields: [LastModifierId], references: [Id], onUpdate: NoAction, map: "FK_QuestionBanks_Users_LastModifier")
+  QuestionBankQuestions                     QuestionBankQuestions[]
+  Assignments                               Assignments[]
+
+  @@index([CourseId], map: "IX_QuestionBanks_CourseId")
+  @@index([CreatorId], map: "IX_QuestionBanks_CreatorId")
+  @@index([LastModifierId], map: "IX_QuestionBanks_LastModifierId")
+  @@index([IsPublic], map: "IX_QuestionBanks_IsPublic")
+  @@index([Status], map: "IX_QuestionBanks_Status")
+}
+
+model QuestionBankQuestions {
+  Id                                                String                @id(map: "PK_QuestionBankQuestions") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  QuestionBankId                                    String                @db.Uuid
+  Content                                           String                @db.VarChar(500)
+  Difficulty                                        String?               @db.VarChar(50)
+  ParamA                                            Float?
+  ParamB                                            Float?
+  ParamC                                            Float?
+  Explanation                                       String?               @db.VarChar(2000)
+  Status                                            String                @default("Draft") @db.VarChar(45)
+  CreatorId                                         String                @db.Uuid
+  LastModifierId                                    String                @db.Uuid
+  CreationTime                                      DateTime              @default(now()) @db.Timestamp(6)
+  LastModificationTime                              DateTime              @default(now()) @db.Timestamp(6)
+  QuestionBank                                      QuestionBanks         @relation(fields: [QuestionBankId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_QuestionBankQuestions_QuestionBanks")
+  Users_QuestionBankQuestions_CreatorIdToUsers      Users                 @relation("QuestionBankQuestions_CreatorIdToUsers", fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_QuestionBankQuestions_Users_Creator")
+  Users_QuestionBankQuestions_LastModifierIdToUsers Users                 @relation("QuestionBankQuestions_LastModifierIdToUsers", fields: [LastModifierId], references: [Id], onUpdate: NoAction, map: "FK_QuestionBankQuestions_Users_LastModifier")
+  QuestionBankChoices                               QuestionBankChoices[]
+  McqQuestions                                      McqQuestions[]
+
+  @@index([QuestionBankId], map: "IX_QuestionBankQuestions_QuestionBankId")
+  @@index([CreatorId], map: "IX_QuestionBankQuestions_CreatorId")
+  @@index([LastModifierId], map: "IX_QuestionBankQuestions_LastModifierId")
+  @@index([Status], map: "IX_QuestionBankQuestions_Status")
+}
+
+model QuestionBankChoices {
+  Id                     String                @id(map: "PK_QuestionBankChoices") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  QuestionBankQuestionId String                @db.Uuid
+  Content                String                @db.VarChar(500)
+  IsCorrect              Boolean               @default(false)
+  OrderIndex             Int                   @default(0)
+  CreationTime           DateTime              @default(now()) @db.Timestamp(6)
+  LastModificationTime   DateTime              @default(now()) @db.Timestamp(6)
+  QuestionBankQuestion   QuestionBankQuestions @relation(fields: [QuestionBankQuestionId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_QuestionBankChoices_QuestionBankQuestions")
+  McqChoices             McqChoices[]
+
+  @@index([QuestionBankQuestionId, OrderIndex], map: "IX_QuestionBankChoices_QuestionBankQuestionId_OrderIndex")
+  @@index([QuestionBankQuestionId], map: "IX_QuestionBankChoices_QuestionBankQuestionId")
 }
 
 model Reactions {
@@ -538,59 +616,64 @@ model UserAbilities {
   Courses    Courses   @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Courses")
   Users      Users     @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Users")
 
+  @@unique([UserId, CourseId], map: "UQ_UserAbilities_UserId_CourseId")
   @@index([CourseId], map: "IX_UserAbilities_CourseId")
   @@index([UserId], map: "IX_UserAbilities_UserId")
 }
 
 model Users {
-  Id                                            String                  @id(map: "PK_Users") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  UserName                                      String                  @db.VarChar(45)
-  Password                                      String                  @db.VarChar(100)
-  Email                                         String                  @db.VarChar(45)
-  FullName                                      String                  @db.VarChar(45)
-  MetaFullName                                  String                  @db.VarChar(45)
-  AvatarUrl                                     String                  @db.VarChar(255)
-  Role                                          String
-  Token                                         String                  @db.VarChar(100)
-  RefreshToken                                  String                  @db.VarChar(100)
-  IsVerified                                    Boolean                 @default(false)
-  IsApproved                                    Boolean                 @default(false)
-  AccessFailedCount                             Int                     @default(0) @db.SmallInt
-  LoginProvider                                 String?                 @db.VarChar(100)
-  ProviderKey                                   String?                 @db.VarChar(100)
-  Bio                                           String                  @default("") @db.VarChar(1000)
-  DateOfBirth                                   DateTime?               @db.Timestamp(6)
-  Phone                                         String?                 @db.VarChar(45)
-  EnrollmentCount                               Int                     @default(0)
-  InstructorId                                  String?                 @db.Uuid
-  CreationTime                                  DateTime                @default(now()) @db.Timestamp(6)
-  LastModificationTime                          DateTime                @default(now()) @db.Timestamp(6)
-  SystemBalance                                 BigInt                  @default(0)
-  last_seen                                     DateTime?               @db.Timestamp(6)
-  Articles                                      Articles[]
-  AssignmentCompletions                         AssignmentCompletions[]
-  Assignments                                   Assignments[]
-  Bills                                         Bills[]
-  CAT_Logs                                      CAT_Logs[]
-  CAT_Results                                   CAT_Results[]
-  CartCheckout                                  CartCheckout[]
-  ChatMessages                                  ChatMessages[]
-  Comments                                      Comments[]
-  ConversationMembers                           ConversationMembers[]
-  Conversations                                 Conversations[]
-  Coupons                                       Coupons[]
-  CourseReviews                                 CourseReviews[]
-  Courses                                       Courses[]
-  Enrollments                                   Enrollments[]
-  Instructors_Instructors_CreatorIdToUsers      Instructors[]           @relation("Instructors_CreatorIdToUsers")
-  LectureCompletions                            LectureCompletions[]
-  Notifications_Notifications_CreatorIdToUsers  Notifications[]         @relation("Notifications_CreatorIdToUsers")
-  Notifications_Notifications_ReceiverIdToUsers Notifications[]         @relation("Notifications_ReceiverIdToUsers")
-  Reactions                                     Reactions[]
-  Submissions                                   Submissions[]
-  UserAbilities                                 UserAbilities[]
-  Wishlist                                      Wishlist[]
-  Instructors_Users_InstructorIdToInstructors   Instructors?            @relation("Users_InstructorIdToInstructors", fields: [InstructorId], references: [Id], onUpdate: NoAction, map: "FK_Users_Instructors")
+  Id                                                                String                  @id(map: "PK_Users") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  UserName                                                          String                  @db.VarChar(45)
+  Password                                                          String                  @db.VarChar(100)
+  Email                                                             String                  @db.VarChar(45)
+  FullName                                                          String                  @db.VarChar(45)
+  MetaFullName                                                      String                  @db.VarChar(45)
+  AvatarUrl                                                         String                  @db.VarChar(255)
+  Role                                                              String
+  Token                                                             String                  @db.VarChar(100)
+  RefreshToken                                                      String                  @db.VarChar(100)
+  IsVerified                                                        Boolean                 @default(false)
+  IsApproved                                                        Boolean                 @default(false)
+  AccessFailedCount                                                 Int                     @default(0) @db.SmallInt
+  LoginProvider                                                     String?                 @db.VarChar(100)
+  ProviderKey                                                       String?                 @db.VarChar(100)
+  Bio                                                               String                  @default("") @db.VarChar(1000)
+  DateOfBirth                                                       DateTime?               @db.Timestamp(6)
+  Phone                                                             String?                 @db.VarChar(45)
+  EnrollmentCount                                                   Int                     @default(0)
+  InstructorId                                                      String?                 @db.Uuid
+  CreationTime                                                      DateTime                @default(now()) @db.Timestamp(6)
+  LastModificationTime                                              DateTime                @default(now()) @db.Timestamp(6)
+  SystemBalance                                                     BigInt                  @default(0)
+  last_seen                                                         DateTime?               @db.Timestamp(6)
+  Articles                                                          Articles[]
+  AssignmentCompletions                                             AssignmentCompletions[]
+  Assignments                                                       Assignments[]
+  Bills                                                             Bills[]
+  CAT_Logs                                                          CAT_Logs[]
+  CAT_Results                                                       CAT_Results[]
+  CartCheckout                                                      CartCheckout[]
+  ChatMessages                                                      ChatMessages[]
+  Comments                                                          Comments[]
+  ConversationMembers                                               ConversationMembers[]
+  Conversations                                                     Conversations[]
+  Coupons                                                           Coupons[]
+  CourseReviews                                                     CourseReviews[]
+  Courses                                                           Courses[]
+  Enrollments                                                       Enrollments[]
+  Instructors_Instructors_CreatorIdToUsers                          Instructors[]           @relation("Instructors_CreatorIdToUsers")
+  LectureCompletions                                                LectureCompletions[]
+  Notifications_Notifications_CreatorIdToUsers                      Notifications[]         @relation("Notifications_CreatorIdToUsers")
+  Notifications_Notifications_ReceiverIdToUsers                     Notifications[]         @relation("Notifications_ReceiverIdToUsers")
+  QuestionBanks_QuestionBanks_CreatorIdToUsers                      QuestionBanks[]         @relation("QuestionBanks_CreatorIdToUsers")
+  QuestionBanks_QuestionBanks_LastModifierIdToUsers                 QuestionBanks[]         @relation("QuestionBanks_LastModifierIdToUsers")
+  QuestionBankQuestions_QuestionBankQuestions_CreatorIdToUsers      QuestionBankQuestions[] @relation("QuestionBankQuestions_CreatorIdToUsers")
+  QuestionBankQuestions_QuestionBankQuestions_LastModifierIdToUsers QuestionBankQuestions[] @relation("QuestionBankQuestions_LastModifierIdToUsers")
+  Reactions                                                         Reactions[]
+  Submissions                                                       Submissions[]
+  UserAbilities                                                     UserAbilities[]
+  Wishlist                                                          Wishlist[]
+  Instructors_Users_InstructorIdToInstructors                       Instructors?            @relation("Users_InstructorIdToInstructors", fields: [InstructorId], references: [Id], onUpdate: NoAction, map: "FK_Users_Instructors")
 
   @@index([Email], map: "IX_Users_Email")
   @@index([InstructorId], map: "IX_Users_InstructorId")

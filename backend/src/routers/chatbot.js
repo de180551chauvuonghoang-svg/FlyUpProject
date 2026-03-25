@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { chat } from '../controllers/chatbotController.js';
+import { chat, tts, transcribeVideo } from '../controllers/chatbotController.js';
 
 const router = express.Router();
 
@@ -37,5 +37,7 @@ const router = express.Router();
  *         description: AI response
  */
 router.post('/', chat);
+router.post('/tts', tts);
+router.post('/transcribe', transcribeVideo);
 
 export default router;

@@ -20,8 +20,8 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.5, ease: "easeOut" }
   }
@@ -29,8 +29,8 @@ const itemVariants = {
 
 const logoVariants = {
   initial: { scale: 0, rotate: -180 },
-  animate: { 
-    scale: 1, 
+  animate: {
+    scale: 1,
     rotate: 0,
     transition: {
       type: "spring",
@@ -40,10 +40,13 @@ const logoVariants = {
   }
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:5000/api';
 
 const LoginPage = () => {
-  const { signIn } = useAuth(); 
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,40 +59,47 @@ const LoginPage = () => {
     setIsLoading(true);
     const toastId = toast.loading('Verifying Google Login...');
     try {
-        const res = await fetch(`${API_URL}/auth/google`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ credential: credentialResponse.credential })
-        });
-        
-        const data = await res.json();
-        
-        if (!res.ok) throw new Error(data.details || data.error || 'Google login failed');
-        
-        localStorage.setItem('accessToken', data.session.accessToken);
-        localStorage.setItem('refreshToken', data.session.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        toast.success('Logged in with Google!', { id: toastId });
-        window.location.href = '/'; 
-        
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ credential: credentialResponse.credential })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.details || data.error || 'Google login failed');
+
+      localStorage.setItem('accessToken', data.session.accessToken);
+      localStorage.setItem('refreshToken', data.session.refreshToken);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      toast.success('Logged in with Google!', { id: toastId });
+      const role = String(data?.user?.Role || data?.user?.role || '').trim().toLowerCase();
+      if (role === 'admin') {
+        window.location.href = '/admin/dashboard';
+      } else if (role === 'instructor') {
+        window.location.href = '/instructor/question-banks';
+      } else {
+        window.location.href = '/';
+      }
+
     } catch (error) {
-        console.error('Google login error', error);
-        toast.error(error.message, { id: toastId });
+      console.error('Google login error', error);
+      toast.error(error.message, { id: toastId });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
   const handleGithubLogin = () => {
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
     if (!clientId) {
-        toast.error('GitHub Client ID is missing');
-        return;
+      toast.error('GitHub Client ID is missing');
+      return;
     }
-    const redirectUri = window.location.origin + '/login'; 
+    const redirectUri = window.location.origin + '/login';
     const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user:email`;
     window.location.href = githubUrl;
   };
@@ -101,7 +111,7 @@ const LoginPage = () => {
     if (code) {
       // Clear code from URL to avoid re-triggering
       window.history.replaceState({}, document.title, window.location.pathname);
-      
+
       const loginWithGithub = async () => {
         setIsLoading(true);
         const toastId = toast.loading('Verifying GitHub Login...');
@@ -113,18 +123,25 @@ const LoginPage = () => {
             },
             body: JSON.stringify({ code })
           });
-          
+
           const data = await res.json();
-          
+
           if (!res.ok) throw new Error(data.details || data.error || 'GitHub login failed');
-          
+
           localStorage.setItem('accessToken', data.session.accessToken);
           localStorage.setItem('refreshToken', data.session.refreshToken);
           localStorage.setItem('user', JSON.stringify(data.user));
-          
+
           toast.success('Logged in with GitHub!', { id: toastId });
-          window.location.href = '/'; 
-          
+          const role = String(data?.user?.Role || data?.user?.role || '').trim().toLowerCase();
+          if (role === 'admin') {
+            window.location.href = '/admin/dashboard';
+          } else if (role === 'instructor') {
+            window.location.href = '/instructor/question-banks';
+          } else {
+            window.location.href = '/';
+          }
+
         } catch (error) {
           console.error('GitHub login error', error);
           toast.error(error.message, { id: toastId });
@@ -151,14 +168,23 @@ const LoginPage = () => {
     const toastId = toast.loading('Logging in...');
 
     try {
-      const { error } = await signIn(formData.email, formData.password);
+      const { data, error } = await signIn(formData.email, formData.password);
 
       if (error) {
         throw new Error(error.message);
       }
 
+      const role = String(data?.user?.Role || data?.user?.role || '').toLowerCase();
+
       toast.success('Welcome back!', { id: toastId });
-      navigate('/');
+
+      if (role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (role === 'instructor') {
+        navigate('/instructor/question-banks');
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error.message || 'Failed to login', { id: toastId });
@@ -166,7 +192,6 @@ const LoginPage = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="font-display bg-[#0a0a14] text-white antialiased overflow-x-hidden min-h-screen relative selection:bg-primary selection:text-white">
 
@@ -231,7 +256,7 @@ const LoginPage = () => {
       </div>
 
       {/* Main Container */}
-      <motion.div 
+      <motion.div
         className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 lg:p-8"
         initial="hidden"
         animate="visible"
@@ -239,8 +264,8 @@ const LoginPage = () => {
       >
         {/* Back to Home Button */}
         <motion.div variants={itemVariants}>
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="absolute top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
           >
             <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
@@ -249,7 +274,7 @@ const LoginPage = () => {
         </motion.div>
 
         {/* Glass Card */}
-        <motion.div 
+        <motion.div
           className="glass-card w-full max-w-[480px] rounded-2xl p-8 sm:p-10"
           variants={itemVariants}
           whileHover={{ scale: 1.01 }}
@@ -257,25 +282,25 @@ const LoginPage = () => {
         >
           {/* Header Section */}
           <div className="mb-8 flex flex-col items-center text-center">
-            <motion.div 
+            <motion.div
               className="mb-6"
               variants={logoVariants}
               initial="initial"
               animate="animate"
             >
-              <img 
-                src="/FlyUpLogin.png" 
-                alt="FlyUp Logo" 
+              <img
+                src="/FlyUpLogin.png"
+                alt="FlyUp Logo"
                 className="w-32 h-32 object-contain"
               />
             </motion.div>
-            <motion.h1 
+            <motion.h1
               className="text-4xl font-black bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent"
               variants={itemVariants}
             >
               Welcome back
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="mt-2 text-sm text-gray-400"
               variants={itemVariants}
             >
@@ -294,11 +319,11 @@ const LoginPage = () => {
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                   <span className="material-symbols-outlined text-[20px]">mail</span>
                 </div>
-                <motion.input 
+                <motion.input
                   className="block w-full rounded-lg border border-[#2a2a3a] bg-[#1e1e28]/50 py-3 pl-10 pr-4 text-sm text-white placeholder-gray-500 shadow-sm backdrop-blur-sm transition-all focus:border-primary focus:bg-[#1e1e28] focus:ring-2 focus:ring-primary/50 focus:outline-none"
-                  id="email" 
+                  id="email"
                   name="email"
-                  placeholder="student@example.com" 
+                  placeholder="student@example.com"
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
@@ -319,18 +344,18 @@ const LoginPage = () => {
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                   <span className="material-symbols-outlined text-[20px]">lock</span>
                 </div>
-                <motion.input 
+                <motion.input
                   className="block w-full rounded-lg border border-[#2a2a3a] bg-[#1e1e28]/50 py-3 pl-10 pr-10 text-sm text-white placeholder-gray-500 shadow-sm backdrop-blur-sm transition-all focus:border-primary focus:bg-[#1e1e28] focus:ring-2 focus:ring-primary/50 focus:outline-none"
-                  id="password" 
+                  id="password"
                   name="password"
-                  placeholder="•••••••••" 
+                  placeholder="•••••••••"
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleInputChange}
                   required
                   whileFocus={{ scale: 1.01 }}
                 />
-                <button 
+                <button
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-primary transition-colors"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -348,7 +373,7 @@ const LoginPage = () => {
             </motion.div>
 
             {/* Submit Button */}
-            <motion.button 
+            <motion.button
               className="group relative mt-2 flex w-full items-center justify-center overflow-hidden rounded-lg bg-primary px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#0a0a14] disabled:opacity-70 disabled:cursor-not-allowed"
               type="submit"
               disabled={isLoading}
@@ -383,29 +408,29 @@ const LoginPage = () => {
           </motion.div>
 
           {/* Social Buttons */}
-          <motion.div 
+          <motion.div
             className="flex justify-center gap-6"
             variants={itemVariants}
           >
-            <motion.div 
+            <motion.div
               className="flex justify-center"
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
             >
-               <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => {
-                    toast.error('Google Sign In Failed');
-                  }}
-                  useOneTap
-                  type="icon"
-                  theme="filled_black"
-                  shape="circle"
-               />
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => {
+                  toast.error('Google Sign In Failed');
+                }}
+                useOneTap
+                type="icon"
+                theme="filled_black"
+                shape="circle"
+              />
             </motion.div>
-            
+
             {/* Facebook button */}
-            <motion.button 
+            <motion.button
               type="button"
               className="flex items-center justify-center w-[40px] h-[40px] rounded-full border border-[#2a2a3a] bg-[#1e1e28]/50 text-gray-300 shadow-sm transition-all hover:bg-[#1e1e28] hover:text-primary hover:border-primary/50"
               whileHover={{ scale: 1.1, rotate: -5 }}
@@ -415,9 +440,9 @@ const LoginPage = () => {
                 <path clipRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fillRule="evenodd"></path>
               </svg>
             </motion.button>
-            
+
             {/* GitHub button */}
-            <motion.button 
+            <motion.button
               type="button"
               className="flex items-center justify-center w-[40px] h-[40px] rounded-full border border-[#2a2a3a] bg-[#1e1e28]/50 text-gray-300 shadow-sm transition-all hover:bg-[#1e1e28] hover:text-primary hover:border-primary/50"
               whileHover={{ scale: 1.1, rotate: 5 }}
@@ -431,7 +456,7 @@ const LoginPage = () => {
           </motion.div>
 
           {/* Footer */}
-          <motion.p 
+          <motion.p
             className="mt-8 text-center text-sm text-gray-400"
             variants={itemVariants}
           >
@@ -443,7 +468,7 @@ const LoginPage = () => {
         </motion.div>
 
         {/* Bottom copyright */}
-        <motion.div 
+        <motion.div
           className="mt-8 text-center text-xs text-gray-600"
           variants={itemVariants}
         >
