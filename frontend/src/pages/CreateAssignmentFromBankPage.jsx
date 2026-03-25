@@ -129,9 +129,10 @@ const CreateAssignmentFromBankPage = () => {
             setLoadingQuestions(true);
             try {
                 const questions = await fetchQuestionBankQuestions(form.sourceQuestionBankId);
+                const publishedQuestions = questions.filter(q => String(q.Status || '').trim() === 'Published');
                 setBankQuestions(questions);
-                // Default select all
-                setSelectedQuestionIds(new Set(questions.map(q => q.Id)));
+                // Default select chỉ câu Published
+                setSelectedQuestionIds(new Set(publishedQuestions.map(q => q.Id)));
             } catch (error) {
                 toast.error('Failed to load questions from bank');
             } finally {
@@ -144,9 +145,10 @@ const CreateAssignmentFromBankPage = () => {
 
     const filteredQuestions = useMemo(() => {
         return bankQuestions.filter(q => {
+            const isPublished = String(q.Status || '').trim() === 'Published';
             const matchesSearch = !questionSearch || q.Content.toLowerCase().includes(questionSearch.toLowerCase());
             const matchesDifficulty = !difficultyFilter || q.Difficulty === difficultyFilter;
-            return matchesSearch && matchesDifficulty;
+            return isPublished && matchesSearch && matchesDifficulty;
         });
     }, [bankQuestions, questionSearch, difficultyFilter]);
 
@@ -188,7 +190,12 @@ const CreateAssignmentFromBankPage = () => {
     };
 
     const handleSelectAll = () => {
-        setSelectedQuestionIds(new Set(bankQuestions.map(q => q.Id)));
+        // Chỉ select câu Published (filteredQuestions đã lọc sẵn)
+        setSelectedQuestionIds(prev => {
+            const next = new Set(prev);
+            filteredQuestions.forEach(q => next.add(q.Id));
+            return next;
+        });
     };
 
     const handleClearAll = () => {
@@ -241,6 +248,18 @@ const CreateAssignmentFromBankPage = () => {
             title="Create Assignment"
             subtitle="Snapshot selective questions from a bank into a new assignment"
         >
+            {/* Back button */}
+            <div className="mb-6">
+                <button
+                    type="button"
+                    onClick={() => navigate('/instructor/question-banks')}
+                    className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-all group"
+                >
+                    <span className="material-symbols-outlined text-lg group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+                    Back to Question Bank
+                </button>
+            </div>
+
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 {/* Form Section */}
                 <div className="xl:col-span-2 space-y-8">

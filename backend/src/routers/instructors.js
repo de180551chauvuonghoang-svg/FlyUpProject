@@ -6,12 +6,12 @@ const router = express.Router();
 /**
  * @swagger
  * /instructors:
- * get:
- * summary: Get all published instructors
- * tags: [Instructors]
- * responses:
- * 200:
- * description: List of instructors
+ *   get:
+ *     summary: Get all published instructors
+ *     tags: [Instructors]
+ *     responses:
+ *       200:
+ *         description: List of instructors
  */
 router.get('/instructors', async (req, res) => {
   try {

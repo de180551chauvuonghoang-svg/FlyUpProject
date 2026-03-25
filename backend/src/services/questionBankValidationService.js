@@ -114,6 +114,50 @@ export function validateQuestionBankForPublish(questionBank) {
     };
 }
 
+const MIN_TOTAL_QUESTIONS = 10;
+const REQUIRED_DIFFICULTIES = ["Easy", "Medium", "Hard"];
+
 export function validateQuestionBankForSnapshot(questionBank) {
-    return validateQuestionBankForPublish(questionBank);
+    // Validate cơ bản như publish
+    const result = validateQuestionBankForPublish(questionBank);
+
+    // Chỉ tính câu hỏi đã Published
+    const questions = (questionBank?.QuestionBankQuestions || []).filter(
+        (q) => String(q.Status || "").trim() === "Published"
+    );
+
+    const total = questions.length;
+
+    if (total < MIN_TOTAL_QUESTIONS) {
+        throw new Error(
+            `Assignment phải có ít nhất ${MIN_TOTAL_QUESTIONS} câu hỏi đã Published (hiện có ${total} câu)`
+        );
+    }
+
+    // Đếm số câu theo từng mức độ
+    const difficultyCounts = { Easy: 0, Medium: 0, Hard: 0 };
+    for (const question of questions) {
+        const difficulty = String(question.Difficulty || "").trim();
+        if (difficulty in difficultyCounts) {
+            difficultyCounts[difficulty]++;
+        }
+    }
+
+    // Mỗi cấp độ phải có ít nhất 1 câu
+    const missingDifficulties = REQUIRED_DIFFICULTIES.filter((d) => difficultyCounts[d] === 0);
+    if (missingDifficulties.length > 0) {
+        throw new Error(
+            `Assignment phải có câu hỏi ở tất cả 3 cấp độ. Thiếu: ${missingDifficulties.join(", ")}`
+        );
+    }
+
+    // Ít nhất 1 cấp độ phải có ≥2 câu
+    const hasAtLeastTwoInOneDifficulty = REQUIRED_DIFFICULTIES.some((d) => difficultyCounts[d] >= 2);
+    if (!hasAtLeastTwoInOneDifficulty) {
+        throw new Error(
+            `Ít nhất 1 cấp độ (Easy/Medium/Hard) phải có từ 2 câu hỏi trở lên`
+        );
+    }
+
+    return result;
 }

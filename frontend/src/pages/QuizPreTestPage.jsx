@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchSubmissionHistory } from '../services/quizService';
 
 const QuizPreTestPage = ({ assignment, userId, onStart, onBack }) => {
-    const [questionCount, setQuestionCount] = useState(50);
+    const questionCount = 10;
 
     const { data: submissions = [], isLoading: submissionsLoading } = useQuery({
         queryKey: ['submissionHistory', assignment?.Id, userId],
@@ -74,33 +74,14 @@ const QuizPreTestPage = ({ assignment, userId, onStart, onBack }) => {
                     </div>
                 </div>
 
-                {/* Question Count Selector */}
-                <div className="glass-card rounded-2xl p-6 flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-base font-bold text-white">Số câu hỏi muốn làm</h3>
-                            <p className="text-xs text-white/40 mt-0.5">Mỗi câu 45 giây · CAT sẽ chọn câu phù hợp với bạn</p>
-                        </div>
-                        <div className="size-14 rounded-xl bg-quiz-primary/20 border border-quiz-primary/30 flex items-center justify-center">
-                            <span className="text-xl font-extrabold text-white">{questionCount}</span>
-                        </div>
+                {/* Quiz info */}
+                <div className="glass-card rounded-2xl p-6 flex items-center gap-4">
+                    <div className="size-14 rounded-xl bg-quiz-primary/20 border border-quiz-primary/30 flex items-center justify-center shrink-0">
+                        <span className="text-xl font-extrabold text-white">{questionCount}</span>
                     </div>
-                    <input
-                        type="range"
-                        min={50}
-                        max={150}
-                        step={10}
-                        value={questionCount}
-                        onChange={(e) => setQuestionCount(Number(e.target.value))}
-                        className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                        style={{
-                            background: `linear-gradient(to right, #7f13ec ${((questionCount - 50) / 100) * 100}%, rgba(255,255,255,0.1) ${((questionCount - 50) / 100) * 100}%)`,
-                        }}
-                    />
-                    <div className="flex justify-between text-xs text-white/40 font-bold">
-                        <span>50 câu</span>
-                        <span>100 câu</span>
-                        <span>150 câu</span>
+                    <div>
+                        <h3 className="text-base font-bold text-white">Số câu hỏi mỗi lần làm</h3>
+                        <p className="text-xs text-white/40 mt-0.5">Mỗi câu 45 giây · CAT sẽ chọn câu phù hợp với trình độ của bạn từ ngân hàng câu hỏi</p>
                     </div>
                 </div>
 
@@ -162,7 +143,7 @@ const QuizPreTestPage = ({ assignment, userId, onStart, onBack }) => {
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 transition-all text-white font-extrabold text-lg shadow-lg shadow-quiz-primary/30 flex items-center justify-center gap-3 group"
                 >
                     <span className="material-symbols-outlined text-[22px] group-hover:rotate-12 transition-transform">rocket_launch</span>
-                    Bắt đầu làm bài · {questionCount} câu · {estimatedMinutes} phút
+                    Bắt đầu làm bài · {questionCount} câu · ~{estimatedMinutes} phút
                 </button>
             </div>
         </div>

@@ -72,6 +72,9 @@ async function getPublishedOwnedQuestionBankOrThrow({ userId, courseId, sourceQu
             Status: true,
             IsPublic: true,
             QuestionBankQuestions: {
+                where: {
+                    Status: "Published",
+                },
                 select: {
                     Id: true,
                     Content: true,
@@ -165,6 +168,7 @@ export async function createAssignmentFromQuestionBankService({
     }
 
     const result = await prisma.$transaction(async (tx) => {
+        // 1. Tạo assignment
         const assignment = await tx.assignments.create({
             data: {
                 Name: normalizedName,
@@ -182,41 +186,55 @@ export async function createAssignmentFromQuestionBankService({
             },
         });
 
-        for (const sourceQuestion of sourceQuestions) {
-            const createdQuestion = await tx.mcqQuestions.create({
-                data: {
-                    Content: sourceQuestion.Content,
-                    AssignmentId: assignment.Id,
-                    ParamA: sourceQuestion.ParamA,
-                    ParamB: sourceQuestion.ParamB,
-                    ParamC: sourceQuestion.ParamC,
-                    Difficulty: sourceQuestion.Difficulty || null,
-                    SourceQuestionBankQuestionId: sourceQuestion.Id,
-                },
-                select: {
-                    Id: true,
-                },
-            });
+        // 2. Bulk insert tất cả McqQuestions cùng lúc thay vì từng cái
+        await tx.mcqQuestions.createMany({
+            data: sourceQuestions.map((q) => ({
+                Content: q.Content,
+                AssignmentId: assignment.Id,
+                ParamA: q.ParamA,
+                ParamB: q.ParamB,
+                ParamC: q.ParamC,
+                Difficulty: q.Difficulty || null,
+                SourceQuestionBankQuestionId: q.Id,
+            })),
+        });
 
-            if ((sourceQuestion.QuestionBankChoices || []).length > 0) {
-                await tx.mcqChoices.createMany({
-                    data: sourceQuestion.QuestionBankChoices.map((sourceChoice) => ({
-                        Content: sourceChoice.Content,
-                        IsCorrect: sourceChoice.IsCorrect,
-                        McqQuestionId: createdQuestion.Id,
-                        SourceQuestionBankChoiceId: sourceChoice.Id,
-                    })),
+        // 3. Fetch lại IDs của các câu vừa tạo để map với choices
+        const createdQuestions = await tx.mcqQuestions.findMany({
+            where: {
+                AssignmentId: assignment.Id,
+                SourceQuestionBankQuestionId: { in: sourceQuestions.map((q) => q.Id) },
+            },
+            select: { Id: true, SourceQuestionBankQuestionId: true },
+        });
+
+        const sourceIdToMcqId = new Map(
+            createdQuestions.map((q) => [q.SourceQuestionBankQuestionId, q.Id])
+        );
+
+        // 4. Bulk insert tất cả choices cùng lúc
+        const allChoices = [];
+        for (const q of sourceQuestions) {
+            const mcqId = sourceIdToMcqId.get(q.Id);
+            if (!mcqId) continue;
+            for (const choice of q.QuestionBankChoices || []) {
+                allChoices.push({
+                    Content: choice.Content,
+                    IsCorrect: choice.IsCorrect,
+                    McqQuestionId: mcqId,
+                    SourceQuestionBankChoiceId: choice.Id,
                 });
             }
         }
 
+        if (allChoices.length > 0) {
+            await tx.mcqChoices.createMany({ data: allChoices });
+        }
+
+        // 5. Update question count
         const updatedAssignment = await tx.assignments.update({
-            where: {
-                Id: assignment.Id,
-            },
-            data: {
-                QuestionCount: sourceQuestions.length,
-            },
+            where: { Id: assignment.Id },
+            data: { QuestionCount: sourceQuestions.length },
             select: {
                 Id: true,
                 Name: true,
@@ -226,7 +244,7 @@ export async function createAssignmentFromQuestionBankService({
         });
 
         return updatedAssignment;
-    });
+    }, { timeout: 30000 }); // Tăng lên 30 giây
 
     return {
         assignmentId: result.Id,
@@ -435,11 +453,21 @@ export async function updateAssignmentSnapshotService({
 
     const assignment = await prisma.assignments.findFirst({
         where: { Id: assignmentId, CreatorId: userId },
-        include: { 
-            McqQuestions: true,
+        select: {
+            Id: true,
+            SectionId: true,
+            SourceQuestionBankId: true,
+            McqQuestions: {
+                select: {
+                    Id: true,
+                    SourceQuestionBankQuestionId: true,
+                },
+            },
             Sections: {
-                include: { Courses: true }
-            }
+                select: {
+                    CourseId: true,
+                },
+            },
         },
     });
 
@@ -466,12 +494,21 @@ export async function updateAssignmentSnapshotService({
                 GradeToPass: normalizedGradeToPass,
                 SectionId: sectionId || assignment.SectionId,
             },
+            select: { Id: true },
         });
 
         // 2. Manage questions if questionIds provided
         if (Array.isArray(questionIds) && questionIds.length > 0) {
             const currentQuestions = assignment.McqQuestions || [];
-            
+
+            // Xóa orphan McqQuestions (không có SourceQuestionBankQuestionId) vì không thể track
+            await tx.mcqQuestions.deleteMany({
+                where: {
+                    AssignmentId: assignmentId,
+                    SourceQuestionBankQuestionId: null,
+                },
+            });
+
             // Current source IDs mapped in this assignment
             const currentSourceIds = currentQuestions
                 .map(q => q.SourceQuestionBankQuestionId)
@@ -498,7 +535,21 @@ export async function updateAssignmentSnapshotService({
                         Id: { in: toAddSourceIds },
                         QuestionBankId: assignment.SourceQuestionBankId 
                     },
-                    include: { QuestionBankChoices: true },
+                    select: {
+                        Id: true,
+                        Content: true,
+                        Difficulty: true,
+                        ParamA: true,
+                        ParamB: true,
+                        ParamC: true,
+                        QuestionBankChoices: {
+                            select: {
+                                Id: true,
+                                Content: true,
+                                IsCorrect: true,
+                            },
+                        },
+                    },
                 });
 
                 for (const sourceQuestion of sourceQuestions) {
@@ -512,6 +563,7 @@ export async function updateAssignmentSnapshotService({
                             Difficulty: sourceQuestion.Difficulty || null,
                             SourceQuestionBankQuestionId: sourceQuestion.Id,
                         },
+                        select: { Id: true },
                     });
 
                     if ((sourceQuestion.QuestionBankChoices || []).length > 0) {
@@ -531,6 +583,7 @@ export async function updateAssignmentSnapshotService({
             await tx.assignments.update({
                 where: { Id: assignmentId },
                 data: { QuestionCount: questionIds.length },
+                select: { Id: true },
             });
         }
 
@@ -541,12 +594,14 @@ export async function updateAssignmentSnapshotService({
 export async function deleteAssignmentSnapshotService({ userId, assignmentId }) {
     const assignment = await prisma.assignments.findFirst({
         where: { Id: assignmentId, CreatorId: userId },
+        select: { Id: true },
     });
 
     if (!assignment) throw new Error("Assignment not found or not owned by you");
 
     await prisma.assignments.delete({
         where: { Id: assignmentId },
+        select: { Id: true },
     });
 
     return { success: true };
