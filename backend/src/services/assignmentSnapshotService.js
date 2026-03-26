@@ -1,5 +1,5 @@
 import prisma from "../lib/prisma.js";
-import { validateQuestionBankForSnapshot } from "./questionBankValidationService.js";
+import { validateQuestionBankForSnapshot, validateAssignmentQuestionSelection } from "./questionBankValidationService.js";
 
 async function getInstructorUserOrThrow(userId) {
     const user = await prisma.users.findUnique({
@@ -166,6 +166,9 @@ export async function createAssignmentFromQuestionBankService({
             throw new Error("None of the selected questions were found in the source bank");
         }
     }
+
+    // Validate selected questions: total ≥10 AND each level ≥2
+    validateAssignmentQuestionSelection(sourceQuestions);
 
     const result = await prisma.$transaction(async (tx) => {
         // 1. Tạo assignment
@@ -499,6 +502,17 @@ export async function updateAssignmentSnapshotService({
 
         // 2. Manage questions if questionIds provided
         if (Array.isArray(questionIds) && questionIds.length > 0) {
+            // Validate total ≥10 AND each level ≥2 before applying changes
+            // We need the difficulty info from the bank questions, so fetch them
+            const bankQuestionsForValidation = await tx.questionBankQuestions.findMany({
+                where: {
+                    Id: { in: questionIds },
+                    QuestionBankId: assignment.SourceQuestionBankId,
+                },
+                select: { Id: true, Difficulty: true },
+            });
+            validateAssignmentQuestionSelection(bankQuestionsForValidation);
+
             const currentQuestions = assignment.McqQuestions || [];
 
             // Xóa orphan McqQuestions (không có SourceQuestionBankQuestionId) vì không thể track

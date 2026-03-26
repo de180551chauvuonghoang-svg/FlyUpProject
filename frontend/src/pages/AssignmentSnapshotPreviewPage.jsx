@@ -98,6 +98,22 @@ const AssignmentSnapshotPreviewPage = () => {
     const handleSave = async () => {
         if (!editForm.name.trim() || !editForm.sectionId) { toast.error('Please fill required fields'); return; }
         if (selectedQuestionIds.size === 0) { toast.error('Please select at least one question'); return; }
+
+        // Validate: total ≥10 AND each level ≥2
+        const selectedQuestions = bankQuestions.filter(q => selectedQuestionIds.has(q.Id));
+        const total = selectedQuestions.length;
+        if (total < 10) {
+            toast.error(`Assignment phải có ít nhất 10 câu hỏi (hiện có ${total} câu)`);
+            return;
+        }
+        const counts = { Easy: 0, Medium: 0, Hard: 0 };
+        selectedQuestions.forEach(q => { if (q.Difficulty in counts) counts[q.Difficulty]++; });
+        const issues = Object.entries(counts).filter(([, v]) => v < 2).map(([d, v]) => `${d} (cần 2, có ${v})`);
+        if (issues.length > 0) {
+            toast.error(`Mỗi cấp độ phải có ít nhất 2 câu. Chưa đủ: ${issues.join('; ')}`);
+            return;
+        }
+
         setSaving(true);
         const toastId = toast.loading('Saving changes...');
         try {
@@ -266,6 +282,26 @@ const AssignmentSnapshotPreviewPage = () => {
                             <p className={`text-sm font-black ${isEditing ? 'text-purple-400' : 'text-slate-300'}`}>
                                 {isEditing ? selectedQuestionIds.size : assignment.QuestionCount}
                             </p>
+                            {isEditing && (() => {
+                                const sel = bankQuestions.filter(q => selectedQuestionIds.has(q.Id));
+                                const counts = { Easy: 0, Medium: 0, Hard: 0 };
+                                sel.forEach(q => { if (q.Difficulty in counts) counts[q.Difficulty]++; });
+                                return (
+                                    <div className="grid grid-cols-3 gap-1 mt-2">
+                                        {Object.entries(counts).map(([diff, count]) => {
+                                            const ok = count >= 2;
+                                            const colorText = diff === 'Easy' ? 'text-emerald-400' : diff === 'Medium' ? 'text-amber-400' : 'text-rose-400';
+                                            const colorBg = diff === 'Easy' ? 'bg-emerald-500/10' : diff === 'Medium' ? 'bg-amber-500/10' : 'bg-rose-500/10';
+                                            return (
+                                                <div key={diff} className={`rounded-lg p-1.5 text-center border ${ok ? `${colorBg} border-transparent` : 'bg-rose-500/10 border-rose-500/30'}`}>
+                                                    <p className={`text-[8px] font-bold uppercase ${ok ? colorText : 'text-rose-400'}`}>{diff}</p>
+                                                    <p className={`text-xs font-black ${ok ? colorText : 'text-rose-400'}`}>{count}<span className="text-[8px] opacity-60">/2</span></p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         <div>

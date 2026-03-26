@@ -215,6 +215,21 @@ const CreateAssignmentFromBankPage = () => {
             return;
         }
 
+        // Validate: total ≥10 AND each level ≥2
+        const selectedQuestions = bankQuestions.filter(q => selectedQuestionIds.has(q.Id));
+        const total = selectedQuestions.length;
+        if (total < 10) {
+            toast.error(`Assignment phải có ít nhất 10 câu hỏi (hiện chọn ${total} câu)`);
+            return;
+        }
+        const counts = { Easy: 0, Medium: 0, Hard: 0 };
+        selectedQuestions.forEach(q => { if (q.Difficulty in counts) counts[q.Difficulty]++; });
+        const issues = Object.entries(counts).filter(([, v]) => v < 2).map(([d, v]) => `${d} (cần 2, có ${v})`);
+        if (issues.length > 0) {
+            toast.error(`Mỗi cấp độ phải có ít nhất 2 câu. Chưa đủ: ${issues.join('; ')}`);
+            return;
+        }
+
         setSubmitting(true);
         const toastId = toast.loading('Creating assignment from question bank...');
 
@@ -501,15 +516,38 @@ const CreateAssignmentFromBankPage = () => {
                                 <p className="text-sm font-bold text-slate-300 truncate">{selectedBank?.Name || 'Not selected'}</p>
                                 {selectedBank && (
                                     <div className="flex flex-col gap-1 mt-2">
-                                        <p className="text-[10px] text-purple-400 uppercase font-black">
-                                            {selectedQuestionIds.size} / {bankQuestions.length} Questions selected
-                                        </p>
-                                        <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden mt-1">
-                                            <div 
-                                                className="bg-purple-500 h-full transition-all duration-500" 
-                                                style={{ width: `${bankQuestions.length ? (selectedQuestionIds.size / bankQuestions.length) * 100 : 0}%` }}
-                                            />
-                                        </div>
+                                        {(() => {
+                                            const sel = bankQuestions.filter(q => selectedQuestionIds.has(q.Id));
+                                            const counts = { Easy: 0, Medium: 0, Hard: 0 };
+                                            sel.forEach(q => { if (q.Difficulty in counts) counts[q.Difficulty]++; });
+                                            const totalOk = sel.length >= 10;
+                                            return (
+                                                <>
+                                                    <p className={`text-[10px] font-black uppercase ${totalOk ? 'text-purple-400' : 'text-rose-400'}`}>
+                                                        {selectedQuestionIds.size} / {bankQuestions.length} Questions selected
+                                                    </p>
+                                                    <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden mt-1">
+                                                        <div
+                                                            className="bg-purple-500 h-full transition-all duration-500"
+                                                            style={{ width: `${bankQuestions.length ? (selectedQuestionIds.size / bankQuestions.length) * 100 : 0}%` }}
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-1 mt-2">
+                                                        {Object.entries(counts).map(([diff, count]) => {
+                                                            const ok = count >= 2;
+                                                            const colorBg = diff === 'Easy' ? 'bg-emerald-500/10' : diff === 'Medium' ? 'bg-amber-500/10' : 'bg-rose-500/10';
+                                                            const colorText = diff === 'Easy' ? 'text-emerald-400' : diff === 'Medium' ? 'text-amber-400' : 'text-rose-400';
+                                                            return (
+                                                                <div key={diff} className={`rounded-lg p-1.5 text-center border ${ok ? `${colorBg} border-current/20` : 'bg-rose-500/10 border-rose-500/30'}`}>
+                                                                    <p className={`text-[8px] font-bold uppercase ${ok ? colorText : 'text-rose-400'}`}>{diff}</p>
+                                                                    <p className={`text-xs font-black ${ok ? colorText : 'text-rose-400'}`}>{count}<span className="text-[8px] opacity-60">/2</span></p>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 )}
                             </div>

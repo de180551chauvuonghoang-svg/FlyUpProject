@@ -811,6 +811,7 @@ export async function publishQuestionBankService({ userId, bankId }) {
                     Id: true,
                     Content: true,
                     Difficulty: true,
+                    Status: true,
                     ParamA: true,
                     ParamB: true,
                     ParamC: true,
