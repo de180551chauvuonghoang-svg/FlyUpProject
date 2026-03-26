@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
+import ConfirmModal from "../components/ConfirmModal";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -40,11 +41,23 @@ export default function InstructorEditCoursePage() {
   const [finalAssignment, setFinalAssignment] = useState(null);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [expandedSectionId, setExpandedSectionId] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
   // Assignment Modal State
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [currentAssignment, setCurrentAssignment] = useState(null);
   const [assignmentTarget, setAssignmentTarget] = useState({ type: null, id: null });
+  const [confirmConfig, setConfirmConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
+  const triggerConfirm = (title, message, onConfirm) => {
+    setConfirmConfig({ isOpen: true, title, message, onConfirm });
+  };
 
   const fetchCourseData = async () => {
     try {
@@ -67,7 +80,9 @@ export default function InstructorEditCoursePage() {
         price: course.Price ?? "",
         discount: course.Discount ?? 0,
         level: course.Level || "Beginner",
+        ThumbUrl: course.ThumbUrl || null,
       });
+      setThumbnailPreview(course.ThumbUrl || null);
 
       // Fetch assignments for this course
       const assignRes = await fetch(`${API_URL}/quiz/course/${id}/assignments`, {
@@ -157,6 +172,13 @@ export default function InstructorEditCoursePage() {
     }
   };
 
+  const handleThumbnailUpload = (file) => {
+    if (!file) return;
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+    toast.success("Thumbnail selected");
+  };
+
   useEffect(() => {
     fetchCourseData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -188,30 +210,34 @@ export default function InstructorEditCoursePage() {
   };
 
   const removeSection = async (sectionId) => {
-    if (!confirm("Are you sure you want to delete this section?")) return;
-
-    // If it's an existing section, delete from backend first
-    const section = sections.find((s) => s.id === sectionId);
-    if (section?.isExisting) {
-      try {
-        const res = await fetch(`${API_URL}/courses/sections/${sectionId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        if (!res.ok) {
-          throw new Error("Failed to delete section");
+    triggerConfirm(
+      "Delete Section",
+      "Are you sure you want to delete this section and all its contents? This action cannot be undone.",
+      async () => {
+        // If it's an existing section, delete from backend first
+        const section = sections.find((s) => s.id === sectionId);
+        if (section?.isExisting) {
+          try {
+            const res = await fetch(`${API_URL}/courses/sections/${sectionId}`, {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            });
+            if (!res.ok) {
+              throw new Error("Failed to delete section");
+            }
+          } catch (error) {
+            console.error("Delete section error:", error);
+            toast.error("Failed to delete section from server");
+            return;
+          }
         }
-      } catch (error) {
-        console.error("Delete section error:", error);
-        toast.error("Failed to delete section from server");
-        return;
-      }
-    }
 
-    setSections(sections.filter((sec) => sec.id !== sectionId));
-    toast.success("Section removed");
+        setSections(sections.filter((sec) => sec.id !== sectionId));
+        toast.success("Section removed");
+      }
+    );
   };
 
   const updateSectionTitle = (sectionId, newTitle) => {
@@ -274,43 +300,44 @@ export default function InstructorEditCoursePage() {
   };
 
   const removeAssignment = async (targetType, targetId, assignmentId) => {
-    if (!confirm("Are you sure you want to delete this assignment?")) return;
-
-    if (assignmentId && !assignmentId.toString().startsWith("temp-")) {
-      try {
-        const res = await fetch(`${API_URL}/quiz/${assignmentId}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        if (!res.ok) throw new Error("Failed to delete assignment from server");
-      } catch (err) {
-        toast.error(err.message);
-        return;
-      }
-    }
-
-    if (targetType === "section") {
-      setSections(sections.map(sec => {
-        if (sec.id === targetId) {
-          return {
-            ...sec,
-            assignments: (sec.assignments || []).filter(a => a.id !== assignmentId),
-            isModified: true
-          };
+    triggerConfirm(
+      "Delete Assignment",
+      "Are you sure you want to delete this assignment?",
+      async () => {
+        if (assignmentId && !assignmentId.toString().startsWith("temp-")) {
+          try {
+            const res = await fetch(`${API_URL}/quiz/${assignmentId}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            if (!res.ok) throw new Error("Failed to delete assignment from server");
+          } catch (err) {
+            toast.error(err.message);
+            return;
+          }
         }
-        return sec;
-      }));
-    } else {
-      setFinalAssignment(null);
-    }
-    toast.success("Assignment removed");
+
+        if (targetType === "section") {
+          setSections(sections.map(sec => {
+            if (sec.id === targetId) {
+              return {
+                ...sec,
+                assignments: (sec.assignments || []).filter(a => a.id !== assignmentId),
+                isModified: true
+              };
+            }
+            return sec;
+          }));
+        } else {
+          setFinalAssignment(null);
+        }
+        toast.success("Assignment removed");
+      }
+    );
   };
 
   // Lecture management
   const addLecture = (sectionId) => {
-    const lectureTitle = prompt("Enter lecture title:");
-    if (!lectureTitle || !lectureTitle.trim()) return;
-
     setSections(
       sections.map((section) => {
         if (section.id === sectionId) {
@@ -320,7 +347,7 @@ export default function InstructorEditCoursePage() {
               ...section.lectures,
               {
                 id: `temp-${Date.now()}`,
-                title: lectureTitle,
+                title: "",
                 content: "",
                 videoUrl: null,
                 videoFile: null,
@@ -333,45 +360,50 @@ export default function InstructorEditCoursePage() {
         return section;
       }),
     );
-    toast.success("Lecture added!");
+    setExpandedSectionId(sectionId);
+    toast.success("Lecture box added!");
   };
 
   const removeLecture = async (sectionId, lectureId) => {
-    if (!confirm("Are you sure you want to delete this lecture?")) return;
-
-    // If it's an existing lecture, delete from backend first
-    const section = sections.find((s) => s.id === sectionId);
-    const lecture = section?.lectures.find((l) => l.id === lectureId);
-    if (lecture?.isExisting) {
-      try {
-        const res = await fetch(`${API_URL}/courses/lectures/${lectureId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        if (!res.ok) {
-          throw new Error("Failed to delete lecture");
+    triggerConfirm(
+      "Delete Lecture",
+      "Are you sure you want to delete this lecture?",
+      async () => {
+        // If it's an existing lecture, delete from backend first
+        const section = sections.find((s) => s.id === sectionId);
+        const lecture = section?.lectures.find((l) => l.id === lectureId);
+        if (lecture?.isExisting) {
+          try {
+            const res = await fetch(`${API_URL}/courses/lectures/${lectureId}`, {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            });
+            if (!res.ok) {
+              throw new Error("Failed to delete lecture");
+            }
+          } catch (error) {
+            console.error("Delete lecture error:", error);
+            toast.error("Failed to delete lecture from server");
+            return;
+          }
         }
-      } catch (error) {
-        console.error("Delete lecture error:", error);
-        toast.error("Failed to delete lecture from server");
-        return;
+
+        setSections(
+          sections.map((section) => {
+            if (section.id === sectionId) {
+              return {
+                ...section,
+                lectures: section.lectures.filter((lec) => lec.id !== lectureId),
+              };
+            }
+            return section;
+          }),
+        );
+        toast.success("Lecture removed");
       }
-    }
-
-    setSections(
-      sections.map((section) => {
-        if (section.id === sectionId) {
-          return {
-            ...section,
-            lectures: section.lectures.filter((lec) => lec.id !== lectureId),
-          };
-        }
-        return section;
-      }),
     );
-    toast.success("Lecture removed");
   };
 
   const updateLecture = (sectionId, lectureId, field, value) => {
@@ -401,28 +433,37 @@ export default function InstructorEditCoursePage() {
       return;
     }
 
-    // Set both videoFile and videoUrl in a single state update
-    // to avoid stale closure issues
-    setSections((prev) =>
-      prev.map((section) => {
-        if (section.id === sectionId) {
-          return {
-            ...section,
-            lectures: section.lectures.map((lec) =>
-              lec.id === lectureId
-                ? {
-                    ...lec,
-                    videoFile: file,
-                    videoUrl: URL.createObjectURL(file),
-                    isModified: true,
-                  }
-                : lec,
-            ),
-          };
-        }
-        return section;
-      }),
-    );
+    // Capture video duration
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = function () {
+      window.URL.revokeObjectURL(video.src);
+      const duration = Math.round(video.duration); // in seconds
+      
+      setSections((prev) =>
+        prev.map((section) => {
+          if (section.id === sectionId) {
+            return {
+              ...section,
+              lectures: section.lectures.map((lec) =>
+                lec.id === lectureId
+                  ? {
+                      ...lec,
+                      videoFile: file,
+                      videoUrl: URL.createObjectURL(file),
+                      duration: duration,
+                      isModified: true,
+                    }
+                  : lec,
+              ),
+            };
+          }
+          return section;
+        }),
+      );
+    };
+    video.src = URL.createObjectURL(file);
+    
     toast.success("Video selected for upload");
   };
 
@@ -461,55 +502,61 @@ export default function InstructorEditCoursePage() {
   };
 
   const removeMaterial = async (sectionId, lectureId, materialId) => {
-    // Find the material to check if it's existing or new
-    const section = sections.find((s) => s.id === sectionId);
-    const lecture = section?.lectures.find((l) => l.id === lectureId);
-    const material = lecture?.materials.find((m) => m.id === materialId);
+    triggerConfirm(
+      "Delete Material",
+      "Are you sure you want to delete this material?",
+      async () => {
+        // Find the material to check if it's existing or new
+        const section = sections.find((s) => s.id === sectionId);
+        const lecture = section?.lectures.find((l) => l.id === lectureId);
+        const material = lecture?.materials.find((m) => m.id === materialId);
 
-    // If it's an existing material (not new), delete from server
-    if (material && !material.isNew && lecture.isExisting) {
-      try {
-        const res = await fetch(
-          `${API_URL}/upload/material/${lectureId}/${materialId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
+        // If it's an existing material (not new), delete from server
+        if (material && !material.isNew && lecture.isExisting) {
+          try {
+            const res = await fetch(
+              `${API_URL}/upload/material/${lectureId}/${materialId}`,
+              {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                },
+              },
+            );
+
+            if (!res.ok) {
+              throw new Error("Failed to delete material");
+            }
+          } catch (error) {
+            console.error("Delete material error:", error);
+            toast.error("Failed to delete material from server");
+            return;
+          }
+        }
+
+        // Remove from local state
+        setSections(
+          sections.map((section) => {
+            if (section.id === sectionId) {
+              return {
+                ...section,
+                lectures: section.lectures.map((lec) => {
+                  if (lec.id === lectureId) {
+                    return {
+                      ...lec,
+                      materials: lec.materials.filter((m) => m.id !== materialId),
+                    };
+                  }
+                  return lec;
+                }),
+              };
+            }
+            return section;
+          }),
         );
-
-        if (!res.ok) {
-          throw new Error("Failed to delete material");
-        }
-      } catch (error) {
-        console.error("Delete material error:", error);
-        toast.error("Failed to delete material from server");
-        return;
+        toast.success("Material removed");
       }
-    }
-
-    // Remove from local state
-    setSections(
-      sections.map((section) => {
-        if (section.id === sectionId) {
-          return {
-            ...section,
-            lectures: section.lectures.map((lec) => {
-              if (lec.id === lectureId) {
-                return {
-                  ...lec,
-                  materials: lec.materials.filter((m) => m.id !== materialId),
-                };
-              }
-              return lec;
-            }),
-          };
-        }
-        return section;
-      }),
     );
-    toast.success("Material removed");
   };
 
   // Save all changes
@@ -547,6 +594,22 @@ export default function InstructorEditCoursePage() {
 
       if (!basicInfoRes.ok) throw new Error("Failed to update basic course info");
       console.log("✅ Course info updated");
+
+      // Step 1.5: Upload Course Thumbnail if changed
+      if (thumbnailFile) {
+        console.log("🖼️ Uploading course thumbnail...");
+        const thumbFormData = new FormData();
+        thumbFormData.append("file", thumbnailFile);
+        thumbFormData.append("courseId", id);
+
+        const thumbRes = await fetch(`${API_URL}/upload/thumbnail`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: thumbFormData,
+        });
+        if (!thumbRes.ok) console.error("Thumbnail upload failed");
+        else console.log("✅ Thumbnail uploaded");
+      }
 
       // Step 2-5: Process sections, lectures, and assignments
       for (const section of sections) {
@@ -609,6 +672,9 @@ export default function InstructorEditCoursePage() {
             const videoFormData = new FormData();
             videoFormData.append("file", lecture.videoFile);
             videoFormData.append("lectureId", lectureId);
+            if (lecture.duration) {
+              videoFormData.append("duration", lecture.duration);
+            }
             const videoRes = await fetch(`${API_URL}/upload/video`, {
               method: "POST",
               headers: { Authorization: `Bearer ${accessToken}` },
@@ -950,6 +1016,47 @@ export default function InstructorEditCoursePage() {
               Course Details
             </h2>
 
+            {/* Thumbnail Upload */}
+            <div className="mb-8 p-6 bg-slate-800/30 rounded-xl border border-slate-700/50">
+              <label className="block text-sm font-semibold text-white mb-4">Course Thumbnail</label>
+              <div className="flex items-start gap-6">
+                <div className="relative w-64 h-36 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden group">
+                  {thumbnailPreview ? (
+                    <img src={thumbnailPreview} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-500">
+                      <Upload size={32} className="mb-2 opacity-20" />
+                      <span className="text-xs uppercase tracking-widest font-bold opacity-30">No Image</span>
+                    </div>
+                  )}
+                  <label className="absolute inset-0 bg-slate-950/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <div className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-xs font-bold text-white flex items-center gap-2">
+                      <Upload size={14} /> Change Image
+                    </div>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleThumbnailUpload(e.target.files[0])} />
+                  </label>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <h4 className="text-white font-bold text-sm">Update course thumbnail</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Set a thumbnail that captures attention. Recommended: 1280x720 pixels (16:9 ratio). 
+                    Supported formats: .jpg, .png, .webp
+                  </p>
+                  {thumbnailFile && (
+                    <button 
+                      onClick={() => {
+                        setThumbnailFile(null);
+                        setThumbnailPreview(formData.ThumbUrl || null);
+                      }}
+                      className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 font-bold pt-1"
+                    >
+                      <Trash2 size={12} /> Reset to Original
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Title */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-white mb-2">
@@ -999,7 +1106,7 @@ export default function InstructorEditCoursePage() {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-white mb-2">
-                  Price (USD)
+                  Giá (VNĐ)
                 </label>
                 <input
                   type="number"
@@ -1448,7 +1555,7 @@ export default function InstructorEditCoursePage() {
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Price</span>
                 <span className="text-white font-semibold">
-                  ${formData.price || "0.00"}
+                  {(formData.price || 0).toLocaleString('vi-VN')}₫
                 </span>
               </div>
               {formData.discount > 0 && (
@@ -1481,6 +1588,14 @@ export default function InstructorEditCoursePage() {
           </div>
         </div>
       </div>
+      {_renderAssignmentModal()}
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+      />
     </div>
   );
 }

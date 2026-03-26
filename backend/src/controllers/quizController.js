@@ -21,7 +21,10 @@ export const getAssignmentsByCourse = async (req, res) => {
 
     const assignments = await prisma.assignments.findMany({
       where: {
-        Sections: { CourseId: courseId }
+        OR: [
+          { Sections: { CourseId: courseId } },
+          { CourseId: courseId }
+        ]
       },
       select: {
         Id: true,
@@ -30,6 +33,7 @@ export const getAssignmentsByCourse = async (req, res) => {
         QuestionCount: true,
         GradeToPass: true,
         SectionId: true,
+        CourseId: true,
         Sections: {
           select: {
             Title: true,
@@ -117,10 +121,10 @@ export const getSubmissionHistory = async (req, res) => {
  */
 export const createAssignment = async (req, res) => {
   try {
-    const { name, duration, gradeToPass, sectionId, questions } = req.body;
+    const { name, duration, gradeToPass, sectionId, courseId, questions } = req.body;
     const userId = req.user?.userId;
 
-    console.log(`[QuizController] Creating assignment: ${name}`);
+    console.log(`[QuizController] Creating assignment: ${name} for course: ${courseId}, section: ${sectionId}`);
 
     const result = await prisma.assignments.create({
       data: {
@@ -128,6 +132,7 @@ export const createAssignment = async (req, res) => {
         Duration: parseInt(duration) || 30,
         GradeToPass: parseFloat(gradeToPass) || 8,
         SectionId: sectionId || null,
+        CourseId: courseId || null,
         CreatorId: userId,
         QuestionCount: questions?.length || 0,
         McqQuestions: {
@@ -169,7 +174,7 @@ export const createAssignment = async (req, res) => {
 export const updateAssignment = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, duration, gradeToPass, questions } = req.body;
+    const { name, duration, gradeToPass, courseId, questions } = req.body;
 
     console.log(`[QuizController] Updating assignment: ${id}`);
 
@@ -184,6 +189,7 @@ export const updateAssignment = async (req, res) => {
         Name: name,
         Duration: parseInt(duration) || 30,
         GradeToPass: parseFloat(gradeToPass) || 8,
+        CourseId: courseId || undefined,
         QuestionCount: questions?.length || 0,
         McqQuestions: {
           create: questions?.map((q) => ({

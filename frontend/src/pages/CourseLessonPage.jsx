@@ -582,6 +582,13 @@ export default function CourseLessonPage() {
     const completedLectures =
       JSON.parse(enrollment?.LectureMilestones || "[]") || [];
 
+    const formatTime = (seconds) => {
+      if (!seconds || seconds <= 0) return "";
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, "0")}`;
+    };
+
     return sections.map((section, idx) => ({
       title: section.Title,
       sectionNumber: idx + 1,
@@ -606,7 +613,7 @@ export default function CourseLessonPage() {
               : idx > 0
                 ? "locked"
                 : "pending",
-          duration: `${Math.ceil(Math.random() * 15 + 5)} min`,
+          duration: formatTime(lecture.Duration),
           type: "Video",
         })) || [],
     }));
@@ -934,7 +941,7 @@ export default function CourseLessonPage() {
                         className={`text-sm ${item.status === "active"
                           ? "font-medium text-white"
                           : item.status === "completed"
-                            ? "text-slate-300 line-through decoration-slate-600"
+                            ? "text-slate-300"
                             : "text-slate-300 group-hover:text-white"
                           }`}
                       >
@@ -944,7 +951,7 @@ export default function CourseLessonPage() {
                         {item.title}
                       </span>
                       <span className="text-[10px] text-slate-500 mt-0.5">
-                        {item.duration} • {item.type}
+                        {item.duration ? `${item.duration} • ` : ""}{item.type}
                       </span>
                     </div>
                   </button>

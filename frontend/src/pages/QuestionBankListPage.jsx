@@ -163,14 +163,14 @@ const CreateQuestionBankModal = ({
                                 onChange={handleChange}
                                 className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3.5 text-sm text-white outline-none appearance-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all"
                             >
-                                <option value="" className="bg-slate-900">
+                                <option value="" className="bg-[#1a1c2e]">
                                     Select course
                                 </option>
                                 {courses.map((course) => (
                                     <option
                                         key={course.Id}
                                         value={course.Id}
-                                        className="bg-slate-900"
+                                        className="bg-[#1a1c2e]"
                                     >
                                         {course.Title}
                                     </option>
@@ -406,67 +406,98 @@ const QuestionBankListPage = () => {
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                                 Course
                             </label>
-                            <select
-                                value={filters.courseId}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        courseId: e.target.value,
-                                        page: 1,
-                                    }))
-                                }
-                                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none focus:border-purple-500/50"
-                            >
-                                <option value="">All courses</option>
-                                {courses.map((course) => (
-                                    <option key={course.Id} value={course.Id}>
-                                        {course.Title}
+                            <div className="relative">
+                                <select
+                                    value={filters.courseId}
+                                    onChange={(e) =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            courseId: e.target.value,
+                                            page: 1,
+                                        }))
+                                    }
+                                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none appearance-none focus:border-purple-500/50 transition-all"
+                                >
+                                    <option value="" className="bg-[#1a1c2e]">
+                                        All courses
                                     </option>
-                                ))}
-                            </select>
+                                    {courses.map((course) => (
+                                        <option key={course.Id} value={course.Id} className="bg-[#1a1c2e]">
+                                            {course.Title}
+                                        </option>
+                                    ))}
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none text-sm">
+                                    expand_more
+                                </span>
+                            </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                                 Status
                             </label>
-                            <select
-                                value={filters.status}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        status: e.target.value,
-                                        page: 1,
-                                    }))
-                                }
-                                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none focus:border-purple-500/50"
-                            >
-                                <option value="">All statuses</option>
-                                <option value="Draft">Draft</option>
-                                <option value="Published">Published</option>
-                                <option value="Archived">Archived</option>
-                            </select>
+                            <div className="relative">
+                                <select
+                                    value={filters.status}
+                                    onChange={(e) =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            status: e.target.value,
+                                            page: 1,
+                                        }))
+                                    }
+                                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none appearance-none focus:border-purple-500/50 transition-all"
+                                >
+                                    <option value="" className="bg-[#1a1c2e]">
+                                        All statuses
+                                    </option>
+                                    <option value="Draft" className="bg-[#1a1c2e]">
+                                        Draft
+                                    </option>
+                                    <option value="Published" className="bg-[#1a1c2e]">
+                                        Published
+                                    </option>
+                                    <option value="Archived" className="bg-[#1a1c2e]">
+                                        Archived
+                                    </option>
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none text-sm">
+                                    expand_more
+                                </span>
+                            </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                                 Visibility
                             </label>
-                            <select
-                                value={filters.isPublic}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        isPublic: e.target.value,
-                                        page: 1,
-                                    }))
-                                }
-                                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none focus:border-purple-500/50"
-                            >
-                                <option value="">All</option>
-                                <option value="true">Public</option>
-                                <option value="false">Private</option>
-                            </select>
+                            <div className="relative">
+                                <select
+                                    value={filters.isPublic}
+                                    onChange={(e) =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            isPublic: e.target.value,
+                                            page: 1,
+                                        }))
+                                    }
+                                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none appearance-none focus:border-purple-500/50 transition-all"
+                                >
+                                    <option value="" className="bg-[#1a1c2e]">
+                                        All
+                                    </option>
+                                    <option value="true" className="bg-[#1a1c2e]">
+                                        Public
+                                    </option>
+                                    <option value="false" className="bg-[#1a1c2e]">
+                                        Private
+                                    </option>
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none text-sm">
+                                    expand_more
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -475,64 +506,99 @@ const QuestionBankListPage = () => {
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                                 Sort By
                             </label>
-                            <select
-                                value={filters.sortBy}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        sortBy: e.target.value,
-                                        page: 1,
-                                    }))
-                                }
-                                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none focus:border-purple-500/50"
-                            >
-                                <option value="updatedAt">Updated At</option>
-                                <option value="createdAt">Created At</option>
-                                <option value="name">Name</option>
-                                <option value="questionCount">Question Count</option>
-                            </select>
+                            <div className="relative">
+                                <select
+                                    value={filters.sortBy}
+                                    onChange={(e) =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            sortBy: e.target.value,
+                                            page: 1,
+                                        }))
+                                    }
+                                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none appearance-none focus:border-purple-500/50 transition-all"
+                                >
+                                    <option value="updatedAt" className="bg-[#1a1c2e]">
+                                        Updated At
+                                    </option>
+                                    <option value="createdAt" className="bg-[#1a1c2e]">
+                                        Created At
+                                    </option>
+                                    <option value="name" className="bg-[#1a1c2e]">
+                                        Name
+                                    </option>
+                                    <option value="questionCount" className="bg-[#1a1c2e]">
+                                        Question Count
+                                    </option>
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none text-sm">
+                                    expand_more
+                                </span>
+                            </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                                 Sort Order
                             </label>
-                            <select
-                                value={filters.sortOrder}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        sortOrder: e.target.value,
-                                        page: 1,
-                                    }))
-                                }
-                                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none focus:border-purple-500/50"
-                            >
-                                <option value="desc">Descending</option>
-                                <option value="asc">Ascending</option>
-                            </select>
+                            <div className="relative">
+                                <select
+                                    value={filters.sortOrder}
+                                    onChange={(e) =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            sortOrder: e.target.value,
+                                            page: 1,
+                                        }))
+                                    }
+                                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none appearance-none focus:border-purple-500/50 transition-all"
+                                >
+                                    <option value="desc" className="bg-[#1a1c2e]">
+                                        Descending
+                                    </option>
+                                    <option value="asc" className="bg-[#1a1c2e]">
+                                        Ascending
+                                    </option>
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none text-sm">
+                                    expand_more
+                                </span>
+                            </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                                 Page Size
                             </label>
-                            <select
-                                value={filters.pageSize}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        pageSize: Number(e.target.value),
-                                        page: 1,
-                                    }))
-                                }
-                                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none focus:border-purple-500/50"
-                            >
-                                <option value={5}>5</option>
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                            </select>
+                            <div className="relative">
+                                <select
+                                    value={filters.pageSize}
+                                    onChange={(e) =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            pageSize: Number(e.target.value),
+                                            page: 1,
+                                        }))
+                                    }
+                                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white outline-none appearance-none focus:border-purple-500/50 transition-all"
+                                >
+                                    <option value={5} className="bg-[#1a1c2e]">
+                                        5
+                                    </option>
+                                    <option value={10} className="bg-[#1a1c2e]">
+                                        10
+                                    </option>
+                                    <option value={20} className="bg-[#1a1c2e]">
+                                        20
+                                    </option>
+                                    <option value={50} className="bg-[#1a1c2e]">
+                                        50
+                                    </option>
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none text-sm">
+                                    expand_more
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

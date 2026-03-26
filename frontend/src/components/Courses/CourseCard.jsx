@@ -74,7 +74,7 @@ const CourseCard = ({ id, image, category, level, rating, reviews, duration, tit
             queryClient.invalidateQueries({ queryKey: ['wishlist'] });
         } catch (error) {
             console.error("Failed to toggle wishlist", error);
-            toast.error('Failed to update wishlist');
+            toast.error(error.message || 'Khôi phục wishlist thất bại');
             
             // Revert on error
             if (previousWishlist) {

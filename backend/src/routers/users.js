@@ -102,6 +102,25 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { FullName, Bio, Phone, DateOfBirth, AvatarUrl } = req.body;
+    
+    // Validate Phone (digits only)
+    if (Phone && !/^\d+$/.test(Phone)) {
+      return res.status(400).json({ error: 'Số điện thoại chỉ được chứa các chữ số' });
+    }
+
+    // Validate Age (at least 5 years old)
+    if (DateOfBirth) {
+      const birthDate = new Date(DateOfBirth);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (age < 5) {
+        return res.status(400).json({ error: 'Bạn phải từ 5 tuổi trở lên' });
+      }
+    }
 
     const user = await prisma.users.update({
       where: { Id: id },
