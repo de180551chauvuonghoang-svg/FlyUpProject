@@ -15,7 +15,7 @@ const MentorsPage = () => {
       try {
         const data = await fetchInstructors();
         setMentors(data);
-      } catch (err) {
+      } catch {
         setError('Failed to load mentors. Please try again later.');
       } finally {
         setLoading(false);
