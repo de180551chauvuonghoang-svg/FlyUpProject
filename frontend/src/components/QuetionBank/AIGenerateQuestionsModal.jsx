@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { bulkGenerateAIQuestions } from '../../services/questionBankService';
 import { fetchCourseById } from '../../services/courseService';
@@ -17,9 +17,9 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
         if (open && courseId) {
             loadCourseLessons();
         }
-    }, [open, courseId]);
+    }, [open, courseId, loadCourseLessons]);
 
-    const loadCourseLessons = async () => {
+    const loadCourseLessons = useCallback(async () => {
         setLoadingLessons(true);
         try {
             const courseData = await fetchCourseById(courseId);
@@ -45,7 +45,7 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
         } finally {
             setLoadingLessons(false);
         }
-    };
+    }, [courseId]);
 
     if (!open) return null;
 

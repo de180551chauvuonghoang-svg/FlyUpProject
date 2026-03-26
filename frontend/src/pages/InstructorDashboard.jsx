@@ -14,7 +14,6 @@ const formatVND = (amount) => {
 export default function InstructorDashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [timeframe, setTimeframe] = useState("6months");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("my"); // "my" or "all"
