@@ -81,6 +81,23 @@ export const registerUser = async ({ email, password, fullName, role }) => {
     }
   });
 
+  // If role is instructor, create instructor profile record
+  if (userRole === 'instructor') {
+    const instructor = await prisma.instructors.create({
+      data: {
+        CreatorId: userId,
+        Intro: "I am a new instructor.",
+        Experience: "No experience details provided yet."
+      }
+    });
+
+    // Update user with InstructorId
+    await prisma.users.update({
+      where: { Id: userId },
+      data: { InstructorId: instructor.Id }
+    });
+  }
+
   // Return user with plain refresh token (not hashed)
   return {
     ...newUser,

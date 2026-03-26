@@ -95,10 +95,20 @@ export const handleCassoWebhook = async (req, res) => {
           }
         });
 
-        // Create Enrollments
+        // Create Enrollments and Update Instructor Balances
         const courseIds = JSON.parse(checkout.CourseIds);
+        
+        // Fetch courses to get Instructor IDs and Prices
+        const coursesInCheckout = await tx.courses.findMany({
+          where: { Id: { in: courseIds } },
+          select: { Id: true, InstructorId: true, Price: true }
+        });
+
         await Promise.all(courseIds.map(async (courseId) => {
-          // Check if already enrolled to avoid unique constraint error
+          const courseDetail = coursesInCheckout.find(c => c.Id === courseId);
+          if (!courseDetail) return;
+
+          // Check if already enrolled
           const existing = await tx.enrollments.findUnique({
             where: {
               CreatorId_CourseId: {
@@ -109,7 +119,8 @@ export const handleCassoWebhook = async (req, res) => {
           });
 
           if (!existing) {
-            return tx.enrollments.create({
+            // Create Enrollment
+            await tx.enrollments.create({
               data: {
                 CreatorId: checkout.UserId,
                 CourseId: courseId,
@@ -117,8 +128,28 @@ export const handleCassoWebhook = async (req, res) => {
                 Status: 'Active'
               }
             });
+
+            // Calculate Instructor Share (70%)
+            // Handle proportional discount if total amount < sum of course prices
+            const totalOriginalPrice = coursesInCheckout.reduce((sum, c) => sum + (c.Price || 0), 0);
+            const proportionalShare = totalOriginalPrice > 0 
+              ? (courseDetail.Price / totalOriginalPrice) 
+              : (1 / courseIds.length);
+            
+            const coursePaidAmount = Number(amount) * proportionalShare;
+            const instructorShare = Math.floor(coursePaidAmount * 0.7);
+
+            if (instructorShare > 0) {
+              await tx.instructors.update({
+                where: { Id: courseDetail.InstructorId },
+                data: {
+                  Balance: { increment: BigInt(instructorShare) },
+                  LastModificationTime: new Date()
+                }
+              });
+              console.log(`💰 Credited ${instructorShare} to Instructor ${courseDetail.InstructorId} for course ${courseId}`);
+            }
           }
-          return existing;
         }));
 
         // Remove from Wishlist if exists

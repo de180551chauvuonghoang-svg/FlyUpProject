@@ -38,40 +38,40 @@ const makeBody = (to, from, subject, message) => {
 };
 
 const sendEmailViaGmail = async (to, subject, htmlBody) => {
-    const gmail = createGmailClient();
-    
-    if (!gmail) {
-        console.warn('⚠️ GMAIL API credentials missing. Emails will not send.');
-        return false;
+  const gmail = createGmailClient();
+
+  if (!gmail) {
+    console.warn('⚠️ GMAIL API credentials missing. Emails will not send.');
+    return false;
+  }
+
+  try {
+    const raw = makeBody(to, `"${FROM_NAME}" <${FROM_EMAIL}>`, subject, htmlBody);
+    const res = await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: raw,
+      },
+    });
+    console.log(`✅ Email sent to ${to} (ID: ${res.data.id})`);
+    return true;
+  } catch (error) {
+    console.error('❌ Error sending email via Gmail API:', error.message);
+    if (error.response) {
+      console.error('API Error Details:', error.response.data);
     }
 
-    try {
-        const raw = makeBody(to, `"${FROM_NAME}" <${FROM_EMAIL}>`, subject, htmlBody);
-        const res = await gmail.users.messages.send({
-            userId: 'me',
-            requestBody: {
-                raw: raw,
-            },
-        });
-        console.log(`✅ Email sent to ${to} (ID: ${res.data.id})`);
-        return true;
-    } catch (error) {
-        console.error('❌ Error sending email via Gmail API:', error.message);
-        if (error.response) {
-            console.error('API Error Details:', error.response.data);
-        }
-        
-        const customError = new Error('Failed to send email via Gmail API: ' + error.message);
-        customError.code = 'EMAIL_SEND_FAILED';
-        customError.details = error.response ? error.response.data : null;
-        throw customError;
-    }
+    const customError = new Error('Failed to send email via Gmail API: ' + error.message);
+    customError.code = 'EMAIL_SEND_FAILED';
+    customError.details = error.response ? error.response.data : null;
+    throw customError;
+  }
 }
 
 export const sendWelcomeEmail = async (to, name, clientURL = 'http://localhost:5173') => {
   try {
     const gmail = createGmailClient();
-    
+
     if (!gmail) {
       console.log('📧 [DEV MODE] Welcome email would be sent to:', to);
       console.warn('⚠️ GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN missing. Add to .env.');
@@ -90,7 +90,7 @@ export const sendWelcomeEmail = async (to, name, clientURL = 'http://localhost:5
 export const sendPurchaseSuccessEmail = async (to, name, orderData) => {
   try {
     const gmail = createGmailClient();
-    
+
     // Development fallback
     if (!gmail) {
       console.log('\n💳 ═══════════════════════════════════════════════════════');
@@ -117,7 +117,7 @@ export const sendPurchaseSuccessEmail = async (to, name, orderData) => {
 export const sendPasswordResetEmail = async (to, resetLink) => {
   try {
     const gmail = createGmailClient();
-    
+
     if (!gmail) {
       console.log('\n🔐 ═══════════════════════════════════════════════════════');
       console.log('📧 [DEV MODE] Password Reset Email');
@@ -320,7 +320,7 @@ export const sendOtpEmail = async (to, otp) => {
   try {
     const gmail = createGmailClient();
     const isDev = process.env.NODE_ENV === 'development';
-    
+
     // Check if client creation failed
     if (!gmail) {
       if (isDev) {
@@ -337,34 +337,34 @@ export const sendOtpEmail = async (to, otp) => {
 
     const html = createOtpEmailTemplate(otp);
     const sent = await sendEmailViaGmail(to, 'Your Verification Code', html);
-    
+
     // If sending via Gmail failed (e.g. invalid_grant)
     if (!sent) {
-        if (isDev) {
-            console.log('\n🔐 ═══════════════════════════════════════════════════════');
-            console.log('📧 [DEV MODE - SEND FAILED] OTP Email');
-            console.log('📬 To:', to);
-            console.log('🔑 OTP:', otp);
-            console.log('═══════════════════════════════════════════════════════\n');
-            console.warn('⚠️ Email sending failed. Displaying OTP in console for testing.');
-            return true; // Return true so the frontend flow can continue in dev
-        }
-        throw new Error('Failed to send OTP email via Gmail');
+      if (isDev) {
+        console.log('\n🔐 ═══════════════════════════════════════════════════════');
+        console.log('📧 [DEV MODE - SEND FAILED] OTP Email');
+        console.log('📬 To:', to);
+        console.log('🔑 OTP:', otp);
+        console.log('═══════════════════════════════════════════════════════\n');
+        console.warn('⚠️ Email sending failed. Displaying OTP in console for testing.');
+        return true; // Return true so the frontend flow can continue in dev
+      }
+      throw new Error('Failed to send OTP email via Gmail');
     }
 
     return true;
 
   } catch (error) {
     console.error('Error sending OTP email:', error);
-    
+
     if (process.env.NODE_ENV === 'development') {
-        // In dev, print OTP to console if email fails
-        console.log('🔑 [FALLBACK] OTP:', otp);
-        return true; // Return true to allow flow to continue
+      // In dev, print OTP to console if email fails
+      console.log('🔑 [FALLBACK] OTP:', otp);
+      return true; // Return true to allow flow to continue
     }
-    
+
     // In production, bubble up the error
-    throw error; 
+    throw error;
   }
 };
 
@@ -401,6 +401,135 @@ function createOtpEmailTemplate(otp) {
     
     <div style="background-color: #f8f9fa; padding: 24px; text-align: center; font-size: 13px; color: #888; border-top: 1px solid #eaeaea;">
        <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Fly Up Team. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+export const sendCourseApprovedEmail = async (to, instructorName, courseTitle) => {
+  try {
+    const gmail = createGmailClient();
+
+    if (!gmail) {
+      console.log('📧 [DEV MODE] Course Approved Email would be sent to:', to);
+      return true;
+    }
+
+    const html = createCourseApprovedEmailTemplate(instructorName, courseTitle);
+    return await sendEmailViaGmail(to, 'Course Approved - Fly Up', html);
+  } catch (error) {
+    console.error('Error sending course approved email:', error);
+    return false;
+  }
+};
+
+export const sendCourseRejectedEmail = async (to, instructorName, courseTitle, reason) => {
+  try {
+    const gmail = createGmailClient();
+
+    if (!gmail) {
+      console.log('📧 [DEV MODE] Course Rejected Email would be sent to:', to);
+      return true;
+    }
+
+    const html = createCourseRejectedEmailTemplate(instructorName, courseTitle, reason);
+    return await sendEmailViaGmail(to, 'Course Revision Required - Fly Up', html);
+  } catch (error) {
+    console.error('Error sending course rejected email:', error);
+    return false;
+  }
+};
+
+function createCourseApprovedEmailTemplate(instructorName, courseTitle) {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Approved</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333;">
+  <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);">
+    <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 40px 20px; text-align: center;">
+      <img src="https://swp-fly-up.vercel.app/FluyUpLogo.png" alt="Fly Up Logo" style="width: 80px; height: 80px; background: white; border-radius: 50%; padding: 10px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: contain;">
+      <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">Congratulations!</h1>
+    </div>
+    
+    <div style="padding: 40px 30px;">
+      <p style="font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 16px;">Hello ${instructorName},</p>
+      <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a; margin-bottom: 24px;">
+        Good news! Your course <strong>"${courseTitle}"</strong> has been reviewed and <strong>approved</strong> by our team. 
+        It is now live on the Fly Up platform and available for students to enroll.
+      </p>
+      
+      <div style="background-color: #f8f9fa; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #28a745;">
+        <p style="margin: 0; font-weight: 600; color: #333;">Your course is now public!</p>
+        <p style="margin: 8px 0 0 0; color: #555; font-size: 15px;">You can now view your course page and start marketing it to your audience.</p>
+      </div>
+
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="http://localhost:5173/instructor/courses" style="display: inline-block; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">Go to Instructor Dashboard</a>
+      </div>
+      
+      <p style="margin-top: 40px; font-size: 14px; color: #888; text-align: center;">
+        Thank you for contributing to Fly Up. We're excited to see your course succeed!
+      </p>
+    </div>
+    
+    <div style="background-color: #f8f9fa; padding: 24px; text-align: center; font-size: 13px; color: #888; border-top: 1px solid #eaeaea;">
+      <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Fly Up Team. All rights reserved.</p>
+      <p style="margin: 5px 0;">Keep Inspiring! 🚀</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+function createCourseRejectedEmailTemplate(instructorName, courseTitle, reason) {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Revision Required</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333;">
+  <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);">
+    <div style="background: linear-gradient(135deg, #dc3545 0%, #ff4d5a 100%); padding: 40px 20px; text-align: center;">
+      <img src="https://swp-fly-up.vercel.app/FluyUpLogo.png" alt="Fly Up Logo" style="width: 80px; height: 80px; background: white; border-radius: 50%; padding: 10px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: contain;">
+      <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">Update Required</h1>
+    </div>
+    
+    <div style="padding: 40px 30px;">
+      <p style="font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 16px;">Hello ${instructorName},</p>
+      <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a; margin-bottom: 24px;">
+        Thank you for submitting your course <strong>"${courseTitle}"</strong>. Our team has reviewed your submission and identified some areas that need improvement before it can be published.
+      </p>
+      
+      <div style="background-color: #fff5f5; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #dc3545;">
+        <p style="margin: 0 0 12px 0; font-weight: 600; color: #333;">Reason for revision:</p>
+        <p style="margin: 0; color: #d32f2f; font-size: 15px; line-height: 1.6;">${reason || 'No specific reason provided. Please review our guidelines.'}</p>
+      </div>
+
+      <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a; margin-bottom: 24px;">
+        Don't worry! You can easily make the necessary adjustments in your instructor dashboard and resubmit your course for approval.
+      </p>
+
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="http://localhost:5173/instructor/courses" style="display: inline-block; background: linear-gradient(135deg, #dc3545 0%, #ff4d5a 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);">Edit My Course</a>
+      </div>
+      
+      <p style="margin-top: 40px; font-size: 14px; color: #888; text-align: center;">
+        If you have any questions regarding this decision, feel free to contact our support team.
+      </p>
+    </div>
+    
+    <div style="background-color: #f8f9fa; padding: 24px; text-align: center; font-size: 13px; color: #888; border-top: 1px solid #eaeaea;">
+      <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Fly Up Team. All rights reserved.</p>
     </div>
   </div>
 </body>

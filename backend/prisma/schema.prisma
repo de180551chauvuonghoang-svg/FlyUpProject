@@ -2,13 +2,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "../ERD.svg"
-}
+
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Articles {
@@ -372,6 +370,7 @@ model Instructors {
   CourseCount                           Int                   @default(0) @db.SmallInt
   CourseNotifications                   CourseNotifications[]
   Courses                               Courses[]
+  WithdrawalRequests                   WithdrawalRequests[]
   Users_Instructors_CreatorIdToUsers    Users                 @relation("Instructors_CreatorIdToUsers", fields: [CreatorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Instructors_Users")
   Users_Users_InstructorIdToInstructors Users[]               @relation("Users_InstructorIdToInstructors")
 }
@@ -708,4 +707,23 @@ model EmailVerifications {
   AttemptCount Int      @default(0)
 
   @@index([Email], map: "IX_EmailVerifications_Email")
+}
+
+model WithdrawalRequests {
+  Id            String      @id(map: "PK_WithdrawalRequests") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  InstructorId  String      @db.Uuid
+  Amount              BigInt
+  Status              String      @default("PENDING") @db.VarChar(50)
+  RejectionReason     String?     @db.VarChar(500)
+  CreationTime        DateTime    @default(now()) @db.Timestamp(6)
+  ProcessedTime       DateTime?   @db.Timestamp(6)
+  
+  // Snapshots for history
+  TotalCoursesSold Int      @default(0)
+  TotalEarnings    BigInt   @default(0)
+
+  Instructor    Instructors @relation(fields: [InstructorId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_WithdrawalRequests_Instructors")
+
+  @@index([InstructorId], map: "IX_WithdrawalRequests_InstructorId")
+  @@index([Status], map: "IX_WithdrawalRequests_Status")
 }

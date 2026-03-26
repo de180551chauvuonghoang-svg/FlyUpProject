@@ -215,6 +215,18 @@
   font-size: 14px;
   font-weight: 500;
 }
+.admin-wrapper .nav-badge {
+  background: var(--color-accent-red);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  min-width: 18px;
+  text-align: center;
+}
 .admin-wrapper .sidebar-user {
   display: flex;
   align-items: center;

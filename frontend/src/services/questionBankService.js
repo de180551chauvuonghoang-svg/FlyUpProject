@@ -122,10 +122,26 @@ export async function archiveQuestionBank(bankId) {
     return data.data;
 }
 
-export async function restoreQuestionBank(bankId) {
+export const restoreQuestionBank = async (bankId) => {
     const data = await request(`/question-banks/${bankId}/restore`, {
         method: 'POST',
     });
     return data.data;
+};
+
+/**
+ * AI Generation
+ */
+export async function bulkGenerateAIQuestions(bankId, courseId, count = 5, difficulty = 'Mixed') {
+    const data = await request(`/ai/question-bank/generate`, {
+        method: 'POST',
+        body: JSON.stringify({
+            questionBankId: bankId,
+            courseId,
+            count,
+            difficulty,
+        }),
+    });
+    return data; // bulkGenerateToBank returns success object directly
 }
 

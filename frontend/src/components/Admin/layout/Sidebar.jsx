@@ -5,9 +5,13 @@ import {
   GraduationCap,
   UserCog,
   LogOut,
-  Rocket
+  Rocket,
+  DollarSign,
+  Bell
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import useAuth from '../../../hooks/useAuth';
+import notificationService from '../../../services/admin/notificationService';
 
 /**
  * Menu items configuration
@@ -33,6 +37,17 @@ const menuItems = [
     label: 'Courses',
     icon: BookOpen,
   },
+  {
+    path: '/admin/payouts',
+    label: 'Payouts',
+    icon: DollarSign,
+  },
+  {
+    path: '/admin/notifications',
+    label: 'Yêu cầu duyệt',
+    icon: Bell,
+    isNotification: true
+  },
 ];
 
 /**
@@ -43,6 +58,24 @@ function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const result = await notificationService.getNotifications({ limit: 1, status: 'Pending' });
+        setNotificationCount(result.pagination.totalItems || 0);
+      } catch (error) {
+        console.error('Failed to fetch notification count:', error);
+      }
+    };
+
+    fetchCount();
+    // Poll every 2 minutes
+    const interval = setInterval(fetchCount, 120000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -80,6 +113,9 @@ function Sidebar() {
                 <Icon size={20} />
               </div>
               <span className="nav-label">{item.label}</span>
+              {item.isNotification && notificationCount > 0 && (
+                <span className="nav-badge">{notificationCount > 9 ? '9+' : notificationCount}</span>
+              )}
             </NavLink>
           );
         })}

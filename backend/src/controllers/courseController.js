@@ -167,9 +167,26 @@ export const getInstructorStats = async (req, res) => {
     const prisma = (await import("../lib/prisma.js")).default;
 
     // Find instructor record from user
-    const instructor = await prisma.instructors.findFirst({
+    let instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
     });
+
+    if (!instructor && req.user.role?.toLowerCase() === "instructor") {
+      // Auto-create instructor profile if user has the role but no profile yet
+      instructor = await prisma.instructors.create({
+        data: {
+          CreatorId: userId,
+          Intro: "I am a new instructor.",
+          Experience: "No experience details provided yet.",
+        },
+      });
+
+      // Update user record with InstructorId
+      await prisma.users.update({
+        where: { Id: userId },
+        data: { InstructorId: instructor.Id },
+      });
+    }
 
     if (!instructor) {
       return res.json({
@@ -234,8 +251,14 @@ export const getInstructorStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get instructor stats error:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch stats" });
+    console.error("❌ Get instructor stats error:", error);
+    console.error("Full Error Object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to fetch stats",
+      message: error.message,
+      fullError: process.env.NODE_ENV === 'development' ? error : undefined
+    });
   }
 };
 
@@ -247,9 +270,23 @@ export const getInstructorCourses = async (req, res) => {
     const prisma = (await import("../lib/prisma.js")).default;
 
     // Find instructor record
-    const instructor = await prisma.instructors.findFirst({
+    let instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
     });
+
+    if (!instructor && req.user.role?.toLowerCase() === "instructor") {
+      instructor = await prisma.instructors.create({
+        data: {
+          CreatorId: userId,
+          Intro: "I am a new instructor.",
+          Experience: "No experience details provided yet.",
+        },
+      });
+      await prisma.users.update({
+        where: { Id: userId },
+        data: { InstructorId: instructor.Id },
+      });
+    }
 
     if (!instructor) {
       return res.json({ success: true, data: [] });
@@ -311,10 +348,14 @@ export const getInstructorCourses = async (req, res) => {
 
     res.json({ success: true, data: transformed });
   } catch (error) {
-    console.error("Get instructor courses error:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch instructor courses" });
+    console.error("❌ Get instructor courses error:", error);
+    console.error("Full Error Object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to fetch instructor courses",
+      message: error.message,
+      fullError: process.env.NODE_ENV === 'development' ? error : undefined
+    });
   }
 };
 
@@ -325,16 +366,29 @@ export const createCourse = async (req, res) => {
     const prisma = (await import("../lib/prisma.js")).default;
 
     // Find instructor record
-    const instructor = await prisma.instructors.findFirst({
+    let instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
     });
+
+    if (!instructor && req.user.role?.toLowerCase() === "instructor") {
+      instructor = await prisma.instructors.create({
+        data: {
+          CreatorId: userId,
+          Intro: "I am a new instructor.",
+          Experience: "No experience details provided yet.",
+        },
+      });
+      await prisma.users.update({
+        where: { Id: userId },
+        data: { InstructorId: instructor.Id },
+      });
+    }
+
     if (!instructor) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          error: "Instructor profile not found. Please contact admin.",
-        });
+      return res.status(403).json({
+        success: false,
+        error: "Instructor profile not found. Please contact admin.",
+      });
     }
 
     const {
@@ -384,7 +438,7 @@ export const createCourse = async (req, res) => {
           Discount: parseFloat(discount) || 0,
           Level: level || "Beginner",
           Status: "Draft",
-          ApprovalStatus: "Pending",
+          ApprovalStatus: "None",
           LeafCategoryId: categoryId,
           InstructorId: instructor.Id,
           CreatorId: userId,
@@ -448,14 +502,14 @@ export const createCourse = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Create course error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        error: "Failed to create course",
-        message: error.message,
-      });
+    console.error("❌ Create course error:", error);
+    console.error("Full Error Object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    res.status(500).json({
+      success: false,
+      error: "Failed to create course",
+      message: error.message,
+      fullError: process.env.NODE_ENV === 'development' ? error : undefined
+    });
   }
 };
 
@@ -515,9 +569,45 @@ export const publishCourse = async (req, res) => {
         .status(404)
         .json({ success: false, error: "Course not found or access denied" });
 
+    // NEW: Review submission logic
+    if (course.ApprovalStatus === "None" || course.ApprovalStatus === "Rejected") {
+      // Transition to Pending for admin review
+      const updated = await prisma.courses.update({
+        where: { Id: courseId },
+        data: { ApprovalStatus: "Pending" },
+      });
+
+      // Create Course Notification for Admin
+      await prisma.courseNotifications.create({
+        data: {
+          CourseId: courseId,
+          InstructorId: course.InstructorId,
+          InstructorName: instructor.Users_Instructors_CreatorIdToUsers?.FullName || "Instructor",
+          CourseTitle: course.Title,
+          CoursePrice: parseFloat(course.Price) || 0,
+          NotificationType: "Submission",
+          Status: "Pending",
+        },
+      });
+
+      return res.json({
+        success: true,
+        message: "Course submitted for admin review!",
+        data: { approvalStatus: "Pending" },
+      });
+    }
+
+    // Existing publish logic
+    if (course.ApprovalStatus !== "APPROVED") {
+      return res.status(403).json({
+        success: false,
+        error: "Course must be approved by admin before it can be published.",
+      });
+    }
+
     const updated = await prisma.courses.update({
       where: { Id: courseId },
-      data: { Status: "Ongoing", ApprovalStatus: "APPROVED" },
+      data: { Status: "Ongoing" },
     });
 
     res.json({
@@ -602,6 +692,9 @@ export const updateCourse = async (req, res) => {
         ...(discount !== undefined && { Discount: parseFloat(discount) || 0 }),
         ...(level && { Level: level }),
         LastModifierId: userId,
+        // Reset approval status on any update
+        ApprovalStatus: "None",
+        Status: "Draft",
       },
     });
 
@@ -667,6 +760,12 @@ export const createSection = async (req, res) => {
       },
     });
 
+    // Reset course approval status
+    await prisma.courses.update({
+      where: { Id: courseId },
+      data: { ApprovalStatus: "None", Status: "Draft" },
+    });
+
     // Invalidate course cache
     await safeDel(`course:${courseId}`);
 
@@ -719,6 +818,12 @@ export const updateSection = async (req, res) => {
     const updated = await prisma.sections.update({
       where: { Id: sectionId },
       data: { Title: title.trim() },
+    });
+
+    // Reset course approval status
+    await prisma.courses.update({
+      where: { Id: section.CourseId },
+      data: { ApprovalStatus: "None", Status: "Draft" },
     });
 
     // Invalidate course cache
@@ -793,7 +898,11 @@ export const deleteSection = async (req, res) => {
       );
       await tx.courses.update({
         where: { Id: section.CourseId },
-        data: { LectureCount: totalLectures },
+        data: {
+          LectureCount: totalLectures,
+          ApprovalStatus: "None",
+          Status: "Draft",
+        },
       });
     });
 
@@ -877,7 +986,11 @@ export const createLecture = async (req, res) => {
       );
       await tx.courses.update({
         where: { Id: section.CourseId },
-        data: { LectureCount: totalLectures },
+        data: {
+          LectureCount: totalLectures,
+          ApprovalStatus: "None",
+          Status: "Draft",
+        },
       });
 
       return lecture;
@@ -936,6 +1049,12 @@ export const updateLecture = async (req, res) => {
         ...(title && { Title: title.trim() }),
         ...(content !== undefined && { Content: content }),
       },
+    });
+
+    // Reset course approval status
+    await prisma.courses.update({
+      where: { Id: lecture.Sections.CourseId },
+      data: { ApprovalStatus: "None", Status: "Draft" },
     });
 
     // Invalidate course cache
@@ -1014,7 +1133,11 @@ export const deleteLecture = async (req, res) => {
       );
       await tx.courses.update({
         where: { Id: lecture.Sections.CourseId },
-        data: { LectureCount: totalLectures },
+        data: {
+          LectureCount: totalLectures,
+          ApprovalStatus: "None",
+          Status: "Draft",
+        },
       });
     });
 
@@ -1121,10 +1244,14 @@ export const getInstructorStudents = async (req, res) => {
 
     res.json({ success: true, data: students });
   } catch (error) {
-    console.error("Get instructor students error:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch students" });
+    console.error("❌ Get instructor students error:", error);
+    console.error("Full Error Object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to fetch students",
+      message: error.message,
+      fullError: process.env.NODE_ENV === 'development' ? error : undefined
+    });
   }
 };
 
@@ -1275,32 +1402,32 @@ export const getInstructorCommunication = async (req, res) => {
     // Fetch comments on instructor's lectures
     const comments = lectureIds.length > 0
       ? await prisma.comments.findMany({
-          where: {
-            LectureId: { in: lectureIds },
-            ParentId: null,
+        where: {
+          LectureId: { in: lectureIds },
+          ParentId: null,
+        },
+        include: {
+          Users: {
+            select: { Id: true, FullName: true, AvatarUrl: true },
           },
-          include: {
-            Users: {
-              select: { Id: true, FullName: true, AvatarUrl: true },
-            },
-          },
-          orderBy: { CreationTime: "desc" },
-          take: 50,
-        })
+        },
+        orderBy: { CreationTime: "desc" },
+        take: 50,
+      })
       : [];
 
     // Fetch reviews on instructor's courses
     const reviews = courseIds.length > 0
       ? await prisma.courseReviews.findMany({
-          where: { CourseId: { in: courseIds } },
-          include: {
-            Users: {
-              select: { Id: true, FullName: true, AvatarUrl: true },
-            },
+        where: { CourseId: { in: courseIds } },
+        include: {
+          Users: {
+            select: { Id: true, FullName: true, AvatarUrl: true },
           },
-          orderBy: { CreationTime: "desc" },
-          take: 50,
-        })
+        },
+        orderBy: { CreationTime: "desc" },
+        take: 50,
+      })
       : [];
 
     // Transform
@@ -1342,10 +1469,13 @@ export const getInstructorCommunication = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get instructor communication error:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch communication data" });
+    console.error("❌ getInstructorCommunication Error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch communication data",
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
@@ -1385,7 +1515,7 @@ export const markLectureComplete = async (req, res) => {
 
     if (!milestones.includes(lectureId)) {
       milestones.push(lectureId);
-      
+
       await prisma.$transaction(async (tx) => {
         // Update Enrollment
         await tx.enrollments.update({

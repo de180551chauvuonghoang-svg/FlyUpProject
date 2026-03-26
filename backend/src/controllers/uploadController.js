@@ -109,10 +109,14 @@ export async function uploadVideoController(req, res) {
         Type: newMaterial.Type,
       });
 
-      // Invalidate course cache so video appears immediately
+      // Update coarse status to require re-approval
       const courseId = lecture.Sections.CourseId;
+      await prisma.courses.update({
+        where: { Id: courseId },
+        data: { ApprovalStatus: "None", Status: "Draft" },
+      });
       await safeDel(`course:${courseId}`);
-      console.log(`[UPLOAD_VIDEO] Cache invalidated for course: ${courseId}`);
+      console.log(`[UPLOAD_VIDEO] Cache invalidated and status reset for course: ${courseId}`);
     } else {
       console.log("[UPLOAD_VIDEO] ⚠️ WARNING: lectureId NOT provided!");
       console.log("[UPLOAD_VIDEO] File uploaded to storage but NOT saved to database!");
@@ -200,11 +204,15 @@ export async function uploadDocumentController(req, res) {
         },
       });
 
-      // Invalidate course cache so material appears immediately
+      // Update coarse status to require re-approval
       const courseId = lecture.Sections.CourseId;
+      await prisma.courses.update({
+        where: { Id: courseId },
+        data: { ApprovalStatus: "None", Status: "Draft" },
+      });
       await safeDel(`course:${courseId}`);
       console.log(
-        `[Cache] Invalidated cache for course after material upload: ${courseId}`,
+        `[Cache] Invalidated cache and reset status for course after material upload: ${courseId}`,
       );
     }
 
@@ -270,8 +278,10 @@ export async function uploadThumbnailController(req, res) {
 
       await prisma.courses.update({
         where: { Id: courseId },
-        data: { ThumbUrl: result.url },
+        data: { ThumbUrl: result.url, ApprovalStatus: "None", Status: "Draft" },
       });
+      // Invalidate cache
+      await safeDel(`course:${courseId}`);
     }
 
     res.json({
@@ -364,6 +374,20 @@ export async function deleteMaterial(req, res) {
         },
       },
     });
+
+    // Get course ID to reset status
+    const lecture = await prisma.lectures.findUnique({
+      where: { Id: lectureId },
+      include: { Sections: true },
+    });
+    if (lecture) {
+      const courseId = lecture.Sections.CourseId;
+      await prisma.courses.update({
+        where: { Id: courseId },
+        data: { ApprovalStatus: "None", Status: "Draft" },
+      });
+      await safeDel(`course:${courseId}`);
+    }
 
     res.json({
       success: true,

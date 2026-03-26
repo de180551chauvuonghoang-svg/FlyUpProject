@@ -40,11 +40,49 @@ const redis = {
 
   // Mock 'set' for general usage
   set: async (key, value, mode, duration) => {
-    if (mode === "EX" || mode === "PX") {
-      const ttl = mode === "EX" ? duration : Math.ceil(duration / 1000);
-      return nodeCache.set(key, value, ttl);
-    }
     return nodeCache.set(key, value);
+  },
+
+  // Mock 'setex' for summary caching
+  setex: async (key, seconds, value) => {
+    return nodeCache.set(key, value, seconds);
+  },
+
+  // Mock 'del' for clearing history
+  del: async (...keys) => {
+    let deleted = 0;
+    keys.forEach(key => {
+      if (nodeCache.del(key)) deleted++;
+    });
+    return deleted;
+  },
+
+  // Mock 'rpush' for list-like storage (history)
+  rpush: async (key, value) => {
+    const list = nodeCache.get(key) || [];
+    list.push(value);
+    nodeCache.set(key, list, 3600); // 1 hour default TTL for history
+    return list.length;
+  },
+
+  // Mock 'lrange' for retrieving history
+  lrange: async (key, start, end) => {
+    const list = nodeCache.get(key) || [];
+    if (end === -1) {
+      return list.slice(start);
+    }
+    return list.slice(start, end + 1);
+  },
+
+  // Mock 'llen' for history count
+  llen: async (key) => {
+    const list = nodeCache.get(key) || [];
+    return list.length;
+  },
+
+  // Mock 'exists' for cache presence check
+  exists: async (key) => {
+    return nodeCache.has(key) ? 1 : 0;
   },
 
   // EventEmitter mocks to prevent errors on event listeners

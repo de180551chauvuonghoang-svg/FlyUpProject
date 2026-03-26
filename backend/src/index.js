@@ -37,7 +37,12 @@ import commentRouter from "./routers/comments.js";
 import wishlistRouter from "./routers/wishlist.js";
 import transactionRouter from "./routers/transactions.js";
 import adminRouter from "./routers/admin.js";
-import chatbotRouter from "./routers/chatbot.js";
+import chatbotRouter from "./routers/ai/chatbot.js";
+import recommendationsRouter from "./routers/ai/aiCourseRecommendationsRouter.js";
+import quizGenerationRouter from "./routers/ai/aiQuizGenerationRouter.js";
+import aiQuestionBankGenerationRouter from "./routers/ai/aiQuestionBankGenerationRouter.js";
+import aiAgentRouter from "./routers/ai/aiAgentRouter.js";
+import * as courseCache from "./services/courseCacheService.js";
 import quizRouter from "./routers/quiz.js";
 import uploadRouter from "./routers/upload.js";
 import { getCourses, getCategories } from "./services/courseService.js";
@@ -45,6 +50,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./configs/swagger.js";
 //import routers question bank
 import questionBankRouter from './routers/questionBank.js';
+import payoutRouter from "./routers/payout.js";
 
 // Dynamic import worker after env vars are loaded to ensure Redis connection works
 import("./workers/emailWorker.js").catch((err) =>
@@ -80,6 +86,11 @@ app.use(cors({
 app.use(express.json());
 app.use("/public", express.static(join(__dirname, "../public")));
 
+// Support BigInt in JSON.stringify (important for Prisma)
+BigInt.prototype.toJSON = function() {
+  return this.toString();
+};
+
 // Health check route
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "FlyUp Backend is running!" });
@@ -95,6 +106,10 @@ app.use("/api/wishlist", wishlistRouter);
 app.use("/api/transactions", transactionRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/chatbot", chatbotRouter);
+app.use("/api/recommendations", recommendationsRouter);
+app.use("/api/ai/quiz", quizGenerationRouter);
+app.use("/api/ai/question-bank", aiQuestionBankGenerationRouter);
+app.use("/api/ai/agent", aiAgentRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api/upload", uploadRouter);
 
@@ -102,6 +117,8 @@ app.use("/api/upload", uploadRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Question Bank Routes
 app.use("/api/question-banks", questionBankRouter);
+// Payout Routes
+app.use("/api/payouts", payoutRouter);
 
 // Error handling middleware
 
@@ -135,6 +152,10 @@ const server = app.listen(PORT, () => {
       // Run sequentially to avoid DB connection timeout
       await getCategories();
       await getCourses({ page: 1, limit: 12 });
+      
+      // Warm up chatbot course cache
+      await courseCache.refreshCache();
+      
       console.log("✅ Cache warmed up successfully!");
     } catch (error) {
       console.warn(

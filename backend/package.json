@@ -11,10 +11,13 @@
     "check-course-status": "node scripts/checkCourseStatus.js"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^3.0.31",
     "@google/generative-ai": "^0.24.1",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@supabase/supabase-js": "^2.39.0",
+    "ai": "^6.0.138",
+    "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
@@ -37,7 +40,8 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",

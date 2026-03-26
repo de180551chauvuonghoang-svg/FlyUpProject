@@ -155,6 +155,17 @@ export const createAssignment = async (req, res) => {
       },
     });
 
+    // Reset course approval status
+    const targetCourseId = courseId || (sectionId ? (await prisma.sections.findUnique({ where: { Id: sectionId } }))?.CourseId : null);
+    if (targetCourseId) {
+      await prisma.courses.update({
+        where: { Id: targetCourseId },
+        data: { ApprovalStatus: "None", Status: "Draft" },
+      });
+      const { safeDel } = await import("../lib/cache.js");
+      await safeDel(`course:${targetCourseId}`);
+    }
+
     res.status(201).json({
       success: true,
       data: result,
@@ -210,6 +221,17 @@ export const updateAssignment = async (req, res) => {
       },
     });
 
+    // Reset course approval status
+    const targetCourseId = result.CourseId || (result.SectionId ? (await prisma.sections.findUnique({ where: { Id: result.SectionId } }))?.CourseId : null);
+    if (targetCourseId) {
+      await prisma.courses.update({
+        where: { Id: targetCourseId },
+        data: { ApprovalStatus: "None", Status: "Draft" },
+      });
+      const { safeDel } = await import("../lib/cache.js");
+      await safeDel(`course:${targetCourseId}`);
+    }
+
     res.json({
       success: true,
       data: result,
@@ -231,9 +253,27 @@ export const deleteAssignment = async (req, res) => {
     const { id } = req.params;
     console.log(`[QuizController] Deleting assignment: ${id}`);
 
-    await prisma.assignments.delete({
+    const assignment = await prisma.assignments.findUnique({
       where: { Id: id },
+      include: { Sections: true }
     });
+    
+    if (assignment) {
+      const targetCourseId = assignment.CourseId || assignment.Sections?.CourseId;
+      
+      await prisma.assignments.delete({
+        where: { Id: id },
+      });
+
+      if (targetCourseId) {
+        await prisma.courses.update({
+          where: { Id: targetCourseId },
+          data: { ApprovalStatus: "None", Status: "Draft" },
+        });
+        const { safeDel } = await import("../lib/cache.js");
+        await safeDel(`course:${targetCourseId}`);
+      }
+    }
 
     res.json({
       success: true,
@@ -567,6 +607,17 @@ export const createAssignmentFromBank = async (req, res) => {
       questionIds,
     });
   
+    // Reset course approval status
+    const targetCourseId = courseId || (sectionId ? (await prisma.sections.findUnique({ where: { Id: sectionId } }))?.CourseId : null);
+    if (targetCourseId) {
+      await prisma.courses.update({
+        where: { Id: targetCourseId },
+        data: { ApprovalStatus: "None", Status: "Draft" },
+      });
+      const { safeDel } = await import("../lib/cache.js");
+      await safeDel(`course:${targetCourseId}`);
+    }
+
     res.status(201).json({
       success: true,
       data,

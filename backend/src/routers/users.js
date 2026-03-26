@@ -193,25 +193,25 @@ router.get('/:id/enrollments', async (req, res) => {
       }),
       prisma.enrollments.count({ where: { CreatorId: id } })
     ]);
-    
+
     console.log(`[API] Found ${total} enrollments. Returning ${enrollments.length} items.`);
     if (enrollments.length > 0 && !enrollments[0].Courses) {
-        console.error('[API] CRITICAL: Enrollment found but Course data is missing (null relation)!');
+      console.error('[API] CRITICAL: Enrollment found but Course data is missing (null relation)!');
     }
 
     res.json({
       enrollments: enrollments.map(e => {
-        const course = {
-          ...e.Courses,
-          TotalRating: e.Courses?.TotalRating?.toString() || '0',
-          instructor: e.Courses?.Instructors?.Users_Instructors_CreatorIdToUsers
-        };
-        // Remove raw Instructors object which contains BigInt Balance
-        // We only need the mapped 'instructor' (user) details
-        if (course.Instructors) {
-            delete course.Instructors;
-        }
         const { Courses, ...rest } = e;
+        const course = Courses ? {
+          ...Courses,
+          TotalRating: Courses.TotalRating?.toString() || '0',
+          instructor: Courses.Instructors?.Users_Instructors_CreatorIdToUsers
+        } : null;
+
+        if (course && course.Instructors) {
+          delete course.Instructors;
+        }
+
         return {
           ...rest,
           course
@@ -225,8 +225,13 @@ router.get('/:id/enrollments', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get enrollments error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Get enrollments error:', error);
+    console.error("Full Error Object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      fullError: process.env.NODE_ENV === 'development' ? error : undefined
+    });
   }
 });
 

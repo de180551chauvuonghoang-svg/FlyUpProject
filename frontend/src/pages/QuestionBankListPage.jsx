@@ -5,6 +5,7 @@ import {
     fetchQuestionBanks,
     fetchQuestionBankCourses,
     createQuestionBank,
+    bulkGenerateAIQuestions,
 } from '../services/questionBankService';
 import InstructorLayout from '../components/InstructorLayout';
 
@@ -55,6 +56,7 @@ const CreateQuestionBankModal = ({
         name: '',
         description: '',
         courseId: '',
+        autoGenerate: false,
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -69,10 +71,10 @@ const CreateQuestionBankModal = ({
     if (!open) return null;
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setForm((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: type === 'checkbox' ? checked : value,
         }));
     };
 
@@ -93,11 +95,16 @@ const CreateQuestionBankModal = ({
         const toastId = toast.loading('Creating question bank...');
 
         try {
-            await createQuestionBank({
+            const newBank = await createQuestionBank({
                 name: form.name,
                 description: form.description,
                 courseId: form.courseId,
             });
+
+            if (form.autoGenerate) {
+                toast.loading('AI is generating 10 questions for your new bank...', { id: toastId });
+                await bulkGenerateAIQuestions(newBank.Id, form.courseId, 10, 'Mixed');
+            }
 
             toast.success('Question bank created', { id: toastId });
             onCreated();
@@ -194,6 +201,21 @@ const CreateQuestionBankModal = ({
                             placeholder="Briefly describe the purpose of this bank..."
                             className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3.5 text-sm text-white outline-none resize-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all placeholder:text-slate-600"
                         />
+                    </div>
+
+                    <div className="flex items-center gap-3 p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                        <input
+                            type="checkbox"
+                            id="autoGenerate"
+                            name="autoGenerate"
+                            checked={form.autoGenerate}
+                            onChange={handleChange}
+                            className="w-5 h-5 rounded border-white/10 bg-white/5 text-purple-500 focus:ring-purple-500/20"
+                        />
+                        <label htmlFor="autoGenerate" className="flex flex-col cursor-pointer">
+                            <span className="text-sm font-bold text-white">Auto-generate with AI</span>
+                            <span className="text-[10px] text-purple-300 font-medium uppercase tracking-wider">Creates 10 questions automatically from course content</span>
+                        </label>
                     </div>
 
                     <div className="flex items-center justify-end gap-4 pt-4">

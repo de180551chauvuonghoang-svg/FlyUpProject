@@ -41,6 +41,8 @@ import AdminInstructors from './pages/Admin/Instructors/Instructors';
 import AdminCourses from './pages/Admin/Courses/Courses';
 import AdminCourseDetail from './pages/Admin/CourseDetail/CourseDetail';
 import AdminUserDetail from './pages/Admin/UserDetail/UserDetail';
+import AdminPayoutRequests from './pages/Admin/PayoutRequests';
+import AdminNotifications from './pages/Admin/Notifications/Notifications';
 
 
 function App() {
@@ -177,6 +179,8 @@ function App() {
             <Route path="instructors/:id" element={<AdminUserDetail />} />
             <Route path="courses" element={<AdminCourses />} />
             <Route path="courses/:id" element={<AdminCourseDetail />} />
+            <Route path="payouts" element={<AdminPayoutRequests />} />
+            <Route path="notifications" element={<AdminNotifications />} />
           </Route>
 
         </Routes>

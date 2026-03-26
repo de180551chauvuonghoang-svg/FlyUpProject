@@ -106,10 +106,14 @@ export default function CourseLessonPage() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const cloudAudioRef = useRef(null);
 
-  // File upload state for AI
   const [customFileText, setCustomFileText] = useState("");
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // AI Quiz states
+  const [isGeneratingAIQuiz, setIsGeneratingAIQuiz] = useState(false);
+  const [aiQuizQuestions, setAiQuizQuestions] = useState([]);
+  const [showAIQuiz, setShowAIQuiz] = useState(false);
 
   // Video tracking & UI states
   const maxTimePlayed = useRef(0);
@@ -136,19 +140,19 @@ export default function CourseLessonPage() {
     const normalizedMaterials =
       transformedMaterials.length > 0
         ? transformedMaterials.map((m, index) => ({
+          Id: m?.Id ?? m?.id ?? index,
+          Type: (m?.Type || m?.type || "document").toLowerCase(),
+          Url: m?.Url || m?.url || "",
+          Name: m?.Name || m?.name || null,
+        }))
+        : rawMaterials
+          .filter((m) => (m?.Type || m?.type || "").toLowerCase() !== "video")
+          .map((m, index) => ({
             Id: m?.Id ?? m?.id ?? index,
             Type: (m?.Type || m?.type || "document").toLowerCase(),
             Url: m?.Url || m?.url || "",
             Name: m?.Name || m?.name || null,
-          }))
-        : rawMaterials
-            .filter((m) => (m?.Type || m?.type || "").toLowerCase() !== "video")
-            .map((m, index) => ({
-              Id: m?.Id ?? m?.id ?? index,
-              Type: (m?.Type || m?.type || "document").toLowerCase(),
-              Url: m?.Url || m?.url || "",
-              Name: m?.Name || m?.name || null,
-            }));
+          }));
 
     return {
       videoUrl:
@@ -284,67 +288,67 @@ export default function CourseLessonPage() {
     setIsSummarizing(true);
     try {
       let contentToSummarize = customFileText || "";
-      
+
       // If no custom file is uploaded, we combine video transcript + materials + description
       if (!customFileText) {
         contentToSummarize = currentLesson?.Content ? `Lesson Description:\n${currentLesson.Content}\n\n` : "";
-        
+
         // 1. Extract materials
         if (currentLesson?.Materials?.length > 0) {
           toast.success("Đang đọc và trích xuất tài liệu đính kèm...");
           for (const material of currentLesson.Materials) {
-             try {
-                const res = await fetch(material.Url);
-                const arrayBuffer = await res.arrayBuffer();
-                const fileType = material.Type?.toLowerCase();
-                
-                let text = "";
-                if (fileType === "txt") {
-                  const decoder = new TextDecoder();
-                  text = decoder.decode(arrayBuffer);
-                } else if (fileType === "docx" || fileType === "doc") {
-                  const result = await mammoth.extractRawText({ arrayBuffer });
-                  text = result.value;
-                } else if (fileType === "pdf") {
-                  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                  for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const textContent = await page.getTextContent();
-                    text += textContent.items.map((item) => item.str).join(" ") + " ";
-                  }
+            try {
+              const res = await fetch(material.Url);
+              const arrayBuffer = await res.arrayBuffer();
+              const fileType = material.Type?.toLowerCase();
+
+              let text = "";
+              if (fileType === "txt") {
+                const decoder = new TextDecoder();
+                text = decoder.decode(arrayBuffer);
+              } else if (fileType === "docx" || fileType === "doc") {
+                const result = await mammoth.extractRawText({ arrayBuffer });
+                text = result.value;
+              } else if (fileType === "pdf") {
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                for (let i = 1; i <= pdf.numPages; i++) {
+                  const page = await pdf.getPage(i);
+                  const textContent = await page.getTextContent();
+                  text += textContent.items.map((item) => item.str).join(" ") + " ";
                 }
-                
-                if (text) {
-                   contentToSummarize += `--- Document: ${material.Name || material.Url.split('/').pop()} ---\n${text}\n\n`;
-                }
-             } catch (err) {
-                console.error("Failed to extract material:", material.Url, err);
-             }
+              }
+
+              if (text) {
+                contentToSummarize += `--- Document: ${material.Name || material.Url.split('/').pop()} ---\n${text}\n\n`;
+              }
+            } catch (err) {
+              console.error("Failed to extract material:", material.Url, err);
+            }
           }
         }
-        
+
         // 2. Extract video transcript via backend
         if (currentLesson?.VideoUrl) {
           toast.success("Đang nghe và trích xuất giọng nói từ video...");
           try {
-             const token = localStorage.getItem("accessToken");
-             const transcribeRes = await fetch(`${API_URL}/chatbot/transcribe`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ videoUrl: currentLesson.VideoUrl }),
-             });
-             if (transcribeRes.ok) {
-                const { text } = await transcribeRes.json();
-                if (text && text.text) {
-                   contentToSummarize += `--- Video Transcript ---\n${text.text}\n\n`;
-                } else if (typeof text === 'string') {
-                   contentToSummarize += `--- Video Transcript ---\n${text}\n\n`;
-                }
-             } else {
-                console.warn("Transcription API returned error");
-             }
+            const token = localStorage.getItem("accessToken");
+            const transcribeRes = await fetch(`${API_URL}/chatbot/transcribe`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ videoUrl: currentLesson.VideoUrl }),
+            });
+            if (transcribeRes.ok) {
+              const { text } = await transcribeRes.json();
+              if (text && text.text) {
+                contentToSummarize += `--- Video Transcript ---\n${text.text}\n\n`;
+              } else if (typeof text === 'string') {
+                contentToSummarize += `--- Video Transcript ---\n${text}\n\n`;
+              }
+            } else {
+              console.warn("Transcription API returned error");
+            }
           } catch (err) {
-             console.error("Failed to transcribe video", err);
+            console.error("Failed to transcribe video", err);
           }
         }
       }
@@ -354,7 +358,7 @@ export default function CourseLessonPage() {
         setIsSummarizing(false);
         return;
       }
-      
+
       toast.success("Đang tạo bản tóm tắt...");
       const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_URL}/chatbot`, {
@@ -398,12 +402,12 @@ export default function CourseLessonPage() {
       });
       if (!res.ok) throw new Error("API error");
       const { urls } = await res.json();
-      
+
       if (!urls || urls.length === 0) {
         setIsSpeaking(false);
         return;
       }
-      
+
       let index = 0;
       const playNext = () => {
         if (index >= urls.length) {
@@ -441,6 +445,40 @@ export default function CourseLessonPage() {
       cloudAudioRef.current = null;
     }
     setIsSpeaking(false);
+  };
+
+  const handleGenerateAIQuiz = async () => {
+    setIsGeneratingAIQuiz(true);
+    try {
+      toast.loading("Đang tạo bộ câu hỏi từ bài giảng...", { id: "ai-quiz-gen" });
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_URL}/ai/quiz/generate-instant`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          courseId,
+          count: 5,
+          difficulty: "Mixed",
+        }),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        setAiQuizQuestions(result.data.questions);
+        setShowAIQuiz(true);
+        toast.success("Đã tạo xong 5 câu hỏi thực hành!", { id: "ai-quiz-gen" });
+      } else {
+        toast.error(result.message || "Không thể tạo câu hỏi AI", { id: "ai-quiz-gen" });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi kết nối khi tạo câu hỏi", { id: "ai-quiz-gen" });
+    } finally {
+      setIsGeneratingAIQuiz(false);
+    }
   };
 
   useEffect(() => {
@@ -502,7 +540,7 @@ export default function CourseLessonPage() {
       const now = new Date();
       const diffTime = Math.abs(now - date);
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 0) setLastUpdateText("Last updated today");
       else if (diffDays === 1) setLastUpdateText("Last updated yesterday");
       else if (diffDays < 30) setLastUpdateText(`Last updated ${diffDays} days ago`);
@@ -812,11 +850,11 @@ export default function CourseLessonPage() {
       setIsLessonCompleted(true);
       return;
     }
-    
+
     try {
       await markLectureComplete(currentLessonId);
       setIsLessonCompleted(true);
-      
+
       // Invalidate queries to trigger real-time updates!
       if (user?.id) {
         queryClient.invalidateQueries({ queryKey: ["enrollmentProgress", courseId, user.id] });
@@ -825,7 +863,7 @@ export default function CourseLessonPage() {
         queryClient.invalidateQueries({ queryKey: ["enrollmentProgress"] });
         queryClient.invalidateQueries({ queryKey: ["userEnrollments"] });
       }
-      
+
       toast.success("Tiến trình học đã được tự động lưu!", { id: "progress-saved" });
     } catch (error) {
       console.error("Failed to mark complete:", error);
@@ -1166,28 +1204,26 @@ export default function CourseLessonPage() {
               <p className="text-slate-400 text-sm">{lastUpdateText}</p>
             </div>
             <div className="flex gap-3 w-full md:w-auto">
-              <button 
+              <button
                 onClick={() => {
                   if (!isLessonCompleted) handleCompleteLesson();
                 }}
-                className={`flex-1 md:flex-none h-11 px-6 rounded-lg border transition-all flex items-center justify-center gap-2 font-medium ${
-                  isLessonCompleted 
-                    ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]" 
+                className={`flex-1 md:flex-none h-11 px-6 rounded-lg border transition-all flex items-center justify-center gap-2 font-medium ${isLessonCompleted
+                    ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]"
                     : "border-slate-600 text-white hover:bg-white/5 hover:border-slate-500"
-                }`}
+                  }`}
               >
                 <span className="material-symbols-outlined text-[20px]">
                   check_circle
                 </span>
                 {isLessonCompleted ? "Completed" : "Mark as Complete"}
               </button>
-              <button 
+              <button
                 onClick={handleNextLecture}
-                className={`flex-1 md:flex-none h-11 px-6 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-                  isLessonCompleted
+                className={`flex-1 md:flex-none h-11 px-6 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${isLessonCompleted
                     ? "bg-primary text-white hover:bg-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
                     : "bg-slate-800 text-slate-500 cursor-not-allowed"
-                }`}
+                  }`}
               >
                 Next Lecture
                 <span className="material-symbols-outlined text-[20px]">
@@ -1245,11 +1281,10 @@ export default function CourseLessonPage() {
               </button>
               <button
                 onClick={() => setActiveTab("ai")}
-                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${
-                  activeTab === "ai"
+                className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 ${activeTab === "ai"
                     ? "text-purple-400 border-purple-400"
                     : "text-slate-400 hover:text-purple-300 border-transparent"
-                }`}
+                  }`}
               >
                 <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
                 AI Assistant
@@ -1414,18 +1449,30 @@ export default function CourseLessonPage() {
 
             {activeTab === "qa" && (
               <div className="glass-panel rounded-xl p-8">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
                   <div>
                     <h3 className="text-lg font-bold text-white mb-2">
-                      Course Quiz
+                      Course Quiz & Q&A
                     </h3>
                     <p className="text-slate-400 text-sm">
-                      Test your knowledge with these practice questions
+                      Test your knowledge with practice questions from the lecturer or generate new ones using AI
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-4xl text-purple-500">
-                    quiz
-                  </span>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleGenerateAIQuiz}
+                      disabled={isGeneratingAIQuiz || (!currentLesson?.Content && !customFileText)}
+                      className="px-6 py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        psychology
+                      </span>
+                      {isGeneratingAIQuiz ? "Đang tạo..." : "Luyện tập (5 câu AI)"}
+                    </button>
+                    <span className="material-symbols-outlined text-4xl text-purple-500 hidden sm:block">
+                      quiz
+                    </span>
+                  </div>
                 </div>
                 <Quiz
                   courseId={courseId}
@@ -1450,7 +1497,7 @@ export default function CourseLessonPage() {
             {activeTab === "ai" && (
               <div className="glass-panel rounded-xl p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none"></div>
-                
+
                 <div className="flex items-center justify-between mb-6 relative z-10">
                   <div>
                     <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
@@ -1461,21 +1508,19 @@ export default function CourseLessonPage() {
                       Tóm tắt nhanh kiến thức và đọc bài giảng cho bạn
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 bg-slate-900/50 p-1.5 rounded-lg border border-glass-border">
                     <button
                       onClick={() => setSummaryLang("vi")}
-                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                        summaryLang === "vi" ? "bg-purple-500/20 text-purple-400" : "text-slate-400 hover:text-white"
-                      }`}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${summaryLang === "vi" ? "bg-purple-500/20 text-purple-400" : "text-slate-400 hover:text-white"
+                        }`}
                     >
                       Tiếng Việt
                     </button>
                     <button
                       onClick={() => setSummaryLang("en")}
-                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                        summaryLang === "en" ? "bg-purple-500/20 text-purple-400" : "text-slate-400 hover:text-white"
-                      }`}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${summaryLang === "en" ? "bg-purple-500/20 text-purple-400" : "text-slate-400 hover:text-white"
+                        }`}
                     >
                       English
                     </button>
@@ -1485,11 +1530,11 @@ export default function CourseLessonPage() {
                 <div className="flex flex-col gap-4 relative z-10">
                   {customFileText && (
                     <div className="px-4 py-3 bg-indigo-500/20 text-indigo-300 text-sm rounded-lg border border-indigo-500/30 flex items-start gap-3 relative">
-                       <span className="material-symbols-outlined mt-0.5 text-indigo-400">description</span>
-                       <div className="flex-1">
-                         <p className="font-medium mb-1">Đang sử dụng tài liệu tùy chỉnh ({customFileText.length} ký tự)</p>
-                         <button onClick={() => setCustomFileText("")} className="text-xs text-indigo-400 underline font-bold hover:text-white transition-colors">Hủy bỏ và trở lại dùng nội dung khóa học</button>
-                       </div>
+                      <span className="material-symbols-outlined mt-0.5 text-indigo-400">description</span>
+                      <div className="flex-1">
+                        <p className="font-medium mb-1">Đang sử dụng tài liệu tùy chỉnh ({customFileText.length} ký tự)</p>
+                        <button onClick={() => setCustomFileText("")} className="text-xs text-indigo-400 underline font-bold hover:text-white transition-colors">Hủy bỏ và trở lại dùng nội dung khóa học</button>
+                      </div>
                     </div>
                   )}
 
@@ -1522,7 +1567,7 @@ export default function CourseLessonPage() {
                       </span>
                       {isSummarizing ? "Đang tóm tắt..." : "Tóm tắt"}
                     </button>
-                    
+
                     {!isSpeaking ? (
                       <button
                         onClick={handleSpeak}
@@ -1599,12 +1644,189 @@ export default function CourseLessonPage() {
       {activeOverlay === 'result' && quizResult && (
         <QuizResultPage
           result={quizResult}
-          assignmentName={selectedAssignment?.Name}
-          gradeToPass={selectedAssignment?.GradeToPass || 5}
-          onBack={() => setActiveOverlay(null)}
-          onNextLesson={() => setActiveOverlay(null)}
+          assignmentId={selectedAssignment?.Id}
+          onClose={() => setActiveOverlay(null)}
         />
       )}
+
+      {/* AI Instant Quiz Modal */}
+      {showAIQuiz && aiQuizQuestions.length > 0 && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6">
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar relative">
+            <button
+              onClick={() => setShowAIQuiz(false)}
+              className="absolute top-6 right-6 size-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all z-10"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <div className="p-1">
+              {/* Reuse Quiz component logic but with custom questions */}
+              <AIQuizRenderer
+                questions={aiQuizQuestions}
+                onClose={() => setShowAIQuiz(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Sub-component for rendering AI generated questions
+function AIQuizRenderer({ questions, onClose }) {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSelectAnswer = (questionId, choiceContent) => {
+    setSelectedAnswers({
+      ...selectedAnswers,
+      [questionId]: choiceContent,
+    });
+  };
+
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
+  };
+
+  const handleSubmit = () => {
+    const unanswered = questions.filter((q) => !selectedAnswers[q.id]);
+    if (unanswered.length > 0) {
+      toast.error(`Vui lòng trả lời hết các câu hỏi! Còn ${unanswered.length} câu.`);
+      return;
+    }
+    setIsSubmitted(true);
+  };
+
+  const calculateScore = () => {
+    let correct = 0;
+    questions.forEach((q) => {
+      if (selectedAnswers[q.id] === q.choices.find(c => c.isCorrect)?.content) {
+        correct++;
+      }
+    });
+    return {
+      correct,
+      total: questions.length,
+      percentage: Math.round((correct / questions.length) * 100)
+    };
+  };
+
+  if (isSubmitted) {
+    const { correct, total, percentage } = calculateScore();
+    return (
+      <div className="p-8 text-center">
+        <div className="w-24 h-24 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/50">
+          <span className="text-3xl font-bold text-purple-400">{percentage}%</span>
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">Hoàn thành bài luyện tập!</h2>
+        <p className="text-slate-400 mb-8">Bạn đúng {correct}/{total} câu hỏi.</p>
+
+        <div className="space-y-4 text-left max-w-2xl mx-auto mb-10">
+          {questions.map((q, idx) => {
+            const isCorrect = selectedAnswers[q.id] === q.choices.find(c => c.isCorrect)?.content;
+            return (
+              <div key={q.id} className={`p-4 rounded-xl border ${isCorrect ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
+                <p className="text-white font-medium mb-2">{idx + 1}. {q.content}</p>
+                <p className={`text-sm ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                  {isCorrect ? 'Chính xác!' : `Sai rồi. Đáp án đúng là: ${q.choices.find(c => c.isCorrect)?.content}`}
+                </p>
+                {q.explanation && <p className="text-xs text-slate-500 mt-2 italic">Giải thích: {q.explanation}</p>}
+              </div>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={onClose}
+          className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all"
+        >
+          Đóng và tiếp tục học
+        </button>
+      </div>
+    );
+  }
+
+  const question = questions[currentQuestion];
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+
+  return (
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <span className="material-symbols-outlined text-purple-400">psychology</span>
+          AI Practice Quiz
+        </h2>
+        <div className="text-sm font-bold text-slate-400">
+          Câu {currentQuestion + 1} / {questions.length}
+        </div>
+      </div>
+
+      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-10">
+        <div className="h-full bg-purple-500 transition-all duration-300" style={{ width: `${progress}%` }}></div>
+      </div>
+
+      <div className="mb-10">
+        <h3 className="text-lg text-white font-medium mb-6 leading-relaxed">
+          {question.content}
+        </h3>
+        <div className="grid grid-cols-1 gap-3">
+          {question.choices.map((choice, idx) => {
+            const isSelected = selectedAnswers[question.id] === choice.content;
+            return (
+              <button
+                key={idx}
+                onClick={() => handleSelectAnswer(question.id, choice.content)}
+                className={`w-full text-left p-4 rounded-xl border transition-all ${isSelected
+                    ? 'border-purple-500 bg-purple-500/10 text-white'
+                    : 'border-white/10 bg-white/5 text-slate-300 hover:border-purple-500/30'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`size-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-purple-500 bg-purple-500' : 'border-slate-600'}`}>
+                    {isSelected && <span className="material-symbols-outlined text-white text-[12px]">check</span>}
+                  </div>
+                  {choice.content}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center">
+        <button
+          onClick={handlePrevious}
+          disabled={currentQuestion === 0}
+          className="px-6 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
+        >
+          Quay lại
+        </button>
+        {currentQuestion === questions.length - 1 ? (
+          <button
+            onClick={handleSubmit}
+            className="px-8 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20"
+          >
+            Nộp bài
+          </button>
+        ) : (
+          <button
+            onClick={handleNext}
+            className="px-8 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
+          >
+            Tiếp theo
+          </button>
+        )}
+      </div>
     </div>
   );
 }

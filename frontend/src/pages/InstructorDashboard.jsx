@@ -157,7 +157,7 @@ export default function InstructorDashboard() {
     >
       <div className="space-y-8">
           {/* Stats Cards */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {/* Total Students */}
             <div className="group bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all">
               <div className="flex justify-between items-start mb-4">
@@ -174,23 +174,6 @@ export default function InstructorDashboard() {
               </h3>
             </div>
 
-            {/* Total Revenue */}
-            <div className="group bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-purple-500/20 rounded-lg text-purple-400">
-                  <span className="material-symbols-outlined">
-                    account_balance_wallet
-                  </span>
-                </div>
-                <span className="text-green-400 text-xs font-bold">+8.2%</span>
-              </div>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
-                Total Revenue
-              </p>
-              <h3 className="text-white text-3xl font-bold">
-                {dashboardStats.totalRevenue}
-              </h3>
-            </div>
 
             {/* Total Courses */}
             <div className="group bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all">
@@ -230,77 +213,6 @@ export default function InstructorDashboard() {
             </div>
           </section>
 
-          {/* Earnings Chart */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  Earnings Growth
-                </h2>
-                <p className="text-slate-400 text-sm mt-1">
-                  Monthly revenue distribution
-                </p>
-              </div>
-              <div className="flex gap-2 bg-white/5 p-1 rounded-lg border border-white/10">
-                {["6months", "1year", "all"].map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setTimeframe(period)}
-                    className={`px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${
-                      timeframe === period
-                        ? "bg-purple-500 text-white"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    {period === "6months"
-                      ? "6 Months"
-                      : period === "1year"
-                        ? "1 Year"
-                        : "All Time"}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="h-80 w-full">
-              <svg
-                className="w-full h-full"
-                preserveAspectRatio="none"
-                viewBox="0 0 1000 300"
-              >
-                <defs>
-                  <linearGradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
-                  </linearGradient>
-                  <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
-                    <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="50%" stopColor="#ff00ff" />
-                    <stop offset="100%" stopColor="#00f0ff" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M0,250 C100,230 200,270 300,180 C400,90 500,150 600,110 C700,70 800,120 900,40 C950,20 1000,60 1000,60 V300 H0 Z"
-                  fill="url(#chartGrad)"
-                />
-                <path
-                  d="M0,250 C100,230 200,270 300,180 C400,90 500,150 600,110 C700,70 800,120 900,40 C950,20 1000,60 1000,60"
-                  fill="none"
-                  stroke="url(#lineGrad)"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div className="flex justify-between mt-4 text-xs font-bold text-slate-500 uppercase">
-                <span>Jan</span>
-                <span>Feb</span>
-                <span>Mar</span>
-                <span>Apr</span>
-                <span>May</span>
-                <span>Jun</span>
-                <span>Jul</span>
-              </div>
-            </div>
-          </div>
 
           {/* Course Management Section */}
           <section>

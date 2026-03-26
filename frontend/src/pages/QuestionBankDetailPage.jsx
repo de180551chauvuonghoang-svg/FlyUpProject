@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import QuestionEditorModal from '../components/QuetionBank/QuestionEditorModal';
+import AIGenerateQuestionsModal from '../components/QuetionBank/AIGenerateQuestionsModal';
 import toast from 'react-hot-toast';
 import { fetchAssignmentsByQuestionBank } from '../services/assignmentSnapshotService';
 import {
@@ -68,6 +69,7 @@ const QuestionBankDetailPage = () => {
     const [loadingQuestions, setLoadingQuestions] = useState(true);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState(null);
+    const [isAIGenOpen, setIsAIGenOpen] = useState(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -266,6 +268,9 @@ const QuestionBankDetailPage = () => {
                             Archive
                         </button>
                     )}
+                    <button onClick={() => setIsAIGenOpen(true)} className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">psychology</span> Generate with AI
+                    </button>
                     <button onClick={() => setIsCreateOpen(true)} className="px-4 py-2 bg-purple-500 text-white font-bold rounded-lg hover:bg-purple-600 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">add</span> Add Question
                     </button>
@@ -430,6 +435,13 @@ const QuestionBankDetailPage = () => {
                 bankId={id}
                 onClose={() => setIsCreateOpen(false)}
                 onSaved={() => { loadBank(); loadQuestions(); }}
+            />
+            <AIGenerateQuestionsModal
+                open={isAIGenOpen}
+                bankId={id}
+                courseId={bank?.CourseId}
+                onClose={() => setIsAIGenOpen(false)}
+                onGenerated={() => { loadBank(); loadQuestions(); }}
             />
             <QuestionEditorModal
                 open={!!editingQuestion}

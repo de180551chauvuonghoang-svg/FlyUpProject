@@ -1,12 +1,86 @@
 import express from 'express';
 import prisma from '../lib/prisma.js';
 import { authenticateJWT, authorizeRoles } from '../middleware/authMiddleware.js';
+import { sendCourseApprovedEmail, sendCourseRejectedEmail } from '../services/emailService.js';
 
 const router = express.Router();
 
 // All admin routes require authentication and admin role
 router.use(authenticateJWT);
 router.use(authorizeRoles('Admin'));
+
+/**
+ * GET /api/admin/login-history
+ * Get login history with pagination and search
+ * Query params: page, limit, search
+ */
+router.get('/login-history', async (req, res) => {
+    try {
+        const { page = 1, limit = 20, search = '' } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const where = {};
+        if (search) {
+            where.User = {
+                OR: [
+                    { FullName: { contains: search, mode: 'insensitive' } },
+                    { Email: { contains: search, mode: 'insensitive' } },
+                    { UserName: { contains: search, mode: 'insensitive' } }
+                ]
+            };
+        }
+
+        const [logs, total] = await Promise.all([
+            prisma.loginLogs.findMany({
+                where,
+                skip,
+                take: parseInt(limit),
+                include: {
+                    User: {
+                        select: {
+                            FullName: true,
+                            Email: true,
+                            UserName: true,
+                            AvatarUrl: true,
+                            Role: true
+                        }
+                    }
+                },
+                orderBy: { LoginTime: 'desc' }
+            }),
+            prisma.loginLogs.count({ where })
+        ]);
+
+        const mappedLogs = logs.map(log => ({
+            id: log.Id,
+            userId: log.UserId,
+            userName: log.User.UserName,
+            userEmail: log.User.Email,
+            userFullName: log.User.FullName,
+            userAvatar: log.User.AvatarUrl,
+            userRole: log.User.Role,
+            ipAddress: log.IpAddress,
+            userAgent: log.UserAgent,
+            loginTime: log.LoginTime,
+            status: log.Status
+        }));
+
+        res.json({
+            logs: mappedLogs,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / parseInt(limit)),
+                totalItems: total,
+                itemsPerPage: parseInt(limit),
+                hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)),
+                hasPrevPage: parseInt(page) > 1
+            }
+        });
+    } catch (error) {
+        console.error('Fetch login history error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 /**
  * GET /api/admin/users
@@ -903,7 +977,18 @@ router.put('/courses/:id/approve', async (req, res) => {
         // Check if course exists
         const existingCourse = await prisma.courses.findUnique({
             where: { Id: id },
-            select: { Id: true, Title: true, ApprovalStatus: true, Status: true }
+            include: {
+                Instructors: {
+                    include: {
+                        Users_Instructors_CreatorIdToUsers: {
+                            select: {
+                                FullName: true,
+                                Email: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!existingCourse) {
@@ -926,6 +1011,22 @@ router.put('/courses/:id/approve', async (req, res) => {
                 Status: true
             }
         });
+
+        // Mark related notifications as Read
+        await prisma.courseNotifications.updateMany({
+            where: { CourseId: id, Status: 'Pending' },
+            data: { Status: 'Read' }
+        });
+
+        // Send confirmation email to instructor
+        const instructorUser = existingCourse.Instructors?.Users_Instructors_CreatorIdToUsers;
+        if (instructorUser?.Email) {
+            sendCourseApprovedEmail(
+                instructorUser.Email,
+                instructorUser.FullName,
+                updatedCourse.Title
+            ).catch(err => console.error('Failed to send course approved email:', err));
+        }
 
         res.json({
             success: true,
@@ -954,7 +1055,18 @@ router.put('/courses/:id/reject', async (req, res) => {
         // Check if course exists
         const existingCourse = await prisma.courses.findUnique({
             where: { Id: id },
-            select: { Id: true, Title: true }
+            include: {
+                Instructors: {
+                    include: {
+                        Users_Instructors_CreatorIdToUsers: {
+                            select: {
+                                FullName: true,
+                                Email: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!existingCourse) {
@@ -976,6 +1088,23 @@ router.put('/courses/:id/reject', async (req, res) => {
                 RejectionReason: true
             }
         });
+
+        // Mark related notifications as Read
+        await prisma.courseNotifications.updateMany({
+            where: { CourseId: id, Status: 'Pending' },
+            data: { Status: 'Read' }
+        });
+
+        // Send rejection email to instructor
+        const instructorUser = existingCourse.Instructors?.Users_Instructors_CreatorIdToUsers;
+        if (instructorUser?.Email) {
+            sendCourseRejectedEmail(
+                instructorUser.Email,
+                instructorUser.FullName,
+                updatedCourse.Title,
+                updatedCourse.RejectionReason
+            ).catch(err => console.error('Failed to send course rejected email:', err));
+        }
 
         res.json({
             success: true,
@@ -1088,6 +1217,71 @@ router.put('/courses/:id/unarchive', async (req, res) => {
         });
     } catch (error) {
         console.error('Admin unarchive course error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+// =====================================================
+// NOTIFICATION MANAGEMENT ENDPOINTS
+// =====================================================
+
+/**
+ * GET /api/admin/notifications
+ * Get all course notifications for admin
+ */
+router.get('/notifications', async (req, res) => {
+    try {
+        const { page = 1, limit = 10, status = 'Pending' } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const where = status !== 'ALL' ? { Status: status } : {};
+
+        const [notifications, total] = await Promise.all([
+            prisma.courseNotifications.findMany({
+                where,
+                skip,
+                take: parseInt(limit),
+                orderBy: { CreationTime: 'desc' }
+            }),
+            prisma.courseNotifications.count({ where })
+        ]);
+
+        res.json({
+            success: true,
+            notifications,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / parseInt(limit)),
+                totalItems: total
+            }
+        });
+    } catch (error) {
+        console.error('Admin get notifications error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * PUT /api/admin/notifications/:id/read
+ * Mark a notification as read/viewed
+ */
+router.put('/notifications/:id/read', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const notification = await prisma.courseNotifications.update({
+            where: { Id: id },
+            data: { Status: 'Read' }
+        });
+
+        res.json({
+            success: true,
+            message: 'Notification marked as read',
+            notification
+        });
+    } catch (error) {
+        console.error('Admin mark notification read error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
