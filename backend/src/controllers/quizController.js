@@ -141,6 +141,9 @@ export const createAssignment = async (req, res) => {
           create: questions?.map((q) => ({
             Content: q.content,
             Difficulty: q.difficulty || "Medium",
+            ParamA: 1.0,
+            ParamB: q.difficulty === "Easy" ? -1.0 : q.difficulty === "Hard" ? 1.0 : 0.0,
+            ParamC: 0.25,
             McqChoices: {
               create: q.choices.map((c) => ({
                 Content: c.content,
