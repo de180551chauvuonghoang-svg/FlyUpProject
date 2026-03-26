@@ -13,12 +13,6 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
     const [loadingLessons, setLoadingLessons] = useState(false);
     const [generating, setGenerating] = useState(false);
 
-    useEffect(() => {
-        if (open && courseId) {
-            loadCourseLessons();
-        }
-    }, [open, courseId, loadCourseLessons]);
-
     const loadCourseLessons = useCallback(async () => {
         setLoadingLessons(true);
         try {
@@ -46,6 +40,12 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
             setLoadingLessons(false);
         }
     }, [courseId]);
+
+    useEffect(() => {
+        if (open && courseId) {
+            loadCourseLessons();
+        }
+    }, [open, courseId, loadCourseLessons]);
 
     if (!open) return null;
 
