@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
 import InstructorLayout from "../components/InstructorLayout";
+import ConfirmModal from "../components/ConfirmModal";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+const formatVND = (amount) => {
+  return (amount || 0).toLocaleString('vi-VN') + '₫';
+};
 
 export default function InstructorDashboard() {
   const { user, loading } = useAuth();
@@ -16,6 +21,24 @@ export default function InstructorDashboard() {
   const [courses, setCourses] = useState([]);
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmConfig, setConfirmConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
+  const triggerConfirm = (title, message, onConfirm) => {
+    setConfirmConfig({
+      isOpen: true,
+      title,
+      message,
+      onConfirm: async () => {
+        await onConfirm();
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
 
   // ... (auth and fetch logic kept same)
   // Check if user is logged in and is an instructor
@@ -74,7 +97,7 @@ export default function InstructorDashboard() {
     ? {
         totalStudents: stats.totalStudents.toLocaleString(),
         studentsTrend: "+12.5%",
-        totalRevenue: `$${stats.totalRevenue}`,
+        totalRevenue: formatVND(stats.totalRevenue),
         revenueTrend: "+8.2%",
         totalCourses: stats.totalCourses.toString(),
         coursesTrend: "Stable",
@@ -87,7 +110,7 @@ export default function InstructorDashboard() {
     : {
         totalStudents: "0",
         studentsTrend: "+0%",
-        totalRevenue: "$0",
+        totalRevenue: "0₫",
         revenueTrend: "+0%",
         totalCourses: "0",
         coursesTrend: "Loading...",
@@ -119,20 +142,25 @@ export default function InstructorDashboard() {
 
   const handleEdit = (id) => navigate(`/edit-course/${id}`);
   const handleView = (id) => navigate(`/instructor/preview/${id}`);
-  const handleDelete = async (courseId) => {
-    if (!window.confirm("Are you sure you want to delete this course?")) return;
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_URL}/courses/${courseId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("Failed to delete course");
-      setCourses(courses.filter((c) => c.id !== courseId));
-      toast.success("Course deleted successfully");
-    } catch {
-      toast.error("Failed to delete course");
-    }
+  const handleDelete = (courseId) => {
+    triggerConfirm(
+      "Delete Course",
+      "Are you sure you want to delete this course? This action cannot be undone.",
+      async () => {
+        try {
+          const token = localStorage.getItem("accessToken");
+          const response = await fetch(`${API_URL}/courses/${courseId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!response.ok) throw new Error("Failed to delete course");
+          setCourses(courses.filter((c) => c.id !== courseId));
+          toast.success("Course deleted successfully");
+        } catch {
+          toast.error("Failed to delete course");
+        }
+      }
+    );
   };
   const handleCreateCourse = () => navigate("/instructor/create-course");
 
@@ -148,7 +176,8 @@ export default function InstructorDashboard() {
   }, [courses, searchQuery]);
 
   return (
-    <InstructorLayout
+    <>
+      <InstructorLayout
       title="Teaching Dashboard"
       subtitle="Manage your courses and student progress"
       searchQuery={searchQuery}
@@ -325,7 +354,9 @@ export default function InstructorDashboard() {
                     <div className="relative h-48 overflow-hidden bg-linear-to-br from-purple-900 to-blue-900">
                       <img
                         src={
-                          course.thumbnail ||
+                          course.thumbUrl ||
+                            course.ThumbUrl ||
+                            course.thumbnail ||
                             course.thumbnailUrl ||
                             "https://placehold.co/400x300?text=No+Image"
                         }
@@ -382,10 +413,7 @@ export default function InstructorDashboard() {
                       {/* Price and Rating */}
                       <div className="flex items-center justify-between pt-4 border-t border-white/10">
                         <span className="text-lg font-bold text-purple-400">
-                          $
-                          {(course.discountPrice || course.price || 0).toFixed(
-                            2,
-                          )}
+                          {formatVND(course.discountPrice || course.price || 0)}
                         </span>
                         {course.rating > 0 && (
                           <div className="flex items-center gap-1 text-yellow-400">
@@ -400,30 +428,30 @@ export default function InstructorDashboard() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-2 pt-4">
+                      <div className="flex flex-wrap gap-2 pt-4">
                         <button
                           onClick={() => handleView(course.id)}
-                          className="flex-1 px-4 py-2 bg-white/5 hover:bg-purple-500/20 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2"
+                          className="flex-1 min-w-[80px] px-3 py-2 bg-white/5 hover:bg-purple-500/20 text-white text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 sm:gap-2"
                         >
-                          <span className="material-symbols-outlined text-sm">
+                          <span className="material-symbols-outlined text-sm sm:text-base">
                             visibility
                           </span>
                           View
                         </button>
                         <button
                           onClick={() => handleEdit(course.id)}
-                          className="flex-1 px-4 py-2 bg-white/5 hover:bg-green-500/20 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2"
+                          className="flex-1 min-w-[80px] px-3 py-2 bg-white/5 hover:bg-green-500/20 text-white text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 sm:gap-2"
                         >
-                          <span className="material-symbols-outlined text-sm">
+                          <span className="material-symbols-outlined text-sm sm:text-base">
                             edit
                           </span>
                           Edit
                         </button>
                         <button
                           onClick={() => handlePublish(course.id)}
-                          className="flex-1 px-4 py-2 bg-white/5 hover:bg-blue-500/20 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2"
+                          className="flex-1 min-w-[80px] px-3 py-2 bg-white/5 hover:bg-blue-500/20 text-white text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 sm:gap-2"
                         >
-                          <span className="material-symbols-outlined text-sm">
+                          <span className="material-symbols-outlined text-sm sm:text-base">
                             {course.status === "Ongoing" ||
                             course.status === "published"
                               ? "unpublished"
@@ -436,9 +464,10 @@ export default function InstructorDashboard() {
                         </button>
                         <button
                           onClick={() => handleDelete(course.id)}
-                          className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-lg transition-all"
+                          className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center justify-center"
+                          title="Delete Course"
                         >
-                          <span className="material-symbols-outlined text-sm">
+                          <span className="material-symbols-outlined text-sm sm:text-base">
                             delete
                           </span>
                         </button>
@@ -451,5 +480,13 @@ export default function InstructorDashboard() {
           </section>
         </div>
     </InstructorLayout>
+    <ConfirmModal
+      isOpen={confirmConfig.isOpen}
+      onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+      onConfirm={confirmConfig.onConfirm}
+      title={confirmConfig.title}
+      message={confirmConfig.message}
+    />
+    </>
   );
 }

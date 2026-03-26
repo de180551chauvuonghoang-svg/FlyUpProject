@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
+import ConfirmModal from "../components/ConfirmModal";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -37,11 +38,23 @@ export default function InstructorCreateCoursePage() {
   const [sections, setSections] = useState([]);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [expandedSectionId, setExpandedSectionId] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
   // Assignment states
   const [finalAssignment, setFinalAssignment] = useState(null);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [currentAssignment, setCurrentAssignment] = useState(null);
+  const [confirmConfig, setConfirmConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
+  const triggerConfirm = (title, message, onConfirm) => {
+    setConfirmConfig({ isOpen: true, title, message, onConfirm });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,9 +81,14 @@ export default function InstructorCreateCoursePage() {
   };
 
   const removeSection = (sectionId) => {
-    if (!confirm("Are you sure you want to delete this section?")) return;
-    setSections(sections.filter((sec) => sec.id !== sectionId));
-    toast.success("Section removed");
+    triggerConfirm(
+      "Delete Section",
+      "Are you sure you want to delete this section and all its contents?",
+      () => {
+        setSections(sections.filter((sec) => sec.id !== sectionId));
+        toast.success("Section removed");
+      }
+    );
   };
 
   const updateSectionTitle = (sectionId, newTitle) => {
@@ -81,11 +99,15 @@ export default function InstructorCreateCoursePage() {
     );
   };
 
+  const handleThumbnailUpload = (file) => {
+    if (!file) return;
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+    toast.success("Thumbnail selected");
+  };
+
   // Lecture management
   const addLecture = (sectionId) => {
-    const lectureTitle = prompt("Enter lecture title:");
-    if (!lectureTitle || !lectureTitle.trim()) return;
-
     setSections(
       sections.map((section) => {
         if (section.id === sectionId) {
@@ -95,7 +117,7 @@ export default function InstructorCreateCoursePage() {
               ...section.lectures,
               {
                 id: `temp-${Date.now()}`,
-                title: lectureTitle,
+                title: "",
                 content: "",
                 videoUrl: null,
                 videoFile: null,
@@ -107,23 +129,29 @@ export default function InstructorCreateCoursePage() {
         return section;
       }),
     );
-    toast.success("Lecture added!");
+    setExpandedSectionId(sectionId);
+    toast.success("Lecture box added!");
   };
 
   const removeLecture = (sectionId, lectureId) => {
-    if (!confirm("Are you sure you want to delete this lecture?")) return;
-    setSections(
-      sections.map((section) => {
-        if (section.id === sectionId) {
-          return {
-            ...section,
-            lectures: section.lectures.filter((lec) => lec.id !== lectureId),
-          };
-        }
-        return section;
-      }),
+    triggerConfirm(
+      "Delete Lecture",
+      "Are you sure you want to delete this lecture?",
+      () => {
+        setSections(
+          sections.map((section) => {
+            if (section.id === sectionId) {
+              return {
+                ...section,
+                lectures: section.lectures.filter((lec) => lec.id !== lectureId),
+              };
+            }
+            return section;
+          }),
+        );
+        toast.success("Lecture removed");
+      }
     );
-    toast.success("Lecture removed");
   };
 
   const updateLecture = (sectionId, lectureId, field, value) => {
@@ -150,25 +178,36 @@ export default function InstructorCreateCoursePage() {
       return;
     }
 
-    setSections((prev) =>
-      prev.map((section) => {
-        if (section.id === sectionId) {
-          return {
-            ...section,
-            lectures: section.lectures.map((lec) =>
-              lec.id === lectureId
-                ? {
-                    ...lec,
-                    videoFile: file,
-                    videoUrl: URL.createObjectURL(file),
-                  }
-                : lec,
-            ),
-          };
-        }
-        return section;
-      }),
-    );
+    // Capture video duration
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = function () {
+      window.URL.revokeObjectURL(video.src);
+      const duration = Math.round(video.duration); // in seconds
+
+      setSections((prev) =>
+        prev.map((section) => {
+          if (section.id === sectionId) {
+            return {
+              ...section,
+              lectures: section.lectures.map((lec) =>
+                lec.id === lectureId
+                  ? {
+                      ...lec,
+                      videoFile: file,
+                      videoUrl: URL.createObjectURL(file),
+                      duration: duration,
+                    }
+                  : lec,
+              ),
+            };
+          }
+          return section;
+        }),
+      );
+    };
+    video.src = URL.createObjectURL(file);
+
     toast.success("Video selected");
   };
 
@@ -204,26 +243,32 @@ export default function InstructorCreateCoursePage() {
   };
 
   const removeMaterial = (sectionId, lectureId, materialId) => {
-    setSections(
-      sections.map((section) => {
-        if (section.id === sectionId) {
-          return {
-            ...section,
-            lectures: section.lectures.map((lec) => {
-              if (lec.id === lectureId) {
-                return {
-                  ...lec,
-                  materials: (lec.materials || []).filter((m) => m.id !== materialId),
-                };
-              }
-              return lec;
-            }),
-          };
-        }
-        return section;
-      }),
+    triggerConfirm(
+      "Delete Material",
+      "Are you sure you want to delete this material?",
+      () => {
+        setSections(
+          sections.map((section) => {
+            if (section.id === sectionId) {
+              return {
+                ...section,
+                lectures: section.lectures.map((lec) => {
+                  if (lec.id === lectureId) {
+                    return {
+                      ...lec,
+                      materials: (lec.materials || []).filter((m) => m.id !== materialId),
+                    };
+                  }
+                  return lec;
+                }),
+              };
+            }
+            return section;
+          }),
+        );
+        toast.success("Material removed");
+      }
     );
-    toast.success("Material removed");
   };
 
   // Assignment management
@@ -273,21 +318,26 @@ export default function InstructorCreateCoursePage() {
   };
 
   const removeAssignment = (type, parentId, assignmentId) => {
-    if (!confirm("Are you sure you want to remove this assignment?")) return;
-    if (type === "course") {
-      setFinalAssignment(null);
-    } else {
-      setSections(prev => prev.map(s => {
-        if (s.id === parentId) {
-          return {
-            ...s,
-            assignments: (s.assignments || []).filter(a => a.id !== assignmentId)
-          };
+    triggerConfirm(
+      "Delete Assignment",
+      "Are you sure you want to remove this assignment?",
+      () => {
+        if (type === "course") {
+          setFinalAssignment(null);
+        } else {
+          setSections(prev => prev.map(s => {
+            if (s.id === parentId) {
+              return {
+                ...s,
+                assignments: (s.assignments || []).filter(a => a.id !== assignmentId)
+              };
+            }
+            return s;
+          }));
         }
-        return s;
-      }));
-    }
-    toast.success("Assignment removed");
+        toast.success("Assignment removed");
+      }
+    );
   };
 
   const handleSave = async () => {
@@ -324,6 +374,21 @@ export default function InstructorCreateCoursePage() {
       if (!res.ok) throw new Error("Failed to create course basics");
       const { data: newCourse } = await res.json();
       const courseId = newCourse.id;
+
+      // Step 1.5: Upload Course Thumbnail if exists
+      if (thumbnailFile) {
+        toast.loading("Uploading course thumbnail...", { id: toastId });
+        const thumbFormData = new FormData();
+        thumbFormData.append("file", thumbnailFile);
+        thumbFormData.append("courseId", courseId);
+
+        const thumbRes = await fetch(`${API_URL}/upload/thumbnail`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: thumbFormData,
+        });
+        if (!thumbRes.ok) console.error("Thumbnail upload failed");
+      }
 
       // Step 2: Create sections and lectures sequentially
       for (const section of sections) {
@@ -363,6 +428,9 @@ export default function InstructorCreateCoursePage() {
             const videoFormData = new FormData();
             videoFormData.append("file", lecture.videoFile);
             videoFormData.append("lectureId", lectureId);
+            if (lecture.duration) {
+              videoFormData.append("duration", lecture.duration);
+            }
 
             const vRes = await fetch(`${API_URL}/upload/video`, {
               method: "POST",
@@ -471,6 +539,47 @@ export default function InstructorCreateCoursePage() {
               Course Details
             </h2>
 
+            {/* Thumbnail Upload */}
+            <div className="mb-8 p-6 bg-slate-800/30 rounded-xl border border-slate-700/50">
+              <label className="block text-sm font-semibold text-white mb-4">Course Thumbnail</label>
+              <div className="flex items-start gap-6">
+                <div className="relative w-64 h-36 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden group">
+                  {thumbnailPreview ? (
+                    <img src={thumbnailPreview} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-500">
+                      <Upload size={32} className="mb-2 opacity-20" />
+                      <span className="text-xs uppercase tracking-widest font-bold opacity-30">No Image</span>
+                    </div>
+                  )}
+                  <label className="absolute inset-0 bg-slate-950/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <div className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-xs font-bold text-white flex items-center gap-2">
+                      <Upload size={14} /> Change Image
+                    </div>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleThumbnailUpload(e.target.files[0])} />
+                  </label>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <h4 className="text-white font-bold text-sm">Update course thumbnail</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Set a thumbnail that captures attention. Recommended: 1280x720 pixels (16:9 ratio). 
+                    Supported formats: .jpg, .png, .webp
+                  </p>
+                  {thumbnailFile && (
+                    <button 
+                      onClick={() => {
+                        setThumbnailFile(null);
+                        setThumbnailPreview(null);
+                      }}
+                      className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 font-bold pt-1"
+                    >
+                      <Trash2 size={12} /> Remove Image
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="mb-6">
               <label className="block text-sm font-semibold text-white mb-2">Course Title *</label>
               <input
@@ -497,7 +606,7 @@ export default function InstructorCreateCoursePage() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-white mb-2">Price (USD)</label>
+                <label className="block text-sm font-semibold text-white mb-2">Giá (VNĐ)</label>
                 <input
                   type="number"
                   name="price"
@@ -743,7 +852,7 @@ export default function InstructorCreateCoursePage() {
                </div>
                <div className="border-t border-slate-700 pt-4 flex justify-between items-center">
                  <span className="text-slate-400 font-bold">Price</span>
-                 <span className="text-2xl font-black text-white">${formData.price || "0.00"}</span>
+                 <span className="text-2xl font-black text-white">{(Number(formData.price) || 0).toLocaleString('vi-VN')}₫</span>
                </div>
             </div>
 
@@ -763,6 +872,13 @@ export default function InstructorCreateCoursePage() {
         </div>
       </div>
       {renderAssignmentModal()}
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+      />
     </div>
   );
 

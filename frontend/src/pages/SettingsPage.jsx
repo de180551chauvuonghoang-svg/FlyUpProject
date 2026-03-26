@@ -107,6 +107,25 @@ const ProfileTab = ({ user, refreshUser }) => {
   };
 
   const handleSubmit = async () => {
+    // Validate Phone (digits only)
+    if (formData.phone && !/^\d+$/.test(formData.phone)) {
+      return toast.error('Số điện thoại chỉ được chứa chữ số');
+    }
+
+    // Validate Age (at least 5 years old)
+    if (formData.dateOfBirth) {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (age < 5) {
+        return toast.error('Bạn phải từ 5 tuổi trở lên');
+      }
+    }
+
     try {
       setLoading(true);
       const payload = {

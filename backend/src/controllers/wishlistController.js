@@ -29,6 +29,20 @@ export const toggleWishlist = async (req, res) => {
       });
       return res.status(200).json({ message: 'Removed from wishlist', isInWishlist: false });
     } else {
+      // Check if user is already enrolled in this course
+      const enrollment = await prisma.enrollments.findUnique({
+        where: {
+          CreatorId_CourseId: {
+            CreatorId: userId,
+            CourseId: courseId,
+          },
+        },
+      });
+
+      if (enrollment) {
+        return res.status(400).json({ message: 'Khóa học này bạn đã đăng ký' });
+      }
+
       await prisma.wishlist.create({
         data: {
           UserId: userId,

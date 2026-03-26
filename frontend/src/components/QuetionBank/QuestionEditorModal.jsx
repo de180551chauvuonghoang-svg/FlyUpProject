@@ -22,10 +22,10 @@ const QuestionEditorModal = ({
 }) => {
     const [form, setForm] = useState({
         content: '',
-        difficulty: '',
-        paramA: '',
-        paramB: '',
-        paramC: '',
+        difficulty: 'Easy',
+        paramA: 1,
+        paramB: 0,
+        paramC: 0,
         explanation: '',
         status: 'Draft',
     });
@@ -56,10 +56,10 @@ const QuestionEditorModal = ({
 
             setForm({
                 content: initialData.Content || '',
-                difficulty: initialData.Difficulty || '',
-                paramA: initialData.ParamA ?? '',
-                paramB: initialData.ParamB ?? '',
-                paramC: initialData.ParamC ?? '',
+                difficulty: initialData.Difficulty || 'Easy',
+                paramA: 1,
+                paramB: 0,
+                paramC: 0,
                 explanation: initialData.Explanation || '',
                 status: initialData.Status || 'Draft',
             });
@@ -77,10 +77,10 @@ const QuestionEditorModal = ({
 
         setForm({
             content: '',
-            difficulty: '',
-            paramA: '',
-            paramB: '',
-            paramC: '',
+            difficulty: 'Easy',
+            paramA: 1,
+            paramB: 0,
+            paramC: 0,
             explanation: '',
             status: 'Draft',
         });
@@ -137,9 +137,9 @@ const QuestionEditorModal = ({
                 saved = await updateQuestionBankQuestion(bankId, initialData.Id, {
                     content: form.content,
                     difficulty: form.difficulty,
-                    paramA: form.paramA,
-                    paramB: form.paramB,
-                    paramC: form.paramC,
+                    paramA: 1,
+                    paramB: 0,
+                    paramC: 0,
                     explanation: form.explanation,
                     status: form.status,
                     choices: payloadChoices,
@@ -148,9 +148,9 @@ const QuestionEditorModal = ({
                 saved = await createQuestionBankQuestion(bankId, {
                     content: form.content,
                     difficulty: form.difficulty,
-                    paramA: form.paramA,
-                    paramB: form.paramB,
-                    paramC: form.paramC,
+                    paramA: 1,
+                    paramB: 0,
+                    paramC: 0,
                     explanation: form.explanation,
                     status: form.status,
                     choices: payloadChoices,
@@ -218,13 +218,17 @@ const QuestionEditorModal = ({
                             </label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 text-lg">signal_cellular_alt</span>
-                                <input
+                                <select
                                     name="difficulty"
                                     value={form.difficulty}
                                     onChange={handleFormChange}
-                                    placeholder="Easy / Medium / Hard"
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white text-sm outline-none placeholder:text-slate-600 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all"
-                                />
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white text-sm outline-none appearance-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                                >
+                                    <option value="Easy" className="bg-slate-900">Easy (Dễ)</option>
+                                    <option value="Medium" className="bg-slate-900">Medium (Vừa)</option>
+                                    <option value="Hard" className="bg-slate-900">Hard (Khó)</option>
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 pointer-events-none">expand_more</span>
                             </div>
                         </div>
 
@@ -261,9 +265,8 @@ const QuestionEditorModal = ({
                                     type="number"
                                     step="any"
                                     value={form[param]}
-                                    onChange={handleFormChange}
-                                    placeholder="e.g. 1.0"
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none placeholder:text-slate-600 focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all"
+                                    readOnly
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-sm outline-none cursor-not-allowed grayscale"
                                 />
                             </div>
                         ))}

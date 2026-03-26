@@ -9,6 +9,8 @@ import {
   createAssignmentFromQuestionBankService,
   listAssignmentsByQuestionBankService,
   getAssignmentSnapshotDetailService,
+  updateAssignmentSnapshotService,
+  deleteAssignmentSnapshotService,
 } from "../services/assignmentSnapshotService.js";
 
 /**
@@ -124,7 +126,7 @@ export const createAssignment = async (req, res) => {
     const { name, duration, gradeToPass, sectionId, courseId, questions } = req.body;
     const userId = req.user?.userId;
 
-    console.log(`[QuizController] Creating assignment: ${name}`);
+    console.log(`[QuizController] Creating assignment: ${name} for course: ${courseId}, section: ${sectionId}`);
 
     const result = await prisma.assignments.create({
       data: {
@@ -185,7 +187,7 @@ export const createAssignment = async (req, res) => {
 export const updateAssignment = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, duration, gradeToPass, questions } = req.body;
+    const { name, duration, gradeToPass, courseId, questions } = req.body;
 
     console.log(`[QuizController] Updating assignment: ${id}`);
 
@@ -200,6 +202,7 @@ export const updateAssignment = async (req, res) => {
         Name: name,
         Duration: parseInt(duration) || 30,
         GradeToPass: parseFloat(gradeToPass) || 8,
+        CourseId: courseId || undefined,
         QuestionCount: questions?.length || 0,
         McqQuestions: {
           create: questions?.map((q) => ({
@@ -300,9 +303,10 @@ export const getQuizQuestions = async (req, res) => {
 
     const assignments = await prisma.assignments.findMany({
       where: {
-        Sections: {
-          CourseId: courseId,
-        },
+        OR: [
+          { Sections: { CourseId: courseId } },
+          { CourseId: courseId }
+        ]
       },
       include: {
         McqQuestions: {
@@ -695,9 +699,68 @@ export const getAssignmentSnapshotDetail = async (req, res) => {
     const userId = req.user?.userId;
     const { assignmentId } = req.params;
 
-    console.log("DEBUG: getAssignmentSnapshotDetail Params:", { userId, assignmentId });
+    console.log("[QuizController] DEBUG: getAssignmentSnapshotDetail - Params:", { userId, assignmentId });
+
+    if (!assignmentId) {
+      throw new Error("assignmentId is required");
+    }
 
     const data = await getAssignmentSnapshotDetailService({
+      userId,
+      assignmentId,
+    });
+
+    console.log("[QuizController] DEBUG: getAssignmentSnapshotDetail - Success. Data Keys:", Object.keys(data || {}));
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("[QuizController] ERROR: getAssignmentSnapshotDetail error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Failed to fetch assignment detail",
+    });
+  }
+};
+
+
+export const updateAssignmentSnapshot = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { assignmentId } = req.params;
+    const { name, duration, gradeToPass, sectionId, questionIds } = req.body;
+
+    const data = await updateAssignmentSnapshotService({
+      userId,
+      assignmentId,
+      name,
+      duration,
+      gradeToPass,
+      sectionId,
+      questionIds,
+    });
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("updateAssignmentSnapshot error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Failed to update assignment",
+    });
+  }
+};
+
+export const deleteAssignmentSnapshot = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { assignmentId } = req.params;
+
+    const data = await deleteAssignmentSnapshotService({
       userId,
       assignmentId,
     });
@@ -707,11 +770,10 @@ export const getAssignmentSnapshotDetail = async (req, res) => {
       data,
     });
   } catch (error) {
-    console.error("getAssignmentSnapshotDetail error:", error);
+    console.error("deleteAssignmentSnapshot error:", error);
     res.status(400).json({
       success: false,
-      error: error.message || "Failed to fetch assignment detail",
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: error.message || "Failed to delete assignment",
     });
   }
 };
