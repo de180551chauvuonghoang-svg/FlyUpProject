@@ -42,6 +42,7 @@ model Assignments {
   Duration              Int                     @default(30)
   QuestionCount         Int                     @default(0)
   SectionId             String?                 @db.Uuid
+  CourseId              String?                 @db.Uuid
   CreatorId             String                  @db.Uuid
   GradeToPass           Float                   @default(8)
   SourceQuestionBankId  String?                 @db.Uuid
@@ -325,7 +326,6 @@ model Courses {
   Users                Users                 @relation(fields: [CreatorId], references: [Id], onUpdate: NoAction, map: "FK_Courses_Users_Creator")
   Enrollments          Enrollments[]
   Sections             Sections[]
-  Assignments          Assignments[]
   UserAbilities        UserAbilities[]
 
   @@index([InstructorId], map: "IX_Courses_InstructorId")
@@ -400,6 +400,7 @@ model Lectures {
   CreationTime         DateTime             @default(now()) @db.Timestamp(6)
   LastModificationTime DateTime             @default(now()) @db.Timestamp(6)
   IsPreviewable        Boolean              @default(false)
+  Duration             Int                  @default(0)
   Comments             Comments[]
   Enrollments          Enrollments[]
   LectureCompletions   LectureCompletions[]
@@ -613,7 +614,6 @@ model UserAbilities {
   Courses    Courses   @relation(fields: [CourseId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Courses")
   Users      Users     @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserAbilities_Users")
 
-  @@unique([UserId, CourseId], map: "UQ_UserAbilities_UserId_CourseId")
   @@index([CourseId], map: "IX_UserAbilities_CourseId")
   @@index([UserId], map: "IX_UserAbilities_UserId")
 }

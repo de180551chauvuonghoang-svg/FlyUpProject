@@ -296,6 +296,7 @@ export const getCourseById = async (courseId, { skipStatusFilter = false } = {})
                 Title: true,
                 Content: true,
                 IsPreviewable: true,
+                Duration: true,
                 CreationTime: true,
                 // Include video and materials from LectureMaterial table
                 LectureMaterial: {

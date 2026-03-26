@@ -103,6 +103,17 @@ export async function uploadVideoController(req, res) {
           Url: result.url,
         },
       });
+
+      // Update lecture duration if provided
+      const duration = parseInt(req.body.duration);
+      if (!isNaN(duration) && duration > 0) {
+        console.log(`[UPLOAD_VIDEO] Updating lecture ${lectureId} duration to ${duration}`);
+        await prisma.lectures.update({
+          where: { Id: lectureId },
+          data: { Duration: duration },
+        });
+      }
+
       console.log("[UPLOAD_VIDEO] Material created:", {
         LectureId: newMaterial.LectureId,
         Id: newMaterial.Id,
