@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { 
@@ -50,7 +50,7 @@ const AssignmentSnapshotPreviewPage = () => {
     const [questionSearch, setQuestionSearch] = useState('');
     const [difficultyFilter, setDifficultyFilter] = useState('');
 
-    const loadAssignment = async () => {
+    const loadAssignment = useCallback(async () => {
         setLoading(true);
         try {
             const data = await fetchAssignmentSnapshotDetail(assignmentId);
@@ -65,9 +65,9 @@ const AssignmentSnapshotPreviewPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [assignmentId]);
 
-    useEffect(() => { if (assignmentId) loadAssignment(); }, [assignmentId]);
+    useEffect(() => { if (assignmentId) loadAssignment(); }, [assignmentId, loadAssignment]);
 
     const enterEditMode = async () => {
         setIsEditing(true);
@@ -81,7 +81,7 @@ const AssignmentSnapshotPreviewPage = () => {
                 setSections(sectionsData);
                 // Chỉ lấy câu hỏi Published
                 setBankQuestions(questionsData.filter(q => String(q.Status || '').trim() === 'Published'));
-            } catch (error) {
+            } catch {
                 toast.error('Failed to load edit data');
             } finally {
                 setLoadingEditData(false);
