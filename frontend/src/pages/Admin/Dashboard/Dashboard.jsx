@@ -64,10 +64,10 @@ function Dashboard() {
   }, [txPage]);
 
   // Handle period change for chart
-  const handlePeriodChange = async (period) => {
+  const handlePeriodChange = async (options) => {
     try {
       setChartLoading(true);
-      const data = await dashboardService.getRevenueChart(period);
+      const data = await dashboardService.getRevenueChart(options);
       setRevenueData(data);
     } catch (error) {
       toast.error('Failed to fetch revenue data');

@@ -57,11 +57,13 @@ const dashboardService = {
 
   /**
    * Get revenue chart data
-   * @param {string} period - 'quarterly' | 'yearly' | 'max'
+   * @param {string|Object} options - period string OR object { period, year, month }
    * @returns {Promise<Object>}
    */
-  getRevenueChart: async (period = 'quarterly') => {
-    const params = new URLSearchParams({ period });
+  getRevenueChart: async (options = 'monthly') => {
+    const params = new URLSearchParams(
+      typeof options === 'object' ? options : { period: options }
+    );
     return fetchWithAuth(`${API_BASE_URL}/admin/stats/chart?${params}`, {
       method: 'GET',
     });

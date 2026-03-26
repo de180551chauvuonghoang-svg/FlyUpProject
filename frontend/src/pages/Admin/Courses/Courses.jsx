@@ -16,7 +16,8 @@ import {
     Users,
     Star,
     PlayCircle,
-    DollarSign
+    DollarSign,
+    SlidersHorizontal
 } from 'lucide-react';
 
 import courseService from '../../../services/admin/courseService';
@@ -37,6 +38,8 @@ function Courses() {
     const [searchInput, setSearchInput] = useState('');
     const searchQuery = useDebounce(searchInput, 400);
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const [sortBy, setSortBy] = useState('newest');
+    const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
     const [activeDropdown, setActiveDropdown] = useState(null);
@@ -54,6 +57,7 @@ function Courses() {
                 limit: itemsPerPage,
                 search,
                 status,
+                sort: sortBy,
             });
             setCourses(result.courses);
             setTotalPages(result.pagination.totalPages);
@@ -76,7 +80,7 @@ function Courses() {
         }
 
         fetchCourses(pageToFetch, searchQuery, statusFilter);
-    }, [currentPage, searchQuery, statusFilter, itemsPerPage]);
+    }, [currentPage, searchQuery, statusFilter, sortBy, itemsPerPage]);
 
     // Handle search
     const handleSearch = (e) => {
@@ -89,6 +93,13 @@ function Courses() {
         if (status === statusFilter) return;
         shouldResetPage.current = true;
         setStatusFilter(status);
+    };
+
+    // Handle sort
+    const handleSort = (sort) => {
+        shouldResetPage.current = true;
+        setSortBy(sort);
+        setShowSortDropdown(false);
     };
 
     // Handle page change
@@ -400,51 +411,90 @@ function Courses() {
             </header>
 
             {/* Filters Section */}
-            <section className="filters-section">
-                <div className="search-filter">
-                    <div className="search-box large">
+            <section className="filters-section" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '16px', alignItems: 'center' }}>
+                <div className="search-filter" style={{ flex: '1 1 auto', minWidth: '280px', maxWidth: '400px' }}>
+                    <div className="search-box large" style={{ margin: 0, width: '100%' }}>
                         <Search size={18} />
                         <input
                             type="text"
-                            placeholder="Search by title, instructor or category..."
+                            placeholder="Search courses..."
                             value={searchInput}
                             onChange={handleSearch}
                         />
                     </div>
                 </div>
 
-                <div className="status-filters">
-                    <Filter size={16} />
-                    <button
-                        className={`filter-btn ${statusFilter === 'ALL' ? 'active' : ''}`}
-                        onClick={() => handleStatusFilter('ALL')}
-                    >
-                        All
-                    </button>
-                    <button
-                        className={`filter-btn ${statusFilter === 'PENDING' ? 'active' : ''}`}
-                        onClick={() => handleStatusFilter('PENDING')}
-                    >
-                        Pending
-                    </button>
-                    <button
-                        className={`filter-btn ${statusFilter === 'APPROVED' ? 'active' : ''}`}
-                        onClick={() => handleStatusFilter('APPROVED')}
-                    >
-                        Approved
-                    </button>
-                    <button
-                        className={`filter-btn ${statusFilter === 'REJECTED' ? 'active' : ''}`}
-                        onClick={() => handleStatusFilter('REJECTED')}
-                    >
-                        Rejected
-                    </button>
-                    <button
-                        className={`filter-btn ${statusFilter === 'ARCHIVED' ? 'active' : ''}`}
-                        onClick={() => handleStatusFilter('ARCHIVED')}
-                    >
-                        Archived
-                    </button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px' }}>
+                    {/* Sort Dropdown */}
+                    <div style={{ position: 'relative', zIndex: 100 }}>
+                        <button
+                            onClick={() => setShowSortDropdown(!showSortDropdown)}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                background: sortBy !== 'newest' ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.05)',
+                                color: sortBy !== 'newest' ? '#a855f7' : '#fff',
+                                border: sortBy !== 'newest' ? '1px solid rgba(168,85,247,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '8px', padding: '0 14px', height: '42px',
+                                cursor: 'pointer', fontSize: '14px', whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <SlidersHorizontal size={16} />
+                            {sortBy === 'newest' ? 'Sort' : sortBy === 'mostEnrolled' ? 'Most Enrolled' : 'Oldest'}
+                        </button>
+                        {showSortDropdown && (
+                            <div style={{
+                                position: 'absolute', top: '100%', right: 0, marginTop: '4px',
+                                background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '8px', overflow: 'hidden', zIndex: 50,
+                                minWidth: '160px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+                            }}>
+                                {[{ key: 'newest', label: 'Newest' }, { key: 'oldest', label: 'Oldest' }, { key: 'mostEnrolled', label: 'Most Enrolled' }].map(opt => (
+                                    <button
+                                        key={opt.key}
+                                        onClick={() => handleSort(opt.key)}
+                                        style={{
+                                            display: 'block', width: '100%', textAlign: 'left',
+                                            padding: '10px 14px', border: 'none', cursor: 'pointer',
+                                            fontSize: '13px',
+                                            background: sortBy === opt.key ? 'rgba(168,85,247,0.15)' : 'transparent',
+                                            color: sortBy === opt.key ? '#a855f7' : '#d1d5db',
+                                        }}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Status Tabs */}
+                    <div className="status-filters" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', margin: 0 }}>
+                        <Filter size={16} style={{ marginRight: '4px' }} />
+                        <button
+                            className={`filter-btn ${statusFilter === 'PENDING' ? 'active' : ''}`}
+                            onClick={() => handleStatusFilter('PENDING')}
+                        >
+                            Pending
+                        </button>
+                        <button
+                            className={`filter-btn ${statusFilter === 'APPROVED' ? 'active' : ''}`}
+                            onClick={() => handleStatusFilter('APPROVED')}
+                        >
+                            Approved
+                        </button>
+                        <button
+                            className={`filter-btn ${statusFilter === 'REJECTED' ? 'active' : ''}`}
+                            onClick={() => handleStatusFilter('REJECTED')}
+                        >
+                            Rejected
+                        </button>
+                        <button
+                            className={`filter-btn ${statusFilter === 'ARCHIVED' ? 'active' : ''}`}
+                            onClick={() => handleStatusFilter('ARCHIVED')}
+                        >
+                            Archived
+                        </button>
+                    </div>
                 </div>
             </section>
 

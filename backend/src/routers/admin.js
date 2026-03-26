@@ -629,21 +629,45 @@ router.get('/stats/recent-transactions', async (req, res) => {
  */
 router.get('/stats/chart', async (req, res) => {
     try {
-        const { period = 'monthly' } = req.query;
+        const { period = 'monthly', year, month } = req.query;
 
         // Build all time ranges first, then query in parallel (NOT sequential)
         const ranges = [];
 
-        if (period === 'monthly') {
-            for (let i = 29; i >= 0; i--) {
-                const start = new Date();
-                start.setDate(start.getDate() - i);
-                start.setHours(0, 0, 0, 0);
-                const end = new Date(start);
-                end.setDate(end.getDate() + 1);
+        if (year && month) {
+            // Get all days of the specific month
+            const y = parseInt(year);
+            const m = parseInt(month) - 1; // 0-indexed
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            for (let i = 1; i <= daysInMonth; i++) {
+                const start = new Date(y, m, i, 0, 0, 0, 0);
+                const end = new Date(y, m, i + 1, 0, 0, 0, 0);
                 ranges.push({
                     start, end,
-                    label: start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    label: i.toString()
+                });
+            }
+        } else if (year) {
+            // Get all months of the specific year
+            const y = parseInt(year);
+            for (let i = 0; i < 12; i++) {
+                const start = new Date(y, i, 1, 0, 0, 0, 0);
+                const end = new Date(y, i + 1, 1, 0, 0, 0, 0);
+                ranges.push({
+                    start, end,
+                    label: new Date(y, i, 1).toLocaleDateString('en-US', { month: 'short' })
+                });
+            }
+        } else if (period === 'monthly') {
+            for (let i = 11; i >= 0; i--) {
+                const start = new Date();
+                start.setMonth(start.getMonth() - i, 1);
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(start);
+                end.setMonth(end.getMonth() + 1);
+                ranges.push({
+                    start, end,
+                    label: start.toLocaleDateString('en-US', { month: 'short' }) // "Jan", "Feb"
                 });
             }
         } else if (period === 'quarterly') {
@@ -659,29 +683,36 @@ router.get('/stats/chart', async (req, res) => {
                 });
             }
         } else {
-            for (let i = 11; i >= 0; i--) {
+            // Yearly = 5 years
+            for (let i = 4; i >= 0; i--) {
                 const start = new Date();
-                start.setMonth(start.getMonth() - i, 1);
+                start.setFullYear(start.getFullYear() - i, 0, 1);
                 start.setHours(0, 0, 0, 0);
                 const end = new Date(start);
-                end.setMonth(end.getMonth() + 1);
+                end.setFullYear(end.getFullYear() + 1, 0, 1);
                 ranges.push({
                     start, end,
-                    label: start.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+                    label: start.getFullYear().toString()
                 });
             }
         }
 
-        // Execute ALL counts in parallel instead of one-by-one
-        const counts = await Promise.all(
-            ranges.map(r => prisma.enrollments.count({
-                where: { CreationTime: { gte: r.start, lt: r.end } }
+        // Execute ALL queries in parallel
+        const aggregates = await Promise.all(
+            ranges.map(r => prisma.bills.aggregate({
+                _sum: { Amount: true },
+                where: { 
+                    CreationTime: { gte: r.start, lt: r.end },
+                    IsSuccessful: true 
+                }
             }))
         );
 
+        const data = aggregates.map(agg => Number(agg._sum?.Amount || 0));
+
         res.json({
             labels: ranges.map(r => r.label),
-            data: counts
+            data: data
         });
     } catch (error) {
         console.error('Admin chart error:', error);
@@ -701,8 +732,13 @@ router.get('/stats/chart', async (req, res) => {
  */
 router.get('/courses', async (req, res) => {
     try {
-        const { page = 1, limit = 10, search = '', status = 'ALL' } = req.query;
+        const { page = 1, limit = 10, search = '', status = 'ALL', sort = 'newest' } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        // Sort options
+        let orderBy = { CreationTime: 'desc' };
+        if (sort === 'mostEnrolled') orderBy = { LearnerCount: 'desc' };
+        else if (sort === 'oldest') orderBy = { CreationTime: 'asc' };
 
         // Build where clause
         const where = {};
@@ -765,7 +801,7 @@ router.get('/courses', async (req, res) => {
                         }
                     }
                 },
-                orderBy: { CreationTime: 'desc' }
+                orderBy
             }),
             prisma.courses.count({ where })
         ]);
@@ -829,6 +865,51 @@ router.get('/courses', async (req, res) => {
     } catch (error) {
         console.error('Admin get courses error:', error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * GET /api/admin/courses/:id/students
+ * Get list of students enrolled in a specific course
+ */
+router.get('/courses/:id/students', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Fetching students for course:', id);
+
+        const enrollments = await prisma.enrollments.findMany({
+            where: { CourseId: id },
+            select: {
+                CreatorId: true,
+                Status: true,
+                CreationTime: true,
+                Users: {
+                    select: {
+                        Id: true,
+                        FullName: true,
+                        Email: true,
+                        AvatarUrl: true,
+                    }
+                }
+            },
+            orderBy: { CreationTime: 'desc' }
+        });
+
+        console.log('Found enrollments:', enrollments.length);
+
+        const students = enrollments.map(e => ({
+            id: e.Users?.Id || e.CreatorId,
+            name: e.Users?.FullName || 'Unknown',
+            email: e.Users?.Email || '',
+            avatar: e.Users?.AvatarUrl || null,
+            enrolledAt: e.CreationTime,
+            status: e.Status
+        }));
+
+        res.json({ students, total: students.length });
+    } catch (error) {
+        console.error('Admin get course students error:', error);
+        res.status(500).json({ error: error.message || 'Internal server error' });
     }
 });
 
@@ -1221,7 +1302,6 @@ router.put('/courses/:id/unarchive', async (req, res) => {
     }
 });
 
-
 // =====================================================
 // NOTIFICATION MANAGEMENT ENDPOINTS
 // =====================================================
@@ -1287,4 +1367,3 @@ router.put('/notifications/:id/read', async (req, res) => {
 });
 
 export default router;
-

@@ -16,7 +16,7 @@ import {
 import notificationService from '../../../services/admin/notificationService';
 
 /**
- * Notifications Page (Yêu cầu duyệt)
+ * Notifications Page (Review Requests)
  * Displays list of course submission requests from instructors
  */
 function Notifications() {
@@ -34,7 +34,7 @@ function Notifications() {
             setNotifications(result.notifications);
             setTotalPages(result.pagination.totalPages);
         } catch (error) {
-            toast.error('Không thể tải danh sách yêu cầu');
+            toast.error('Failed to load request list');
         } finally {
             setIsLoading(false);
         }
@@ -47,10 +47,10 @@ function Notifications() {
     const handleMarkAsRead = async (id) => {
         try {
             await notificationService.markAsRead(id);
-            toast.success('Đã đánh dấu là đã xem');
+            toast.success('Marked as seen');
             fetchNotifications(currentPage, statusFilter);
         } catch (error) {
-            toast.error('Thao tác thất bại');
+            toast.error('Operation failed');
         }
     };
 
@@ -59,7 +59,7 @@ function Notifications() {
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleString('vi-VN', {
+        return new Date(dateString).toLocaleString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -76,10 +76,10 @@ function Notifications() {
                     animate={{ opacity: 1, x: 0 }}
                 >
                     <h1 className="page-title inline-title">
-                        <span className="title-accent">Yêu cầu</span>{' '}
-                        <span className="title-main">Phê duyệt</span>
+                        <span className="title-accent">Review</span>{' '}
+                        <span className="title-main">Requests</span>
                     </h1>
-                    <p className="page-subtitle">Quản lý các yêu cầu xuất bản khóa học từ giảng viên</p>
+                    <p className="page-subtitle">Manage course publication requests from instructors</p>
                 </motion.div>
             </header>
 
@@ -90,19 +90,19 @@ function Notifications() {
                         className={`filter-btn ${statusFilter === 'Pending' ? 'active' : ''}`}
                         onClick={() => setStatusFilter('Pending')}
                     >
-                        Chưa xử lý
+                        Pending
                     </button>
                     <button 
                         className={`filter-btn ${statusFilter === 'Read' ? 'active' : ''}`}
                         onClick={() => setStatusFilter('Read')}
                     >
-                        Đã xem
+                        Seen
                     </button>
                     <button 
                         className={`filter-btn ${statusFilter === 'ALL' ? 'active' : ''}`}
                         onClick={() => setStatusFilter('ALL')}
                     >
-                        Tất cả
+                        All
                     </button>
                 </div>
             </section>
@@ -115,8 +115,8 @@ function Notifications() {
                 ) : notifications.length === 0 ? (
                     <div className="empty-state card">
                         <Bell size={48} className="empty-icon" />
-                        <h3>Không có yêu cầu nào</h3>
-                        <p>Tất cả các yêu cầu đã được xử lý hoặc chưa có yêu cầu mới.</p>
+                        <h3>No requests found</h3>
+                        <p>All requests have been processed or there are no new requests.</p>
                     </div>
                 ) : (
                     <div className="notification-grid">
@@ -131,7 +131,7 @@ function Notifications() {
                                 <div className="notif-header">
                                     <div className="notif-type">
                                         <BookOpen size={16} />
-                                        <span>Yêu cầu phê duyệt khóa học</span>
+                                        <span>Course Review Request</span>
                                     </div>
                                     <span className="notif-time">
                                         <Calendar size={14} />
@@ -142,7 +142,7 @@ function Notifications() {
                                     <h3 className="notif-course-title">{notif.CourseTitle}</h3>
                                     <div className="notif-instructor">
                                         <User size={14} />
-                                        <span>Giảng viên: {notif.InstructorName}</span>
+                                        <span>Instructor: {notif.InstructorName}</span>
                                     </div>
                                 </div>
                                 <div className="notif-footer">
@@ -150,7 +150,7 @@ function Notifications() {
                                         className="btn-secondary"
                                         onClick={() => handleViewCourse(notif.CourseId)}
                                     >
-                                        Xem khóa học
+                                        View Course
                                         <ChevronRight size={16} />
                                     </button>
                                     {notif.Status === 'Pending' && (
@@ -159,7 +159,7 @@ function Notifications() {
                                             onClick={() => handleMarkAsRead(notif.Id)}
                                         >
                                             <CheckCircle size={16} />
-                                            Đánh dấu đã xem
+                                            Mark as seen
                                         </button>
                                     )}
                                 </div>
