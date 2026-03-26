@@ -6,7 +6,7 @@ import prisma from '../../lib/prisma.js';
  */
 export const bulkGenerateToBank = async (req, res) => {
   try {
-    const { questionBankId, courseId, count = 5, difficulty = 'Mixed' } = req.body;
+    const { questionBankId, courseId, lessonId, count = 5, difficulty = 'Mixed' } = req.body;
 
     if (!questionBankId || !courseId) {
       return res.status(400).json({ error: "questionBankId and courseId are required" });
@@ -28,7 +28,8 @@ export const bulkGenerateToBank = async (req, res) => {
     const generatedQuestions = await AIQuestionGenerationService.generateQuestionsFromCourseContent(
       courseId, 
       count, 
-      difficulty
+      difficulty,
+      lessonId
     );
 
     // 3. Save to database (Transactionally)

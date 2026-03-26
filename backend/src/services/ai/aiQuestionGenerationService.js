@@ -1,6 +1,9 @@
 import { getGroqClient } from '../../utils/ai-providers/groqClient.js';
 import prisma from '../../lib/prisma.js';
 import axios from 'axios';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { PDFParse } = require('pdf-parse');
 
 /**
  * Service for generating MCQ questions specifically from course content.
@@ -26,7 +29,7 @@ export const AIQuestionGenerationService = {
         const lecture = await prisma.lectures.findUnique({
           where: { Id: lessonId },
           include: {
-            LectureMaterial: { where: { Type: 'document' } },
+            LectureMaterial: true, // Fetch all to avoid case mismatch
             Sections: {
               select: {
                 Course: { select: { Title: true, Description: true } }
@@ -49,7 +52,7 @@ export const AIQuestionGenerationService = {
               include: {
                 Lectures: {
                   include: {
-                    LectureMaterial: { where: { Type: 'document' } }
+                    LectureMaterial: true // Fetch all to avoid case mismatch
                   }
                 }
               }
@@ -70,59 +73,91 @@ export const AIQuestionGenerationService = {
       for (const lecture of lectures) {
         fallbackContent += `### Lecture: ${lecture.Title}\n`;
         if (lecture.Content) {
-          fallbackContent += `${lecture.Content.substring(0, 800)}\n`;
+          fallbackContent += `${lecture.Content.substring(0, 1500)}\n`;
         }
 
         if (lecture.LectureMaterial?.length > 0) {
           for (const material of lecture.LectureMaterial) {
             try {
-              console.log(`📄 Fetching material: ${material.Url}`);
-              const response = await axios.get(material.Url, { timeout: 6000, responseType: 'text' });
-              if (typeof response.data === 'string' && response.data.length > 20) {
-                materialContent += `\n=== DOCUMENT: ${material.Name || 'material'} ===\n${response.data.substring(0, 2500)}\n`;
-                hasMaterials = true;
+              const url = material.Url.toLowerCase();
+              const isPlainText = url.endsWith('.txt') || url.endsWith('.md');
+              const isPdf = url.endsWith('.pdf');
+              const materialTypeRaw = material.Type || '';
+              const isDocumentType = materialTypeRaw.toLowerCase() === 'document';
+              
+              console.log(`🔍 [AI] Material processing: ${material.Url} (Type: ${materialTypeRaw}, isDocument: ${isDocumentType})`);
+
+              if (isPlainText || (isDocumentType && !isPdf)) {
+                console.log(`📄 Fetching text material: ${material.Url}`);
+                const response = await axios.get(material.Url, { timeout: 6000, responseType: 'text' });
+                if (typeof response.data === 'string' && response.data.length > 20) {
+                  materialContent += `\n=== DOCUMENT: ${material.Name || 'material'} ===\n${response.data.substring(0, 3000)}\n`;
+                  hasMaterials = true;
+                }
+              } else if (isPdf) {
+                console.log(`📄 Extracting text from PDF: ${material.Url}`);
+                const response = await axios.get(material.Url, { timeout: 10000, responseType: 'arraybuffer' });
+                
+                
+                const parser = new PDFParse({ data: response.data });
+                const data = await parser.getText();
+                await parser.destroy();
+
+                if (data.text) {
+                  const rawText = data.text.trim();
+                  console.log(`✅ [AI] Extracted ${rawText.length} chars. Preview: "${rawText.substring(0, 100).replace(/\n/g, ' ')}..."`);
+                  
+                  if (rawText.length > 20) {
+                    // Clean up multiple spaces/newlines from PDF extraction
+                    const cleanText = rawText.replace(/\s+/g, ' ').substring(0, 4000);
+                    materialContent += `\n=== PDF CONTENT: ${material.Name || 'document'} ===\n${cleanText}\n`;
+                    hasMaterials = true;
+                  }
+                } else {
+                  console.warn(`⚠️ [AI] PDF extraction returned no text for ${material.Url}`);
+                }
+              } else {
+                // For other types (video, etc.), just add the name/info as context
+                materialContent += `\n=== MATERIAL: ${material.Name || material.Type} ===\n(Type: ${material.Type}, URL: ${material.Url})\n`;
               }
             } catch (fetchErr) {
-              console.warn(`⚠️ Could not fetch material: ${material.Url} — ${fetchErr.message}`);
+              console.warn(`⚠️ Could not process material: ${material.Url} — ${fetchErr.message}`);
             }
           }
         }
       }
 
-      const contextContent = hasMaterials
-        ? `Course: ${courseInfo.title}\n\n${materialContent}`
-        : fallbackContent;
-
+      const contextContent = `${fallbackContent}\n${materialContent}`;
       const sanitizedContent = contextContent.substring(0, 5000);
 
-      // 3. Build prompt
-      const systemPrompt = `You are an expert educational assessment designer. Your task is to generate ${count} multiple-choice questions (MCQs) in STRICT JSON format when given educational content.
+      // 2.5 Check context quality
+      if (sanitizedContent.length < 50) {
+        console.warn('⚠️ AI Context is very short. Questions might be generic.');
+      }
 
-IMPORTANT: You MUST respond with ONLY a valid JSON object with this exact structure:
+      // 3. Build prompt
+      const systemPrompt = `You are a professional MCQ generator. You MUST output a JSON object with the following structure:
 {
   "questions": [
     {
-      "content": "Question text here?",
-      "difficulty": "Easy",
-      "explanation": "Why the correct answer is correct.",
+      "content": "string",
+      "difficulty": "${difficulty}",
+      "explanation": "string",
       "choices": [
-        { "content": "Correct answer", "isCorrect": true },
-        { "content": "Wrong option A", "isCorrect": false },
-        { "content": "Wrong option B", "isCorrect": false },
-        { "content": "Wrong option C", "isCorrect": false }
+        { "content": "string", "isCorrect": true },
+        { "content": "string", "isCorrect": false },
+        { "content": "string", "isCorrect": false },
+        { "content": "string", "isCorrect": false }
       ]
     }
   ]
 }
+Base questions ONLY on the provided content. Focus on specific facts. Output ONLY valid JSON.`;
 
-Rules:
-- Generate exactly ${count} questions.
-- Each question has exactly 4 choices with exactly 1 correct.
-- Difficulty must be one of: Easy, Medium, Hard.
-- Base questions on the provided content.
-- Output ONLY the JSON object, no markdown, no extra text.`;
+      const userPrompt = `Content to generate questions from:
+${sanitizedContent}
 
-      const userPrompt = `Generate ${count} MCQ questions with difficulty "${difficulty}" from the following content:\n\n${sanitizedContent}`;
+Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on the content above.`;
 
       console.log(`🤖 Generating ${count} AI questions (model: llama-3.3-70b-versatile, context: ${sanitizedContent.length} chars)`);
 
@@ -134,9 +169,9 @@ Rules:
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.6,
-        max_tokens: 8192,
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
+        temperature: 0.1, // Set very low for consistency
+        max_tokens: 4096,
       });
 
       const rawText = completion.choices[0]?.message?.content;

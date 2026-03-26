@@ -7,7 +7,8 @@ import {
   LogOut,
   Rocket,
   DollarSign,
-  Bell
+  Bell,
+  Home
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import useAuth from '../../../hooks/useAuth';
@@ -17,6 +18,11 @@ import notificationService from '../../../services/admin/notificationService';
  * Menu items configuration
  */
 const menuItems = [
+  {
+    path: '/',
+    label: 'Home',
+    icon: Home,
+  },
   {
     path: '/admin/dashboard',
     label: 'Dashboard',
@@ -87,7 +93,7 @@ function Sidebar() {
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="logo-icon">
-          <Rocket size={24} />
+          <img src="/FlyUpTeam.png" alt="FlyUp Logo" />
         </div>
         <div className="logo-text">
           <span className="logo-title">FLYUP</span>
