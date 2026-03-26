@@ -112,8 +112,9 @@ export default function CourseLessonPage() {
 
   // AI Quiz states
   const [isGeneratingAIQuiz, setIsGeneratingAIQuiz] = useState(false);
-  const [aiQuizQuestions, setAiQuizQuestions] = useState([]);
-  const [showAIQuiz, setShowAIQuiz] = useState(false);
+  const [quizRefreshTrigger, setQuizRefreshTrigger] = useState(0);
+  const [hasGeneratedQuiz, setHasGeneratedQuiz] = useState(false);
+  const [currentAssignmentId, setCurrentAssignmentId] = useState(null);
 
   // Video tracking & UI states
   const maxTimePlayed = useRef(0);
@@ -460,6 +461,7 @@ export default function CourseLessonPage() {
         },
         body: JSON.stringify({
           courseId,
+          lessonId: selectedLessonId,
           count: 5,
           difficulty: "Mixed",
         }),
@@ -467,9 +469,17 @@ export default function CourseLessonPage() {
 
       const result = await res.json();
       if (result.success) {
-        setAiQuizQuestions(result.data.questions);
-        setShowAIQuiz(true);
-        toast.success("Đã tạo xong 5 câu hỏi thực hành!", { id: "ai-quiz-gen" });
+        // Invalidate Quiz queries so the new questions are fetched from the backend pool
+        queryClient.invalidateQueries({ queryKey: ["courseAssignments", courseId] });
+        
+        // Switch to the Q&A tab to view the questions
+        setActiveTab("qa");
+        // Trigger Quiz component refetch
+        setQuizRefreshTrigger(prev => prev + 1);
+        setHasGeneratedQuiz(true);
+        setCurrentAssignmentId(result.data.assignmentId);
+
+        toast.success("Đã tạo xong 5 câu hỏi thực hành và lưu vào ngân hàng đề!", { id: "ai-quiz-gen" });
       } else {
         toast.error(result.message || "Không thể tạo câu hỏi AI", { id: "ai-quiz-gen" });
       }
@@ -1274,7 +1284,7 @@ export default function CourseLessonPage() {
               >
                 Q&A{" "}
                 <span className="bg-slate-800 text-xs px-1.5 rounded-sm">
-                  12
+                  {assignments?.length || 0}
                 </span>
               </button>
               <button
@@ -1481,10 +1491,43 @@ export default function CourseLessonPage() {
                     </span>
                   </div>
                 </div>
-                <Quiz
-                  courseId={courseId}
-                  onClose={() => setActiveTab("overview")}
-                />
+                <div className="space-y-6">
+                  {hasGeneratedQuiz ? (
+                    <Quiz
+                      courseId={courseId}
+                      assignmentId={currentAssignmentId}
+                      onClose={() => setActiveTab("overview")}
+                      refreshTrigger={quizRefreshTrigger}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 px-6 text-center glass-panel rounded-3xl border-dashed border-2 border-white/10">
+                      <div className="size-20 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 animate-bounce">
+                        <span className="material-symbols-outlined text-4xl text-purple-400">psychology</span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-white mb-2">Sẵn sàng luyện tập?</h3>
+                      <p className="text-slate-400 max-w-md mb-8">
+                        AI sẽ dựa trên nội dung bài giảng này để tạo ra bộ câu hỏi trắc nghiệm giúp bạn củng cố kiến thức ngay lập tức.
+                      </p>
+                      <button
+                        onClick={handleGenerateAIQuiz}
+                        disabled={isGeneratingAIQuiz}
+                        className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-2xl hover:shadow-xl hover:shadow-purple-500/20 active:scale-95 transition-all disabled:opacity-50"
+                      >
+                        {isGeneratingAIQuiz ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white/10 border-t-white rounded-full animate-spin"></div>
+                            <span>Đang tạo câu hỏi...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined">magic_button</span>
+                            <span>Bắt đầu Sinh câu hỏi AI</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1656,185 +1699,8 @@ export default function CourseLessonPage() {
         />
       )}
 
-      {/* AI Instant Quiz Modal */}
-      {showAIQuiz && aiQuizQuestions.length > 0 && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6">
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar relative">
-            <button
-              onClick={() => setShowAIQuiz(false)}
-              className="absolute top-6 right-6 size-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all z-10"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <div className="p-1">
-              {/* Reuse Quiz component logic but with custom questions */}
-              <AIQuizRenderer
-                questions={aiQuizQuestions}
-                onClose={() => setShowAIQuiz(false)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-// Sub-component for rendering AI generated questions
-function AIQuizRenderer({ questions, onClose }) {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleSelectAnswer = (questionId, choiceContent) => {
-    setSelectedAnswers({
-      ...selectedAnswers,
-      [questionId]: choiceContent,
-    });
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
-  };
-
-  const handleSubmit = () => {
-    const unanswered = questions.filter((q) => !selectedAnswers[q.id]);
-    if (unanswered.length > 0) {
-      toast.error(`Vui lòng trả lời hết các câu hỏi! Còn ${unanswered.length} câu.`);
-      return;
-    }
-    setIsSubmitted(true);
-  };
-
-  const calculateScore = () => {
-    let correct = 0;
-    questions.forEach((q) => {
-      if (selectedAnswers[q.id] === q.choices.find(c => c.isCorrect)?.content) {
-        correct++;
-      }
-    });
-    return {
-      correct,
-      total: questions.length,
-      percentage: Math.round((correct / questions.length) * 100)
-    };
-  };
-
-  if (isSubmitted) {
-    const { correct, total, percentage } = calculateScore();
-    return (
-      <div className="p-8 text-center">
-        <div className="w-24 h-24 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/50">
-          <span className="text-3xl font-bold text-purple-400">{percentage}%</span>
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Hoàn thành bài luyện tập!</h2>
-        <p className="text-slate-400 mb-8">Bạn đúng {correct}/{total} câu hỏi.</p>
-
-        <div className="space-y-4 text-left max-w-2xl mx-auto mb-10">
-          {questions.map((q, idx) => {
-            const isCorrect = selectedAnswers[q.id] === q.choices.find(c => c.isCorrect)?.content;
-            return (
-              <div key={q.id} className={`p-4 rounded-xl border ${isCorrect ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
-                <p className="text-white font-medium mb-2">{idx + 1}. {q.content}</p>
-                <p className={`text-sm ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-                  {isCorrect ? 'Chính xác!' : `Sai rồi. Đáp án đúng là: ${q.choices.find(c => c.isCorrect)?.content}`}
-                </p>
-                {q.explanation && <p className="text-xs text-slate-500 mt-2 italic">Giải thích: {q.explanation}</p>}
-              </div>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={onClose}
-          className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all"
-        >
-          Đóng và tiếp tục học
-        </button>
-      </div>
-    );
-  }
-
-  const question = questions[currentQuestion];
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-
-  return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <span className="material-symbols-outlined text-purple-400">psychology</span>
-          AI Practice Quiz
-        </h2>
-        <div className="text-sm font-bold text-slate-400">
-          Câu {currentQuestion + 1} / {questions.length}
-        </div>
-      </div>
-
-      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-10">
-        <div className="h-full bg-purple-500 transition-all duration-300" style={{ width: `${progress}%` }}></div>
-      </div>
-
-      <div className="mb-10">
-        <h3 className="text-lg text-white font-medium mb-6 leading-relaxed">
-          {question.content}
-        </h3>
-        <div className="grid grid-cols-1 gap-3">
-          {question.choices.map((choice, idx) => {
-            const isSelected = selectedAnswers[question.id] === choice.content;
-            return (
-              <button
-                key={idx}
-                onClick={() => handleSelectAnswer(question.id, choice.content)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${isSelected
-                    ? 'border-purple-500 bg-purple-500/10 text-white'
-                    : 'border-white/10 bg-white/5 text-slate-300 hover:border-purple-500/30'
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`size-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-purple-500 bg-purple-500' : 'border-slate-600'}`}>
-                    {isSelected && <span className="material-symbols-outlined text-white text-[12px]">check</span>}
-                  </div>
-                  {choice.content}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center">
-        <button
-          onClick={handlePrevious}
-          disabled={currentQuestion === 0}
-          className="px-6 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
-        >
-          Quay lại
-        </button>
-        {currentQuestion === questions.length - 1 ? (
-          <button
-            onClick={handleSubmit}
-            className="px-8 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20"
-          >
-            Nộp bài
-          </button>
-        ) : (
-          <button
-            onClick={handleNext}
-            className="px-8 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
-          >
-            Tiếp theo
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
 

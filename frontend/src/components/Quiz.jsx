@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-export default function Quiz({ courseId, onClose }) {
+export default function Quiz({ courseId, assignmentId, onClose, refreshTrigger }) {
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -14,13 +14,17 @@ export default function Quiz({ courseId, onClose }) {
   useEffect(() => {
     fetchQuestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId]);
+  }, [courseId, assignmentId, refreshTrigger]);
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch(
-        `${API_URL}/quiz/${courseId}/questions?limit=10`,
-      );
+      const url = new URL(`${API_URL}/quiz/${courseId}/questions`);
+      url.searchParams.append("limit", "10");
+      if (assignmentId) {
+        url.searchParams.append("assignmentId", assignmentId);
+      }
+
+      const response = await fetch(url.toString());
       const data = await response.json();
 
       if (data.success) {
