@@ -18,12 +18,13 @@ const courseService = {
    * @param {string} params.status - Filter by status ('ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'ARCHIVED')
    * @returns {Promise<Object>}
    */
-  getCourses: async ({ page = 1, limit = 10, search = '', status = 'ALL' } = {}) => {
+  getCourses: async ({ page = 1, limit = 10, search = '', status = 'ALL', sort = 'newest' } = {}) => {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
       search,
-      status
+      status,
+      sort
     });
     return api.get(`/admin/courses?${params.toString()}`);
   },
@@ -84,6 +85,15 @@ const courseService = {
     if (!query) return [];
     const response = await api.get(`/admin/courses?search=${encodeURIComponent(query)}&limit=5`);
     return response.courses || [];
+  },
+
+  /**
+   * Get enrolled students for a course
+   * @param {string} courseId - Course ID
+   * @returns {Promise<Object>}
+   */
+  getCourseStudents: async (courseId) => {
+    return api.get(`/admin/courses/${courseId}/students`);
   },
 };
 

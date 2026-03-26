@@ -61,6 +61,9 @@ function CourseDetail() {
     const [actionLoading, setActionLoading] = useState(false);
     const [toast, setToast] = useState(null);
     const [expandedSections, setExpandedSections] = useState({});
+    const [showStudents, setShowStudents] = useState(false);
+    const [students, setStudents] = useState([]);
+    const [studentsLoading, setStudentsLoading] = useState(false);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -132,6 +135,19 @@ function CourseDetail() {
             ...prev,
             [sectionId]: !prev[sectionId],
         }));
+    };
+
+    const handleShowStudents = async () => {
+        setShowStudents(true);
+        setStudentsLoading(true);
+        try {
+            const result = await courseService.getCourseStudents(id);
+            setStudents(result.students || []);
+        } catch (err) {
+            showToast('Failed to load students', 'error');
+        } finally {
+            setStudentsLoading(false);
+        }
     };
 
     // Status helpers
@@ -299,11 +315,11 @@ function CourseDetail() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
             >
-                <div className="cd-stat-card">
+                <div className="cd-stat-card" onClick={handleShowStudents} style={{ cursor: 'pointer', transition: 'transform 0.15s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
                     <Users size={20} className="cd-stat-icon students" />
                     <div>
                         <span className="cd-stat-value">{course.enrolledCount ?? 0}</span>
-                        <span className="cd-stat-label">Students</span>
+                        <span className="cd-stat-label">Students ▸</span>
                     </div>
                 </div>
                 <div className="cd-stat-card">
@@ -474,6 +490,58 @@ function CourseDetail() {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Students Modal */}
+            {showStudents && (
+                <motion.div
+                    className="cd-modal-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={() => setShowStudents(false)}
+                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        onClick={e => e.stopPropagation()}
+                        style={{ background: '#1a1a2e', borderRadius: '12px', border: '1px solid rgba(168,85,247,0.2)', padding: '24px', width: '90%', maxWidth: '600px', maxHeight: '70vh', display: 'flex', flexDirection: 'column' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <h3 style={{ color: '#fff', margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Users size={18} /> Enrolled Students ({students.length})
+                            </h3>
+                            <button onClick={() => setShowStudents(false)} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '20px', padding: '4px' }}>&times;</button>
+                        </div>
+
+                        <div className="custom-scrollbar" style={{ overflowY: 'auto', flex: 1, paddingRight: '8px' }}>
+                            {studentsLoading ? (
+                                <div style={{ textAlign: 'center', color: '#9ca3af', padding: '40px' }}>Loading students...</div>
+                            ) : students.length === 0 ? (
+                                <div style={{ textAlign: 'center', color: '#9ca3af', padding: '40px' }}>No students enrolled yet.</div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {students.map((student, idx) => (
+                                        <div key={student.id || idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                            <img
+                                                src={student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=a855f7&color=fff&size=36`}
+                                                alt={student.name}
+                                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
+                                            />
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ color: '#fff', fontSize: '14px', fontWeight: 500 }}>{student.name}</div>
+                                                <div style={{ color: '#9ca3af', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{student.email}</div>
+                                            </div>
+                                            <div style={{ color: '#6b7280', fontSize: '11px', whiteSpace: 'nowrap' }}>
+                                                {formatDate(student.enrolledAt)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
         </div>
     );
 }

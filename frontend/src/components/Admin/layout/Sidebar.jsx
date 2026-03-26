@@ -5,8 +5,6 @@ import {
   GraduationCap,
   UserCog,
   LogOut,
-  Rocket,
-  DollarSign,
   Bell
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -37,14 +35,10 @@ const menuItems = [
     label: 'Courses',
     icon: BookOpen,
   },
-  {
-    path: '/admin/payouts',
-    label: 'Payouts',
-    icon: DollarSign,
-  },
+
   {
     path: '/admin/notifications',
-    label: 'Yêu cầu duyệt',
+    label: 'Review Requests',
     icon: Bell,
     isNotification: true
   },
@@ -86,11 +80,19 @@ function Sidebar() {
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <div className="logo-icon">
-          <Rocket size={24} />
+        <div className="logo-icon" style={{ background: 'none', boxShadow: 'none' }}>
+          <img 
+            src="/FlyUpTeam.png" 
+            alt="FlyUp Logo" 
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+          />
         </div>
         <div className="logo-text">
-          <span className="logo-title">FLYUP</span>
+          <img 
+            src="/FLYUPTECHANDEDU.png" 
+            alt="FlyUp Edu & Tech" 
+            style={{ height: '32px', width: 'auto', objectFit: 'contain', marginBottom: '-4px' }}
+          />
           <span className="logo-subtitle">Admin Center</span>
         </div>
       </div>
