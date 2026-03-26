@@ -107,6 +107,21 @@ const QuestionBankDetailPage = () => {
     };
 
     const handlePublish = async () => {
+        // Client-side pre-validation
+        const publishedQs = questions.filter(q => String(q.Status || '').trim() === 'Published');
+        const total = publishedQs.length;
+        if (total < 10) {
+            toast.error(`Question Bank phải có ít nhất 10 câu Published (hiện có ${total} câu)`);
+            return;
+        }
+        const counts = { Easy: 0, Medium: 0, Hard: 0 };
+        publishedQs.forEach(q => { if (q.Difficulty in counts) counts[q.Difficulty]++; });
+        const issues = Object.entries(counts).filter(([, v]) => v < 2).map(([d, v]) => `${d} (cần 2, có ${v})`);
+        if (issues.length > 0) {
+            toast.error(`Mỗi cấp độ phải có ít nhất 2 câu Published. Chưa đủ: ${issues.join('; ')}`);
+            return;
+        }
+
         const toastId = toast.loading('Publishing question bank...');
         try {
             await publishQuestionBank(id);
@@ -333,6 +348,42 @@ const QuestionBankDetailPage = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Publish Readiness */}
+                        {bank.Status !== 'Published' && (
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+                                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-sm text-amber-400">rule</span>
+                                    Publish Readiness
+                                </h3>
+                                {(() => {
+                                    const publishedQs = questions.filter(q => String(q.Status || '').trim() === 'Published');
+                                    const total = publishedQs.length;
+                                    const counts = { Easy: 0, Medium: 0, Hard: 0 };
+                                    publishedQs.forEach(q => { if (q.Difficulty in counts) counts[q.Difficulty]++; });
+                                    const totalOk = total >= 10;
+                                    const diffColors = { Easy: 'emerald', Medium: 'amber', Hard: 'rose' };
+                                    return (
+                                        <div className="space-y-3">
+                                            <div className={`flex items-center justify-between p-2 rounded-lg ${totalOk ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}>
+                                                <span className="text-xs font-bold text-slate-400">Total Published</span>
+                                                <span className={`text-xs font-black ${totalOk ? 'text-emerald-400' : 'text-rose-400'}`}>{total}/10</span>
+                                            </div>
+                                            {Object.entries(counts).map(([diff, count]) => {
+                                                const ok = count >= 2;
+                                                const color = diffColors[diff];
+                                                return (
+                                                    <div key={diff} className={`flex items-center justify-between p-2 rounded-lg ${ok ? `bg-${color}-500/10` : 'bg-rose-500/10'}`}>
+                                                        <span className="text-xs font-bold text-slate-400">{diff}</span>
+                                                        <span className={`text-xs font-black ${ok ? `text-${color}-400` : 'text-rose-400'}`}>{count}/2</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        )}
                     </div>
 
                     {/* Questions List */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { 
@@ -115,7 +115,7 @@ const CreateAssignmentFromBankPage = () => {
         };
 
         loadDependentData();
-    }, [form.courseId, form.sourceQuestionBankId]);
+    }, [form.courseId]);
 
     // Fetch questions when bank is selected
     useEffect(() => {
@@ -129,10 +129,11 @@ const CreateAssignmentFromBankPage = () => {
             setLoadingQuestions(true);
             try {
                 const questions = await fetchQuestionBankQuestions(form.sourceQuestionBankId);
+                const publishedQuestions = questions.filter(q => String(q.Status || '').trim() === 'Published');
                 setBankQuestions(questions);
-                // Default select all
-                setSelectedQuestionIds(new Set(questions.map(q => q.Id)));
-            } catch {
+                // Default select chỉ câu Published
+                setSelectedQuestionIds(new Set(publishedQuestions.map(q => q.Id)));
+            } catch (error) {
                 toast.error('Failed to load questions from bank');
             } finally {
                 setLoadingQuestions(false);
@@ -144,9 +145,10 @@ const CreateAssignmentFromBankPage = () => {
 
     const filteredQuestions = useMemo(() => {
         return bankQuestions.filter(q => {
+            const isPublished = String(q.Status || '').trim() === 'Published';
             const matchesSearch = !questionSearch || q.Content.toLowerCase().includes(questionSearch.toLowerCase());
             const matchesDifficulty = !difficultyFilter || q.Difficulty === difficultyFilter;
-            return matchesSearch && matchesDifficulty;
+            return isPublished && matchesSearch && matchesDifficulty;
         });
     }, [bankQuestions, questionSearch, difficultyFilter]);
 
@@ -188,7 +190,12 @@ const CreateAssignmentFromBankPage = () => {
     };
 
     const handleSelectAll = () => {
-        setSelectedQuestionIds(new Set(bankQuestions.map(q => q.Id)));
+        // Chỉ select câu Published (filteredQuestions đã lọc sẵn)
+        setSelectedQuestionIds(prev => {
+            const next = new Set(prev);
+            filteredQuestions.forEach(q => next.add(q.Id));
+            return next;
+        });
     };
 
     const handleClearAll = () => {
@@ -205,6 +212,22 @@ const CreateAssignmentFromBankPage = () => {
 
         if (selectedQuestionIds.size === 0) {
             toast.error('Please select at least one question');
+            return;
+        }
+
+        // Validate: total ≥10 AND each level ≥2
+        const selectedQuestions = bankQuestions.filter(q => selectedQuestionIds.has(q.Id));
+        const total = selectedQuestions.length;
+        if (total < 10) {
+            toast.error(`Assignment phải có ít nhất 10 câu hỏi (hiện chọn ${total} câu)`);
+            return;
+        }
+        const counts = { Easy: 0, Medium: 0, Hard: 0 };
+        selectedQuestions.forEach(q => { if (q.Difficulty in counts) counts[q.Difficulty]++; });
+        const issues = Object.entries(counts).filter(([, v]) => v < 2).map(([d, v]) => `${d} (cần 2, có ${v})`);
+        
+        if (issues.length > 0) {
+            toast.error(`Mỗi cấp độ phải có ít nhất 2 câu. Chưa đủ: ${issues.join('; ')}`);
             return;
         }
 
@@ -241,6 +264,18 @@ const CreateAssignmentFromBankPage = () => {
             title="Create Assignment"
             subtitle="Snapshot selective questions from a bank into a new assignment"
         >
+            {/* Back button */}
+            <div className="mb-6">
+                <button
+                    type="button"
+                    onClick={() => navigate('/instructor/question-banks')}
+                    className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-all group"
+                >
+                    <span className="material-symbols-outlined text-lg group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+                    Back to Question Bank
+                </button>
+            </div>
+
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 {/* Form Section */}
                 <div className="xl:col-span-2 space-y-8">
@@ -482,15 +517,38 @@ const CreateAssignmentFromBankPage = () => {
                                 <p className="text-sm font-bold text-slate-300 truncate">{selectedBank?.Name || 'Not selected'}</p>
                                 {selectedBank && (
                                     <div className="flex flex-col gap-1 mt-2">
-                                        <p className="text-[10px] text-purple-400 uppercase font-black">
-                                            {selectedQuestionIds.size} / {bankQuestions.length} Questions selected
-                                        </p>
-                                        <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden mt-1">
-                                            <div 
-                                                className="bg-purple-500 h-full transition-all duration-500" 
-                                                style={{ width: `${bankQuestions.length ? (selectedQuestionIds.size / bankQuestions.length) * 100 : 0}%` }}
-                                            />
-                                        </div>
+                                        {(() => {
+                                            const sel = bankQuestions.filter(q => selectedQuestionIds.has(q.Id));
+                                            const counts = { Easy: 0, Medium: 0, Hard: 0 };
+                                            sel.forEach(q => { if (q.Difficulty in counts) counts[q.Difficulty]++; });
+                                            const totalOk = sel.length >= 10;
+                                            return (
+                                                <>
+                                                    <p className={`text-[10px] font-black uppercase ${totalOk ? 'text-purple-400' : 'text-rose-400'}`}>
+                                                        {selectedQuestionIds.size} / {bankQuestions.length} Questions selected
+                                                    </p>
+                                                    <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden mt-1">
+                                                        <div
+                                                            className="bg-purple-500 h-full transition-all duration-500"
+                                                            style={{ width: `${bankQuestions.length ? (selectedQuestionIds.size / bankQuestions.length) * 100 : 0}%` }}
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-1 mt-2">
+                                                        {Object.entries(counts).map(([diff, count]) => {
+                                                            const ok = count >= 2;
+                                                            const colorBg = diff === 'Easy' ? 'bg-emerald-500/10' : diff === 'Medium' ? 'bg-amber-500/10' : 'bg-rose-500/10';
+                                                            const colorText = diff === 'Easy' ? 'text-emerald-400' : diff === 'Medium' ? 'text-amber-400' : 'text-rose-400';
+                                                            return (
+                                                                <div key={diff} className={`rounded-lg p-1.5 text-center border ${ok ? `${colorBg} border-current/20` : 'bg-rose-500/10 border-rose-500/30'}`}>
+                                                                    <p className={`text-[8px] font-bold uppercase ${ok ? colorText : 'text-rose-400'}`}>{diff}</p>
+                                                                    <p className={`text-xs font-black ${ok ? colorText : 'text-rose-400'}`}>{count}<span className="text-[8px] opacity-60">/2</span></p>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 )}
                             </div>

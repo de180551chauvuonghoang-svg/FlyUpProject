@@ -90,6 +90,44 @@ export function validateQuestionBankQuestionWithChoices(question) {
     validateQuestionBankChoicesDraft(question?.QuestionBankChoices || []);
 }
 
+const MIN_TOTAL_QUESTIONS = 10;
+const MIN_PER_DIFFICULTY = 2;
+const REQUIRED_DIFFICULTIES = ["Easy", "Medium", "Hard"];
+
+/**
+ * Shared helper: validate a list of questions has ≥10 total and ≥2 per level.
+ * @param {Array} questions - array of question objects with { Difficulty }
+ * @param {string} context - "bank" | "assignment" for error messages
+ */
+export function validateDifficultyDistribution(questions, context = "bank") {
+    const label = context === "assignment" ? "Assignment" : "Question Bank";
+    const total = questions.length;
+
+    if (total < MIN_TOTAL_QUESTIONS) {
+        throw new Error(
+            `${label} phải có ít nhất ${MIN_TOTAL_QUESTIONS} câu hỏi (hiện có ${total} câu)`
+        );
+    }
+
+    const difficultyCounts = { Easy: 0, Medium: 0, Hard: 0 };
+    for (const question of questions) {
+        const difficulty = String(question.Difficulty || "").trim();
+        if (difficulty in difficultyCounts) {
+            difficultyCounts[difficulty]++;
+        }
+    }
+
+    const issues = REQUIRED_DIFFICULTIES
+        .filter((d) => difficultyCounts[d] < MIN_PER_DIFFICULTY)
+        .map((d) => `${d} (cần ${MIN_PER_DIFFICULTY}, hiện có ${difficultyCounts[d]})`);
+
+    if (issues.length > 0) {
+        throw new Error(
+            `${label} phải có ít nhất ${MIN_PER_DIFFICULTY} câu ở mỗi cấp độ. Chưa đủ: ${issues.join("; ")}`
+        );
+    }
+}
+
 export function validateQuestionBankForPublish(questionBank) {
     const questions = questionBank?.QuestionBankQuestions || [];
 
@@ -109,11 +147,37 @@ export function validateQuestionBankForPublish(questionBank) {
         normalizedQuestionContents.add(normalizedQuestion);
     }
 
+    // Only Published questions count toward the distribution requirement
+    const publishedQuestions = questions.filter(
+        (q) => String(q.Status || "").trim() === "Published"
+    );
+    validateDifficultyDistribution(publishedQuestions, "bank");
+
     return {
         questionCount: questions.length,
     };
 }
 
 export function validateQuestionBankForSnapshot(questionBank) {
-    return validateQuestionBankForPublish(questionBank);
+    // Validate cơ bản như publish
+    const result = validateQuestionBankForPublish(questionBank);
+
+    // Chỉ tính câu hỏi đã Published
+    const publishedQuestions = (questionBank?.QuestionBankQuestions || []).filter(
+        (q) => String(q.Status || "").trim() === "Published"
+    );
+
+    // Distribution already checked in validateQuestionBankForPublish above
+    // (re-validate here in case caller bypasses publish check)
+    validateDifficultyDistribution(publishedQuestions, "bank");
+
+    return result;
+}
+
+/**
+ * Validate a selection of questions (from assignment create/update).
+ * @param {Array} selectedQuestions - the actual question objects that will be snapshotted
+ */
+export function validateAssignmentQuestionSelection(selectedQuestions) {
+    validateDifficultyDistribution(selectedQuestions, "assignment");
 }
