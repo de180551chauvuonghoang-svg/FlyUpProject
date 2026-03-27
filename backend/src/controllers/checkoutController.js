@@ -57,8 +57,28 @@ async function fulfillOrder(tx, checkoutId) {
 
     // 3. Create Enrollments
     const courseIds = JSON.parse(checkout.CourseIds);
-    const enrollments = await Promise.all(courseIds.map(courseId =>
-        tx.enrollments.upsert({
+    
+    // Track which ones are actually NEW to avoid double counting
+    let newEnrollmentsCount = 0;
+    const newEnrolledCourseIds = [];
+
+    const enrollments = await Promise.all(courseIds.map(async (courseId) => {
+        // Check if exists first to decide on counter
+        const existing = await tx.enrollments.findUnique({
+            where: {
+                CreatorId_CourseId: {
+                    CreatorId: checkout.UserId,
+                    CourseId: courseId
+                }
+            }
+        });
+
+        if (!existing) {
+            newEnrollmentsCount++;
+            newEnrolledCourseIds.push(courseId);
+        }
+
+        return tx.enrollments.upsert({
             where: {
                 CreatorId_CourseId: {
                     CreatorId: checkout.UserId,
@@ -75,21 +95,23 @@ async function fulfillOrder(tx, checkoutId) {
                 BillId: bill.Id,
                 Status: 'Active'
             }
-        })
-    ));
+        });
+    }));
 
     // --- NEW: Update Counters (LearnerCount and EnrollmentCount) ---
-    // Update User EnrollmentCount
-    await tx.users.update({
-        where: { Id: checkout.UserId },
-        data: { EnrollmentCount: { increment: enrollments.length } }
-    });
+    // Update User EnrollmentCount only by NEW items
+    if (newEnrollmentsCount > 0) {
+        await tx.users.update({
+            where: { Id: checkout.UserId },
+            data: { EnrollmentCount: { increment: newEnrollmentsCount } }
+        });
 
-    // Update Courses LearnerCount
-    await tx.courses.updateMany({
-        where: { Id: { in: courseIds } },
-        data: { LearnerCount: { increment: 1 } }
-    });
+        // Update Courses LearnerCount only for NEWLY enrolled courses
+        await tx.courses.updateMany({
+            where: { Id: { in: newEnrolledCourseIds } },
+            data: { LearnerCount: { increment: 1 } }
+        });
+    }
 
     // 4. Remove from Wishlist if exists
     await tx.wishlist.deleteMany({
@@ -199,6 +221,28 @@ export const createCheckout = async (req, res) => {
 
         if (courses.length !== courseIds.length) {
             return res.status(400).json({ success: false, error: 'Some courses are invalid or unavailable' });
+        }
+
+        // --- NEW: Check if already enrolled in any of these courses ---
+        const existingEnrollments = await prisma.enrollments.findMany({
+            where: {
+                CreatorId: userId,
+                CourseId: { in: courseIds }
+            },
+            select: { CourseId: true }
+        });
+
+        if (existingEnrollments.length > 0) {
+            const alreadyEnrolledIds = existingEnrollments.map(e => e.CourseId);
+            const alreadyEnrolledTitles = courses
+                .filter(c => alreadyEnrolledIds.includes(c.Id))
+                .map(c => c.Title);
+            
+            return res.status(400).json({ 
+                success: false, 
+                error: `You are already enrolled in: ${alreadyEnrolledTitles.join(', ')}`,
+                alreadyEnrolledIds
+            });
         }
 
         // Verify total amount

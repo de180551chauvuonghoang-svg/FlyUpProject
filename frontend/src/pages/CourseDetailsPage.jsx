@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -37,6 +37,8 @@ const getImageUrl = (path) => {
 export default function CourseDetailsPage() {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isFromFinish = searchParams.get('completed') === 'true';
   const queryClient = useQueryClient();
   
   const [activeTab, setActiveTab] = useState('overview');
@@ -106,7 +108,9 @@ export default function CourseDetailsPage() {
       enabled: !!user
   });
   
-  const isEnrolled = enrollmentData?.enrollments?.some(e => e.CourseId === courseId);
+  const userEnrollment = enrollmentData?.enrollments?.find(e => e.CourseId === courseId);
+  const isEnrolled = !!userEnrollment;
+  const isCompleted = userEnrollment?.Status === 'Completed';
 
   // Helper to resolve image URLs
   // (Redefined here if needed or just use the global one if it is safe, but assuming we can use member vars)
@@ -434,6 +438,32 @@ export default function CourseDetailsPage() {
                         </div>
                         <span className="text-sm text-slate-400">{section.Lectures?.length || 0} lectures</span>
                       </motion.button>
+                      
+                      {/* Lectures List */}
+                      {expandedSections[section.Id] && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden bg-white/5"
+                        >
+                          {section.Lectures?.map((lecture) => (
+                            <div key={lecture.Id} className="flex items-center justify-between p-4 border-t border-white/5 pl-12 group hover:bg-white/10 transition-colors">
+                              <div className="flex items-center gap-3">
+                                <PlayCircle className="w-4 h-4 text-slate-400 group-hover:text-violet-400 transition-colors" />
+                                <span className="text-sm text-slate-300 group-hover:text-white transition-colors">
+                                  {lecture.Title}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                {lecture.IsPreviewable && (
+                                  <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider border border-violet-400/30 px-2 py-0.5 rounded">Preview</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </motion.div>
+                      )}
                     </motion.div>
                   ))
                 ) : (
@@ -490,17 +520,28 @@ export default function CourseDetailsPage() {
                  <h3 className="text-xl font-bold text-white mb-6">Student Reviews</h3>
                  <div className="space-y-8">
                     {/* Review Form Logic */}
-                    {isEnrolled ? (
+                    {isCompleted ? (
                       <ReviewForm 
                         courseId={courseId} 
                         token={accessToken}
                         onReviewSubmitted={() => {
                           refetchReviews();
-                          // Optional: Show success toast
+                          if (isFromFinish) {
+                            toast.success('Thank you for your review! Redirecting to your certificate...');
+                            setTimeout(() => {
+                              navigate(`/certificate/${courseId}`);
+                            }, 2000);
+                          } else {
+                            toast.success('Review submitted successfully!');
+                          }
                         }}
                       />
                     ) : (
-                      user ? (
+                      isEnrolled ? (
+                        <div className="bg-[#1A1333] p-6 rounded-xl border border-white/5 text-center mb-6">
+                           <p className="text-slate-300 font-medium">Bạn cần hoàn thành 100% khóa học để đánh giá và bình luận.</p>
+                        </div>
+                      ) : user ? (
                         <div className="bg-[#1A1333] p-6 rounded-xl border border-white/5 text-center mb-6">
                            <p className="text-slate-300 mb-2">Enroll in this course to leave a rating and review.</p>
                         </div>

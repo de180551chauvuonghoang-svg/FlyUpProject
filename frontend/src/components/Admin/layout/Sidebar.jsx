@@ -20,7 +20,7 @@ import notificationService from '../../../services/admin/notificationService';
 const menuItems = [
   {
     path: '/',
-    label: 'Home',
+    label: 'Home Page',
     icon: Home,
   },
   {

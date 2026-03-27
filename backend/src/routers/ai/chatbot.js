@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { chat } from '../../controllers/ai/chatbotController.js';
+import { chat, tts, transcribeVideo } from '../../controllers/ai/chatbotController.js';
 import { chatStream } from '../../controllers/ai/chatbotStreamingController.js';
 import { rateLimit } from '../../middleware/rateLimitMiddleware.js';
 
@@ -103,6 +103,8 @@ router.post('/stream', rateLimit('chatbot:stream', 5, 60), chatStream);
  *       500:
  *         description: Server error
  */
+router.post('/tts', tts);
+router.post('/transcribe', transcribeVideo);
 router.post('/', rateLimit('chatbot', 10, 60), chat);
 
 export default router;

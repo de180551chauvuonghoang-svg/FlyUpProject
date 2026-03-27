@@ -235,7 +235,7 @@ export default function InstructorDashboard() {
               <div className="flex items-center gap-2 text-yellow-400">
                 <span className="material-symbols-outlined text-sm">star</span>
                 <span className="text-sm font-bold">
-                  {dashboardStats.topCourse.rating}
+                  {Number(dashboardStats.topCourse.rating || 0).toFixed(1)}
                 </span>
               </div>
             </div>
@@ -420,7 +420,7 @@ export default function InstructorDashboard() {
                               star
                             </span>
                             <span className="font-bold">
-                              {course.rating.toFixed(1)}
+                              {Number(course.rating || 0).toFixed(1)}
                             </span>
                           </div>
                         )}

@@ -171,11 +171,22 @@ const Header = () => {
                       </div>
                     </div>
                     <div className="p-2">
-                      {/* My Dashboard - replaces Instructor Dashboard */}
-                      <Link to="/instructor/dashboard" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
-                        <span className="material-symbols-outlined text-[20px]">school</span>
-                        <span className="text-sm font-medium">My Dashboard</span>
-                      </Link>
+                       {/* Role-based Dashboard link */}
+                       {(String(user?.role || user?.Role || '').toUpperCase() === 'ADMIN' || 
+                         String(user?.role || user?.Role || '').toUpperCase() === 'INSTRUCTOR') && (
+                        <Link 
+                          to={String(user?.role || user?.Role || '').toUpperCase() === 'ADMIN' ? "/admin/dashboard" : "/instructor/dashboard"} 
+                          onClick={() => setIsDropdownOpen(false)} 
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">
+                            {String(user?.role || user?.Role || '').toUpperCase() === 'ADMIN' ? 'dashboard' : 'school'}
+                          </span>
+                          <span className="text-sm font-medium">
+                            {String(user?.role || user?.Role || '').toUpperCase() === 'ADMIN' ? 'Admin Dashboard' : 'Instructor Dashboard'}
+                          </span>
+                        </Link>
+                      )}
                       <Link to="/my-learning?tab=wishlist" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#2a2a3a]/50 text-gray-300 hover:text-white transition-colors">
                         <span className="material-symbols-outlined text-[20px]">favorite</span>
                         <span className="text-sm font-medium">My Wishlist</span>

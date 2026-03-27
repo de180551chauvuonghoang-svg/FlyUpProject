@@ -1582,14 +1582,18 @@ export const finishCourse = async (req, res) => {
       completedMilestones = [];
     }
 
-    console.log(`[finishCourse] User ${userId} finishing course ${courseId}. Milestones: ${completedMilestones.length}, Total: ${totalLectures}`);
+    // Use a Set to handle potential duplicates in milestones
+    const uniqueCompletedIds = new Set(completedMilestones.filter(id => allLectureIds.includes(id)));
+    const completedCount = uniqueCompletedIds.size;
 
-    // Allow completion if at least 100% (or very close to it)
-    if (completedMilestones.length < totalLectures && totalLectures > 0) {
+    console.log(`[finishCourse] User ${userId} finishing course ${courseId}. Unique Completed: ${completedCount}, Total required: ${totalLectures}`);
+
+    if (completedCount < totalLectures && totalLectures > 0) {
+      // Allow a small margin of error if somehow count is off (optional, but keeping it strict for now with better logs)
       return res.status(400).json({ 
         success: false, 
-        error: "Course not yet completed", 
-        completed: completedMilestones.length, 
+        error: `Course not yet completed. You have finished ${completedCount} of ${totalLectures} lectures.`, 
+        completed: completedCount, 
         total: totalLectures 
       });
     }

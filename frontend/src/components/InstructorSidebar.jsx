@@ -3,6 +3,7 @@ import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
 
 const NAV_ITEMS = [
+  { icon: "home", label: "Home Page", path: "/" },
   { icon: "dashboard", label: "Dashboard", path: "/instructor/dashboard" },
   { icon: "group", label: "Students", path: "/instructor/students" },
   { icon: "forum", label: "Communication", path: "/instructor/communication" },

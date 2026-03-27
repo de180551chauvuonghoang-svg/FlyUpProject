@@ -73,7 +73,10 @@ const MyLearningPage = () => {
         
         return (
             <article key={enrollment.CourseId} className="group relative flex flex-col bg-surface-dark border border-white/5 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-neon hover:-translate-y-1">
-                <div className="relative h-48 w-full overflow-hidden">
+                <div 
+                    className="relative h-48 w-full overflow-hidden cursor-pointer"
+                    onClick={() => navigate(`/courses/${enrollment.course?.Id}`)}
+                >
                     <div 
                         className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
                         style={{ backgroundImage: `url('${getImageUrl(enrollment.course?.ThumbUrl)}')` }}
@@ -85,7 +88,10 @@ const MyLearningPage = () => {
                     </div>
                 </div>
                 <div className="flex flex-col flex-1 p-5 gap-4">
-                    <div className="space-y-1">
+                    <div 
+                        className="space-y-1 cursor-pointer"
+                        onClick={() => navigate(`/courses/${enrollment.course?.Id}`)}
+                    >
                         <div className="flex justify-between items-start">
                             <h3 className="text-lg font-bold text-white leading-tight group-hover:text-primary transition-colors line-clamp-2">
                                 {enrollment.course?.Title}

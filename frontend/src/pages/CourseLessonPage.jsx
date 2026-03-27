@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuth from "../hooks/useAuth";
 import Quiz from "../components/Quiz";
 import toast from "react-hot-toast";
+import { apiCall } from "../config/apiConfig";
 import { sendMessage } from "../services/chatbotService";
 import {
   fetchCourseLessons,
@@ -960,6 +962,7 @@ export default function CourseLessonPage({ isPreview }) {
     } catch (error) {
       console.error("Review submission error:", error);
       toast.error("Không thể gửi đánh giá, nhưng bạn vẫn có thể nhận chứng chỉ.");
+      setShowReviewModal(false);
       navigate(`/certificate/${courseId}`);
     } finally {
       setIsSubmittingReview(false);
@@ -967,14 +970,19 @@ export default function CourseLessonPage({ isPreview }) {
   };
 
   const handleFinishCourse = async () => {
-    if (progress < 100) {
+    console.log("[CourseLessonPage] handleFinishCourse triggered, progress:", progress);
+    
+    if (Math.round(progress) < 100) {
       toast.error("Vui lòng hoàn thành tất cả các bài học để nhận chứng chỉ!");
       return;
     }
 
     const toastId = toast.loading("Đang xử lý hoàn thành khóa học...");
     try {
-      await finishCourse(courseId);
+      console.log("[CourseLessonPage] Calling finishCourse API for:", courseId);
+      const result = await finishCourse(courseId);
+      console.log("[CourseLessonPage] finishCourse API result:", result);
+      
       toast.success("Chúc mừng! Bạn đã hoàn thành khóa học.", { id: toastId });
       
       // Invalidate queries to refresh enrollment status
@@ -985,9 +993,15 @@ export default function CourseLessonPage({ isPreview }) {
 
       // Show review modal instead of direct redirect
       setShowReviewModal(true);
+      console.log("[CourseLessonPage] showReviewModal set to true");
     } catch (error) {
       console.error("Failed to finish course:", error);
-      toast.error("Có lỗi xảy ra khi hoàn thành khóa học. Vui lòng thử lại sau.", { id: toastId });
+      toast.error(`Lỗi: ${error.message || "Có lỗi xảy ra khi hoàn thành khóa học."}`, { id: toastId });
+      
+      // Fallback: If it's already completed or close enough, show the modal anyway
+      if (error.message?.includes("completed") || progress >= 100) {
+        setShowReviewModal(true);
+      }
     }
   };
 
@@ -1446,20 +1460,22 @@ export default function CourseLessonPage({ isPreview }) {
                   Edit This Lecture
                 </button>
               )}
-              <button
-                onClick={() => {
-                  if (!isLessonCompleted) handleCompleteLesson();
-                }}
-                className={`flex-1 md:flex-none h-11 px-6 rounded-lg border transition-all flex items-center justify-center gap-2 font-medium ${isLessonCompleted
-                    ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-                    : "border-slate-600 text-white hover:bg-white/5 hover:border-slate-500"
-                  }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  check_circle
-                </span>
-                {isLessonCompleted ? "Completed" : "Mark as Complete"}
-              </button>
+              {(!currentLesson?.VideoUrl || isLessonCompleted) && (
+                <button
+                  onClick={() => {
+                    if (!isLessonCompleted) handleCompleteLesson();
+                  }}
+                  className={`flex-1 md:flex-none h-11 px-6 rounded-lg border transition-all flex items-center justify-center gap-2 font-medium ${isLessonCompleted
+                      ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                      : "border-slate-600 text-white hover:bg-white/5 hover:border-slate-500"
+                    }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    check_circle
+                  </span>
+                  {isLessonCompleted ? "Completed" : "Mark as Complete"}
+                </button>
+              )}
               <button
                 onClick={handleNextLecture}
                 className={`flex-1 md:flex-none h-11 px-6 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${isLessonCompleted
@@ -1853,7 +1869,9 @@ export default function CourseLessonPage({ isPreview }) {
                               ? 'bg-primary text-white rounded-br-none shadow-lg shadow-primary/10' 
                               : 'bg-slate-800 text-slate-200 border border-white/5 rounded-bl-none shadow-sm'
                           }`}>
-                            {msg.text}
+                            <div className="markdown-content">
+                              <ReactMarkdown>{msg.text}</ReactMarkdown>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1903,8 +1921,8 @@ export default function CourseLessonPage({ isPreview }) {
                           <span className="material-symbols-outlined text-[14px]">close</span>
                         </button>
                       </div>
-                      <div className="text-slate-300 text-xs whitespace-pre-wrap leading-relaxed max-h-[150px] overflow-y-auto custom-scrollbar">
-                        {aiSummary}
+                      <div className="text-slate-300 text-xs leading-relaxed max-h-[150px] overflow-y-auto custom-scrollbar markdown-content">
+                        <ReactMarkdown>{aiSummary}</ReactMarkdown>
                       </div>
                     </div>
                   )}
@@ -2121,7 +2139,7 @@ function AIQuizRenderer({ questions, onClose }) {
         )}
       </div>
 
-      {/* Course Review Modal */}
+      {/* Course Finish / Review Prompt Modal */}
       {showReviewModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="w-full max-w-md bg-[#130d1a] border border-glass-border rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
@@ -2130,54 +2148,33 @@ function AIQuizRenderer({ questions, onClose }) {
             
             <div className="relative z-10 text-center space-y-6">
               <div className="size-20 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20 animate-bounce">
-                <span className="material-symbols-outlined text-4xl text-white">rate_review</span>
+                <span className="material-symbols-outlined text-4xl text-white">emoji_events</span>
               </div>
               
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">How was your learning?</h2>
-                <p className="text-slate-400 text-sm">Your feedback helps instructors improve the course and helps other students decide.</p>
-              </div>
-
-              {/* Star Rating */}
-              <div className="flex justify-center gap-2 py-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => setReviewRating(star)}
-                    onMouseEnter={() => setReviewRating(star)}
-                    className="transition-transform hover:scale-125 focus:outline-none"
-                  >
-                    <span className={`material-symbols-outlined text-4xl ${star <= reviewRating ? 'text-yellow-400 fill-1' : 'text-slate-600'}`} style={{ fontVariationSettings: star <= reviewRating ? "'FILL' 1" : "'FILL' 0" }}>
-                      star
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Comment Field */}
-              <div className="space-y-2 text-left">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Write your feedback</label>
-                <textarea
-                  value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
-                  placeholder="What did you like or dislike about this course? (Optional)"
-                  className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 transition-all resize-none text-sm"
-                ></textarea>
+                <h2 className="text-2xl font-bold text-white mb-2">Congratulations!</h2>
+                <p className="text-slate-400 text-sm">You have successfully completed the course. Please leave a comment and rating for the course, afterwards you will receive your certificate.</p>
               </div>
 
               <div className="flex gap-3 pt-4">
                 <button
-                  onClick={() => navigate(`/certificate/${courseId}`)}
+                  onClick={() => {
+                    setShowReviewModal(false);
+                    navigate(`/certificate/${courseId}`);
+                  }}
                   className="flex-1 py-3 px-4 rounded-xl border border-white/10 text-slate-400 font-bold hover:bg-white/5 transition-all text-sm"
                 >
-                  Skip
+                  Skip for now
                 </button>
                 <button
-                  onClick={handleReviewSubmit}
-                  disabled={isSubmittingReview}
-                  className="flex-[2] py-3 px-4 rounded-xl bg-gradient-to-r from-primary to-purple-600 text-white font-bold shadow-neon hover:shadow-neon-strong transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
+                  onClick={() => {
+                    setShowReviewModal(false);
+                    navigate(`/courses/${courseId}?completed=true`);
+                  }}
+                  className="flex-[2] py-3 px-4 rounded-xl bg-gradient-to-r from-primary to-purple-600 text-white font-bold shadow-neon hover:shadow-neon-strong transition-all flex items-center justify-center gap-2 text-sm"
                 >
-                  {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                  Rate & Comment
+                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </button>
               </div>
             </div>
@@ -2187,6 +2184,5 @@ function AIQuizRenderer({ questions, onClose }) {
     </div>
   );
 }
-=======
->>>>>>> fix-ai-assistant-generate-quiz
+
 

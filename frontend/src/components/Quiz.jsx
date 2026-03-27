@@ -89,7 +89,6 @@ export default function Quiz({ courseId, assignmentId, onClose, refreshTrigger }
           selectedChoiceContent: userChoice?.content || result.userAnswer,
           correctChoiceContent: correctChoice?.content || "",
           isCorrect: result.isCorrect,
-          sectionId: sectionId || null,
         }),
       });
 
