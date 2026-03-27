@@ -3,32 +3,76 @@ import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-export default function Quiz({ courseId, assignmentId, onClose, refreshTrigger }) {
-  const [questions, setQuestions] = useState([]);
+export default function Quiz({ 
+  courseId, 
+  assignmentId, 
+  aiQuizId, 
+  initialQuestions, 
+  onClose, 
+  refreshTrigger 
+}) {
+  const [questions, setQuestions] = useState(initialQuestions || []);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialQuestions);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [results, setResults] = useState(null);
 
   useEffect(() => {
-    fetchQuestions();
+    if (initialQuestions) {
+      setQuestions(initialQuestions);
+      setIsLoading(false);
+    } else {
+      fetchQuestions();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId, assignmentId, refreshTrigger]);
+  }, [courseId, assignmentId, aiQuizId, refreshTrigger]);
 
   const fetchQuestions = async () => {
     try {
-      const url = new URL(`${API_URL}/quiz/${courseId}/questions`);
-      url.searchParams.append("limit", "10");
-      if (assignmentId) {
-        url.searchParams.append("assignmentId", assignmentId);
+      setIsLoading(true);
+      let url;
+      const token = localStorage.getItem("accessToken");
+
+      if (aiQuizId) {
+        // Fetch from dedicated AI Quiz endpoint
+        url = `${API_URL}/ai/quiz/${aiQuizId}`;
+      } else {
+        // Fetch from generic assignment endpoint
+        url = `${API_URL}/quiz/${courseId}/questions`;
+        const urlObj = new URL(url);
+        urlObj.searchParams.append("limit", "50");
+        if (assignmentId) {
+          urlObj.searchParams.append("assignmentId", assignmentId);
+        }
+        url = urlObj.toString();
       }
 
-      const response = await fetch(url.toString());
+      const response = await fetch(url, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        }
+      });
       const data = await response.json();
 
       if (data.success) {
-        setQuestions(data.data.questions);
+        // Format of response might differ between old and new API
+        const fetchedQuestions = aiQuizId ? (data.data.AiQuizQuestions || data.data.questions) : data.data.questions;
+        
+        // Normalize field names if necessary (Content -> content, Id -> id)
+        const normalized = fetchedQuestions.map(q => ({
+          id: q.Id || q.id,
+          content: q.Content || q.content,
+          difficulty: q.Difficulty || q.difficulty,
+          explanation: q.Explanation || q.explanation,
+          choices: (q.AiQuizChoices || q.choices || []).map(c => ({
+            id: c.Id || c.id,
+            content: c.Content || c.content,
+            isCorrect: c.IsCorrect ?? c.isCorrect
+          }))
+        }));
+
+        setQuestions(normalized);
       } else {
         toast.error("Failed to load quiz");
       }
@@ -70,13 +114,20 @@ export default function Quiz({ courseId, assignmentId, onClose, refreshTrigger }
 
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_URL}/quiz/${courseId}/submit`, {
+      const url = aiQuizId 
+        ? `${API_URL}/ai/quiz/submit` 
+        : `${API_URL}/quiz/${courseId}/submit`;
+
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ answers: selectedAnswers }),
+        body: JSON.stringify({ 
+          aiQuizId, 
+          answers: selectedAnswers 
+        }),
       });
 
       const data = await response.json();
@@ -92,6 +143,7 @@ export default function Quiz({ courseId, assignmentId, onClose, refreshTrigger }
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz");
     }
+
   };
 
   const handleRetry = () => {
@@ -171,17 +223,55 @@ export default function Quiz({ courseId, assignmentId, onClose, refreshTrigger }
                     Question {index + 1}
                   </h4>
                   <p className="text-slate-300 mb-3">{result.question}</p>
-                  <div className="text-sm">
-                    <p className="text-slate-400">
-                      {result.isCorrect ? "✓ Correct!" : "✗ Incorrect"}
-                    </p>
-                    {!result.isCorrect && (
-                      <p className="text-green-400 mt-1">
-                        Correct answer: {result.explanation}
-                      </p>
+                  
+                  <div className="space-y-2 mb-4">
+                    {result.choices ? (
+                      result.choices.map((choice) => {
+                        const isUserAnswer = choice.id === result.userAnswer;
+                        const isCorrect = choice.id === result.correctAnswer;
+                        
+                        return (
+                          <div 
+                            key={choice.id}
+                            className={`p-3 rounded-lg text-sm border ${
+                              isCorrect 
+                                ? "border-green-500/50 bg-green-500/10 text-green-200" 
+                                : isUserAnswer 
+                                  ? "border-red-500/50 bg-red-500/10 text-red-200"
+                                  : "border-white/5 bg-white/5 text-slate-400"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {isCorrect && <span className="material-symbols-outlined text-[16px]">check_circle</span>}
+                              {isUserAnswer && !isCorrect && <span className="material-symbols-outlined text-[16px]">cancel</span>}
+                              <span>{choice.content}</span>
+                              {isUserAnswer && <span className="text-[10px] uppercase font-bold ml-auto opacity-70">Your Answer</span>}
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-sm">
+                        <p className={result.isCorrect ? "text-green-400" : "text-red-400"}>
+                          Your answer: {result.userAnswer}
+                        </p>
+                        {!result.isCorrect && (
+                          <p className="text-green-400 mt-1">
+                            Correct answer: {result.explanation}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
+
+                  {result.explanation && (
+                    <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
+                      <p className="text-xs font-bold text-slate-500 uppercase mb-1">Explanation</p>
+                      <p className="text-sm text-slate-300 italic">{result.explanation}</p>
+                    </div>
+                  )}
                 </div>
+
               </div>
             </div>
           ))}

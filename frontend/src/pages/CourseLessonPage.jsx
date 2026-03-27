@@ -9,7 +9,7 @@ import {
   fetchEnrollmentProgress,
   markLectureComplete,
 } from "../services/lessonService";
-import { fetchAssignmentsByCourse } from "../services/quizService";
+import { fetchAssignmentsByCourse, generateInstantAIQuiz } from "../services/quizService";
 import QuizPreTestPage from "./QuizPreTestPage";
 import QuizPage from "./QuizPage";
 import QuizResultPage from "./QuizResultPage";
@@ -114,7 +114,8 @@ export default function CourseLessonPage() {
   const [isGeneratingAIQuiz, setIsGeneratingAIQuiz] = useState(false);
   const [quizRefreshTrigger, setQuizRefreshTrigger] = useState(0);
   const [hasGeneratedQuiz, setHasGeneratedQuiz] = useState(false);
-  const [currentAssignmentId, setCurrentAssignmentId] = useState(null);
+  const [currentAiQuizId, setCurrentAiQuizId] = useState(null);
+  const [currentAiQuizData, setCurrentAiQuizData] = useState(null);
 
   // Video tracking & UI states
   const maxTimePlayed = useRef(0);
@@ -453,33 +454,26 @@ export default function CourseLessonPage() {
     try {
       toast.loading("Đang tạo bộ câu hỏi từ bài giảng...", { id: "ai-quiz-gen" });
       const token = localStorage.getItem("accessToken");
-      const res = await fetch(`${API_URL}/ai/quiz/generate-instant`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          courseId,
-          lessonId: selectedLessonId,
-          count: 5,
-          difficulty: "Mixed",
-        }),
-      });
+      
+      const result = await generateInstantAIQuiz({
+        courseId,
+        lessonId: selectedLessonId,
+        count: 5,
+        difficulty: "Mixed",
+      }, token);
 
-      const result = await res.json();
       if (result.success) {
-        // Invalidate Quiz queries so the new questions are fetched from the backend pool
-        queryClient.invalidateQueries({ queryKey: ["courseAssignments", courseId] });
+        // No need to invalidate courseAssignments since it's stored separately now
         
         // Switch to the Q&A tab to view the questions
         setActiveTab("qa");
-        // Trigger Quiz component refetch
+        // Trigger Quiz component refetch if needed, but we pass direct data
         setQuizRefreshTrigger(prev => prev + 1);
         setHasGeneratedQuiz(true);
-        setCurrentAssignmentId(result.data.assignmentId);
+        setCurrentAiQuizId(result.data.aiQuizId);
+        setCurrentAiQuizData(result.data.questions);
 
-        toast.success("Đã tạo xong 5 câu hỏi thực hành và lưu vào ngân hàng đề!", { id: "ai-quiz-gen" });
+        toast.success("Đã tạo xong 5 câu hỏi thực hành!", { id: "ai-quiz-gen" });
       } else {
         toast.error(result.message || "Không thể tạo câu hỏi AI", { id: "ai-quiz-gen" });
       }
@@ -1495,8 +1489,14 @@ export default function CourseLessonPage() {
                   {hasGeneratedQuiz ? (
                     <Quiz
                       courseId={courseId}
-                      assignmentId={currentAssignmentId}
-                      onClose={() => setActiveTab("overview")}
+                      aiQuizId={currentAiQuizId}
+                      initialQuestions={currentAiQuizData}
+                      onClose={() => {
+                        setHasGeneratedQuiz(false);
+                        setCurrentAiQuizId(null);
+                        setCurrentAiQuizData(null);
+                        setActiveTab("overview");
+                      }}
                       refreshTrigger={quizRefreshTrigger}
                     />
                   ) : (

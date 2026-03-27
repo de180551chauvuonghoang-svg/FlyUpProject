@@ -1,11 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Articles {
@@ -723,4 +725,38 @@ model WithdrawalRequests {
 
   @@index([InstructorId], map: "IX_WithdrawalRequests_InstructorId")
   @@index([Status], map: "IX_WithdrawalRequests_Status")
+}
+
+model AiQuizzes {
+  Id             String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  CourseId       String           @db.Uuid
+  LessonId       String?          @db.Uuid
+  CreatorId      String           @db.Uuid
+  Difficulty     String           @default("Mixed") @db.VarChar(50)
+  QuestionCount  Int              @default(5)
+  CreationTime   DateTime         @default(now()) @db.Timestamp(6)
+  AiQuizQuestions AiQuizQuestions[]
+  @@index([CreatorId])
+  @@index([CourseId])
+  @@index([LessonId])
+}
+
+model AiQuizQuestions {
+  Id           String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  AiQuizId     String          @db.Uuid
+  Content      String          @db.VarChar(1000)
+  Difficulty   String?         @db.VarChar(50)
+  Explanation  String?         @db.VarChar(2000)
+  AiQuiz       AiQuizzes       @relation(fields: [AiQuizId], references: [Id], onDelete: Cascade)
+  AiQuizChoices AiQuizChoices[]
+  @@index([AiQuizId])
+}
+
+model AiQuizChoices {
+  Id              String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  AiQuizQuestionId String         @db.Uuid
+  Content         String          @db.VarChar(500)
+  IsCorrect       Boolean         @default(false)
+  AiQuizQuestion  AiQuizQuestions @relation(fields: [AiQuizQuestionId], references: [Id], onDelete: Cascade)
+  @@index([AiQuizQuestionId])
 }

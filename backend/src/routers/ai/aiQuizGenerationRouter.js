@@ -9,7 +9,10 @@ import express from 'express';
 import { 
   generateQuiz, 
   getQuizGenerationHealth,
-  generateInstantAIQuiz
+  generateInstantAIQuiz,
+  getAiQuiz,
+  getAiQuizzesByLesson,
+  submitAiQuiz
 } from '../../controllers/ai/aiQuizGenerationController.js';
 import { authenticateJWT } from '../../middleware/authMiddleware.js';
 import { rateLimit } from '../../middleware/rateLimitMiddleware.js';
@@ -224,6 +227,40 @@ router.post(
   rateLimit('ai-gen-instant', 5, 60),
   generateInstantAIQuiz
 );
+
+/**
+ * @swagger
+ * /api/ai/quiz/{aiQuizId}:
+ *   get:
+ *     summary: Get a single AI quiz by ID
+ *     tags: [Quiz Generation]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/:aiQuizId', authenticateJWT, getAiQuiz);
+
+/**
+ * @swagger
+ * /api/ai/quiz/lesson/{courseId}/{lessonId}:
+ *   get:
+ *     summary: Get AI quizzes for a specific lesson/course
+ *     tags: [Quiz Generation]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/lesson/:courseId/:lessonId', authenticateJWT, getAiQuizzesByLesson);
+
+/**
+ * @swagger
+ * /api/ai/quiz/submit:
+ *   post:
+ *     summary: Submit AI quiz answers and get results
+ *     tags: [Quiz Generation]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/submit', authenticateJWT, submitAiQuiz);
+
 
 export default router;
 

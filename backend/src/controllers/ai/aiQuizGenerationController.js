@@ -8,6 +8,7 @@
 import { generateAdaptiveQuiz } from '../../services/ai/adaptiveQuizCurationService.js';
 import { createQuizAssignment, getPrimarySectionId } from '../../utils/quizAssignmentFactory.js';
 import { AIQuestionGenerationService } from '../../services/ai/aiQuestionGenerationService.js';
+import { saveAiQuiz, getAiQuizById, getAiQuizzesByLesson as fetchAiQuizzesByLesson } from '../../services/ai/aiQuizService.js';
 import prisma from '../../lib/prisma.js';
 
 /**
@@ -169,6 +170,7 @@ export const generateQuiz = async (req, res) => {
 export const generateInstantAIQuiz = async (req, res) => {
   try {
     const { courseId, lessonId, count = 5, difficulty = 'Mixed' } = req.body;
+    const userId = req.user?.userId;
 
     if (!courseId) {
       return res.status(400).json({
@@ -178,7 +180,7 @@ export const generateInstantAIQuiz = async (req, res) => {
       });
     }
 
-    console.log(`🤖 Instant AI Quiz generation requested for course: ${courseId}`);
+    console.log(`🤖 Instant AI Quiz generation requested for course: ${courseId}, lesson: ${lessonId}`);
 
     // Generate questions using AI service
     const questions = await AIQuestionGenerationService.generateQuestionsFromCourseContent(
@@ -188,53 +190,107 @@ export const generateInstantAIQuiz = async (req, res) => {
       lessonId
     );
 
-    // Save questions to database as an Assignment
-
-    const sectionId = await getPrimarySectionId(prisma, courseId);
-    const userId = req.user?.userId;
-
-    const assignment = await createQuizAssignment(prisma, {
-      name: `AI Practice Quiz - ${new Date().toLocaleDateString('vi-VN')}`,
-      duration: count * 3, // 3 minutes per question
-      gradeToPass: Math.ceil(count * 0.8), // 80% to pass
-      sectionId,
-      userId,
+    // Save to dedicated AI Quiz tables
+    const quiz = await saveAiQuiz({
       courseId,
-      scope: { type: 'instant', lessonId },
-      userTheta: 0,
-      difficultyMix: { [difficulty]: 1 },
-      selectedQuestions: questions.map((q) => ({
-        question: {
-          Content: q.content,
-          Difficulty: q.difficulty,
-          ParamA: 1.0,
-          ParamB: q.difficulty === 'Easy' ? -1.0 : q.difficulty === 'Hard' ? 1.0 : 0.0,
-          ParamC: 0.25,
-          McqChoices: q.choices.map((c) => ({
-            Content: c.content,
-            IsCorrect: !!c.isCorrect,
-          })),
-        },
-        selectionMethod: 'instant'
-      }))
+      lessonId,
+      creatorId: userId,
+      difficulty,
+      questions
     });
 
-    console.log(`✅ Saved AI Quiz as Assignment ${assignment.Id}`);
+    console.log(`✅ Saved Dedicated AI Quiz ${quiz.Id}`);
 
     return res.status(200).json({
       success: true,
       data: {
-        assignmentId: assignment.Id,
-        totalQuestions: questions.length,
-        generatedAt: new Date().toISOString()
+        aiQuizId: quiz.Id,
+        difficulty: quiz.Difficulty,
+        questions: quiz.AiQuizQuestions.map(q => ({
+          id: q.Id,
+          content: q.Content,
+          explanation: q.Explanation,
+          choices: q.AiQuizChoices.map(c => ({
+            id: c.Id,
+            content: c.Content,
+            isCorrect: c.IsCorrect
+          }))
+        })),
+        totalQuestions: quiz.AiQuizQuestions.length,
+        generatedAt: quiz.CreationTime
       }
     });
 
   } catch (error) {
     console.error(`❌ generateInstantAIQuiz Error:`, error);
+    // Log details if it is a Prisma error
+    if (error.code) {
+      console.error(`  Prisma Error Code: ${error.code}`);
+      console.error(`  Prisma Target: ${error.meta?.target}`);
+    }
     return res.status(500).json({
       success: false,
       error: "INSTANT_AI_GENERATION_FAILED",
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+};
+
+
+/**
+ * Get a single AI quiz by ID
+ * GET /api/ai/quiz/:aiQuizId
+ */
+export const getAiQuiz = async (req, res) => {
+  try {
+    const { aiQuizId } = req.params;
+    const quiz = await getAiQuizById(aiQuizId);
+
+    if (!quiz) {
+      return res.status(404).json({
+        success: false,
+        error: "QUIZ_NOT_FOUND",
+        message: "AI Quiz not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: quiz
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "FETCH_AI_QUIZ_FAILED",
+      message: error.message
+    });
+  }
+};
+
+/**
+ * Get AI quizzes by lesson/course
+ * GET /api/ai/quiz/lesson/:courseId/:lessonId
+ */
+export const getAiQuizzesByLesson = async (req, res) => {
+  try {
+    const { courseId, lessonId } = req.params;
+    const userId = req.user.userId;
+
+    const quizzes = await fetchAiQuizzesByLesson({
+      courseId,
+      lessonId: lessonId === 'null' ? null : lessonId,
+      creatorId: userId
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: quizzes
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "FETCH_AI_QUIZZES_FAILED",
       message: error.message
     });
   }
@@ -281,6 +337,97 @@ export const getQuizGenerationHealth = async (req, res) => {
       service: 'quiz-generation',
       status: 'unhealthy',
       error: error.message
+    });
+  }
+};
+
+/**
+ * Submit AI quiz answers and get results
+ * POST /api/ai/quiz/submit
+ */
+export const submitAiQuiz = async (req, res) => {
+  try {
+    const { aiQuizId, answers } = req.body;
+    const userId = req.user?.userId;
+
+    if (!aiQuizId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_AI_QUIZ_ID"
+      });
+    }
+
+    if (!answers || Object.keys(answers).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "NO_ANSWERS_PROVIDED"
+      });
+    }
+
+    // Fetch quiz questions and choices
+    const quiz = await prisma.aiQuizzes.findUnique({
+      where: { Id: aiQuizId },
+      include: {
+        AiQuizQuestions: {
+          include: {
+            AiQuizChoices: true
+          }
+        }
+      }
+    });
+
+    if (!quiz) {
+      return res.status(404).json({
+        success: false,
+        error: "AI_QUIZ_NOT_FOUND"
+      });
+    }
+
+    let correctCount = 0;
+    const questions = quiz.AiQuizQuestions;
+    
+    const results = questions.map(question => {
+      const userChoiceId = answers[question.Id];
+      const choices = question.AiQuizChoices;
+      const correctChoice = choices.find(c => c.IsCorrect);
+      
+      const isCorrect = userChoiceId === correctChoice?.Id;
+      if (isCorrect) correctCount++;
+
+      return {
+        questionId: question.Id,
+        question: question.Content,
+        userAnswer: userChoiceId,
+        correctAnswer: correctChoice?.Id,
+        isCorrect,
+        explanation: question.Explanation || (isCorrect ? "Câu trả lời của bạn đúng." : `Đáp án đúng là: ${correctChoice?.Content}`),
+        choices: choices.map(c => ({
+          id: c.Id,
+          content: c.Content,
+          isCorrect: c.IsCorrect
+        }))
+      };
+    });
+
+    const score = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
+
+    res.json({
+      success: true,
+      data: {
+        score,
+        correctCount,
+        totalQuestions: questions.length,
+        results
+      }
+    });
+
+  } catch (error) {
+    console.error("Submit AI quiz error:", error);
+    res.status(500).json({
+      success: false,
+      error: "SUBMIT_AI_QUIZ_FAILED",
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
