@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const chat = async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, history = [] } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
@@ -79,42 +79,42 @@ export const chat = async (req, res) => {
         ----------------------------------`;
     }).join("\n");
 
-    // 2. Construct the prompt
-    // Use llama-3.3-70b-versatile on Groq
+    // 2. Construct the system prompt
     const model = "llama-3.3-70b-versatile";
 
-    const prompt = `
-    You are "FlyUp", a professional and concise Academic Counselor.
+    const systemPrompt = `
+    You are "FlyUp AI Tutor & Counselor", a professional and helpful educational assistant.
 
-    ### KNOWLEDGE BASE (Courses):
+    ### KNOWLEDGE BASE (Available Courses):
     ${courseContext}
 
     ### INSTRUCTIONS:
-    1.  **Direct Answer**: match the user's intent immediately.
-    2.  **Course Cards**: When recommending courses, use this clean format:
-        *   **[Course Title]**
-        *   💰 Price: [Price in VND]
-        *   👨‍🏫 Instructor: [Name]
-        *   ✨ Why this fits: [1 short sentence linking to user needs]
-    3.  **Language**: Reply in the same language as the user (Vietnamese if they speak Vietnamese).
-    4.  **Tone**: Helpful, short, and to the point. No fluff.
-    5.  **Data**: Use the provided VND price exactly.
-
-    User's Message: "${message}"
-    
-    Your Response:
+    1. **Primary Goal (Tutor)**: Always provide a clear, accurate, and helpful answer to the user's specific learning question or academic topic first. Use any provided lesson context to explain concepts in detail.
+    2. **Secondary Goal (Counselor)**: After answering the academic question, IF and ONLY IF the topic relates to can be expanded via an available course, suggest 1-2 relevant courses using the "Course Card" format.
+    3. **Course Card Format**:
+       * **[Course Title]**
+       * 💰 Price: [Price in VND]
+       * 👨‍🏫 Instructor: [Name]
+       * ✨ Why this fits: [1 short sentence linking to the topic]
+    4. **Language**: Reply in the same language as the user (Vietnamese if they speak Vietnamese).
+    5. **Tone**: Educational, encouraging, and concise.
     `;
+
+    // Format history for Groq
+    const chatHistory = history.map(h => ({
+      role: h.role === 'user' ? 'user' : 'assistant',
+      content: h.content
+    }));
 
     // 3. Generate response using Groq
     const completion = await groq.chat.completions.create({
         messages: [
-            {
-                role: "user",
-                content: prompt,
-            },
+            { role: "system", content: systemPrompt },
+            ...chatHistory,
+            { role: "user", content: message },
         ],
         model: model,
-        temperature: 0.5,
+        temperature: 0.6,
         max_tokens: 1024,
     });
 
