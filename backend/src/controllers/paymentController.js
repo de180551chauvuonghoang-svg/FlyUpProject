@@ -38,17 +38,19 @@ export const handleCassoWebhook = async (req, res) => {
       const amount = transaction.amount;
       
       // Use regex to find checkout ID (Check case-insensitive)
-      const match = description.match(/ORDER\s+([a-zA-Z0-9-]+)/i);
+      // Standard UUIDs can have dashes. Sometimes Casso descriptions append extra chars.
+      const match = description.match(/ORDER\s+([a-fA-F0-9-]+)/i);
       
       console.log(`Processing Trx: ${description}`);
       console.log(`Amount: ${amount}`);
-
+ 
       if (!match) {
         console.log(`ℹ️ Ignored non-order transaction: ${description}`);
         continue;
       }
-
-      const checkoutId = match[1];
+ 
+      // Clean extracted ID: trim trailing dashes or whitespace that might be caught
+      const checkoutId = match[1].replace(/-+$/, '').trim();
 
       // 3. Find Checkout Record
       let checkout = await prisma.cartCheckout.findUnique({
