@@ -1,11 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCourseLessons, fetchEnrollmentProgress } from '../services/lessonService';
 import useAuth from '../hooks/useAuth';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 const CertificatePage = () => {

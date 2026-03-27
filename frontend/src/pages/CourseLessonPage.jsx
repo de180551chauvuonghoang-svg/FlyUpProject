@@ -138,9 +138,6 @@ export default function CourseLessonPage({ isPreview }) {
 
   // Review & Debug states
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState("");
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
 
 
@@ -209,7 +206,7 @@ export default function CourseLessonPage({ isPreview }) {
       setIsInstructorPreview(shouldPreview);
     };
     checkInstructorPreview();
-  }, [user, lessonId]);
+  }, [user, lessonId, isPreview]);
 
   // Fetch course data
   const {
@@ -942,32 +939,6 @@ export default function CourseLessonPage({ isPreview }) {
     }
   };
 
-  const handleReviewSubmit = async () => {
-    if (!reviewRating) {
-      toast.error("Vui lòng chọn số sao đánh giá");
-      return;
-    }
-    setIsSubmittingReview(true);
-    try {
-      if (!isInstructorPreview) {
-        // Real submission
-        await apiCall(`/courses/${courseId}/reviews`, {
-          method: "POST",
-          body: { rating: reviewRating, content: reviewComment }
-        });
-      }
-      toast.success("Cảm ơn bạn đã đánh giá khóa học!");
-      setShowReviewModal(false);
-      navigate(`/certificate/${courseId}`);
-    } catch (error) {
-      console.error("Review submission error:", error);
-      toast.error("Không thể gửi đánh giá, nhưng bạn vẫn có thể nhận chứng chỉ.");
-      setShowReviewModal(false);
-      navigate(`/certificate/${courseId}`);
-    } finally {
-      setIsSubmittingReview(false);
-    }
-  };
 
   const handleFinishCourse = async () => {
     console.log("[CourseLessonPage] handleFinishCourse triggered, progress:", progress);
@@ -1979,165 +1950,6 @@ export default function CourseLessonPage({ isPreview }) {
           onClose={() => setActiveOverlay(null)}
         />
       )}
-
-    </div>
-  );
-}
-
-// Sub-component for rendering AI generated questions
-function AIQuizRenderer({ questions, onClose }) {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleSelectAnswer = (questionId, choiceContent) => {
-    setSelectedAnswers({
-      ...selectedAnswers,
-      [questionId]: choiceContent,
-    });
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
-  };
-
-  const handleSubmit = () => {
-    const unanswered = questions.filter((q) => !selectedAnswers[q.id]);
-    if (unanswered.length > 0) {
-      toast.error(`Vui lòng trả lời hết các câu hỏi! Còn ${unanswered.length} câu.`);
-      return;
-    }
-    setIsSubmitted(true);
-  };
-
-  const calculateScore = () => {
-    let correct = 0;
-    questions.forEach((q) => {
-      if (selectedAnswers[q.id] === q.choices.find(c => c.isCorrect)?.content) {
-        correct++;
-      }
-    });
-    return {
-      correct,
-      total: questions.length,
-      percentage: Math.round((correct / questions.length) * 100)
-    };
-  };
-
-  if (isSubmitted) {
-    const { correct, total, percentage } = calculateScore();
-    return (
-      <div className="p-8 text-center">
-        <div className="w-24 h-24 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/50">
-          <span className="text-3xl font-bold text-purple-400">{percentage}%</span>
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Hoàn thành bài luyện tập!</h2>
-        <p className="text-slate-400 mb-8">Bạn đúng {correct}/{total} câu hỏi.</p>
-
-        <div className="space-y-4 text-left max-w-2xl mx-auto mb-10">
-          {questions.map((q, idx) => {
-            const isCorrect = selectedAnswers[q.id] === q.choices.find(c => c.isCorrect)?.content;
-            return (
-              <div key={q.id} className={`p-4 rounded-xl border ${isCorrect ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
-                <p className="text-white font-medium mb-2">{idx + 1}. {q.content}</p>
-                <p className={`text-sm ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-                  {isCorrect ? 'Chính xác!' : `Sai rồi. Đáp án đúng là: ${q.choices.find(c => c.isCorrect)?.content}`}
-                </p>
-                {q.explanation && <p className="text-xs text-slate-500 mt-2 italic">Giải thích: {q.explanation}</p>}
-              </div>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={onClose}
-          className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all"
-        >
-          Đóng và tiếp tục học
-        </button>
-      </div>
-    );
-  }
-
-  const question = questions[currentQuestion];
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-
-  return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <span className="material-symbols-outlined text-purple-400">psychology</span>
-          AI Practice Quiz
-        </h2>
-        <div className="text-sm font-bold text-slate-400">
-          Câu {currentQuestion + 1} / {questions.length}
-        </div>
-      </div>
-
-      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-10">
-        <div className="h-full bg-purple-500 transition-all duration-300" style={{ width: `${progress}%` }}></div>
-      </div>
-
-      <div className="mb-10">
-        <h3 className="text-lg text-white font-medium mb-6 leading-relaxed">
-          {question.content}
-        </h3>
-        <div className="grid grid-cols-1 gap-3">
-          {question.choices.map((choice, idx) => {
-            const isSelected = selectedAnswers[question.id] === choice.content;
-            return (
-              <button
-                key={idx}
-                onClick={() => handleSelectAnswer(question.id, choice.content)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${isSelected
-                    ? 'border-purple-500 bg-purple-500/10 text-white'
-                    : 'border-white/10 bg-white/5 text-slate-300 hover:border-purple-500/30'
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`size-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-purple-500 bg-purple-500' : 'border-slate-600'}`}>
-                    {isSelected && <span className="material-symbols-outlined text-white text-[12px]">check</span>}
-                  </div>
-                  {choice.content}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center">
-        <button
-          onClick={handlePrevious}
-          disabled={currentQuestion === 0}
-          className="px-6 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
-        >
-          Quay lại
-        </button>
-        {currentQuestion === questions.length - 1 ? (
-          <button
-            onClick={handleSubmit}
-            className="px-8 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20"
-          >
-            Nộp bài
-          </button>
-        ) : (
-          <button
-            onClick={handleNext}
-            className="px-8 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
-          >
-            Tiếp theo
-          </button>
-        )}
-      </div>
 
       {/* Course Finish / Review Prompt Modal */}
       {showReviewModal && (
