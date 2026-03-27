@@ -354,6 +354,11 @@ export default function InstructorCreateCoursePage() {
     const toastId = toast.loading("Creating course and uploading files...");
 
     try {
+      // Check for token
+      if (!accessToken) {
+        throw new Error("You must be logged in to create a course. Please refresh the page.");
+      }
+
       // Step 1: Create basic course shell
       const res = await fetch(`${API_URL}/courses`, {
         method: "POST",
@@ -371,7 +376,14 @@ export default function InstructorCreateCoursePage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to create course basics");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Course creation failed:", res.status, errorData);
+        if (res.status === 401) {
+          throw new Error("Authentication failed. Your session may have expired.");
+        }
+        throw new Error(errorData.message || "Failed to create course basics");
+      }
       const { data: newCourse } = await res.json();
       const courseId = newCourse.id;
 
