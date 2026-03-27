@@ -18,7 +18,7 @@ export const AIQuestionGenerationService = {
    * @param {string|null} lessonId - Optional: generate from a specific lesson's materials
    * @returns {Promise<Array>} Array of generated questions
    */
-  async generateQuestionsFromCourseContent(courseId, count = 5, difficulty = 'Mixed', lessonId = null) {
+  async generateQuestionsFromCourseContent(courseId, count = 10, difficulty = 'Mixed', lessonId = null) {
     try {
       // 1. Fetch relevant content
       let lectures = [];
