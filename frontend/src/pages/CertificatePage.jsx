@@ -5,6 +5,7 @@ import { fetchCourseLessons, fetchEnrollmentProgress } from '../services/lessonS
 import useAuth from '../hooks/useAuth';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 const CertificatePage = () => {
