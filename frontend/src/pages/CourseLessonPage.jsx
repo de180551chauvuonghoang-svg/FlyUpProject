@@ -5,7 +5,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuth from "../hooks/useAuth";
 import Quiz from "../components/Quiz";
 import toast from "react-hot-toast";
-import { apiCall } from "../config/apiConfig";
 import { sendMessage } from "../services/chatbotService";
 import {
   fetchCourseLessons,
