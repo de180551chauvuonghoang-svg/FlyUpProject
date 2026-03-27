@@ -5,7 +5,8 @@ import {
   GraduationCap,
   UserCog,
   LogOut,
-  Bell
+  Bell,
+  Home
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import useAuth from '../../../hooks/useAuth';
@@ -15,6 +16,11 @@ import notificationService from '../../../services/admin/notificationService';
  * Menu items configuration
  */
 const menuItems = [
+  {
+    path: '/',
+    label: 'Home',
+    icon: Home,
+  },
   {
     path: '/admin/dashboard',
     label: 'Dashboard',
@@ -133,14 +139,16 @@ function Sidebar() {
         </div>
         <div className="user-info">
           <span className="user-name">{user?.fullName || "Admin"}</span>
+          <span className="user-role">Administrator</span>
         </div>
+        <button 
+          onClick={handleLogout}
+          className="logout-button"
+          title="Log Out"
+        >
+          <LogOut size={20} />
+        </button>
       </div>
-
-      {/* Logout */}
-      <button className="sidebar-logout" onClick={handleLogout}>
-        <LogOut size={18} />
-        <span>Terminal Exit</span>
-      </button>
     </aside>
   );
 }

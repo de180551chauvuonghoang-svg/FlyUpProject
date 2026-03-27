@@ -91,10 +91,11 @@ async function getAllQuestionsMap(questionIds, assignmentId) {
     return new Map(questions.map((q) => [q.Id, q]));
 }
 
+const QUIZ_QUESTION_COUNT = 10;
+
 export async function startCatQuizService({ userId, courseId, assignmentId, questionCount }) {
-    if (!questionCount || questionCount < 50 || questionCount > 150) {
-        throw new Error("questionCount must be between 50 and 150");
-    }
+    // Luôn dùng cố định 10 câu, bỏ qua giá trị questionCount từ client
+    const actualQuestionCount = QUIZ_QUESTION_COUNT;
 
     const assignment = await getAssignmentOrThrow(assignmentId, courseId);
 
@@ -102,9 +103,9 @@ export async function startCatQuizService({ userId, courseId, assignmentId, ques
         where: { AssignmentId: assignmentId },
     });
 
-    if (totalAvailableQuestions < questionCount) {
+    if (totalAvailableQuestions < actualQuestionCount) {
         throw new Error(
-            `Assignment only has ${totalAvailableQuestions} questions, cannot start ${questionCount}-question quiz`
+            `Assignment only has ${totalAvailableQuestions} questions, cannot start ${actualQuestionCount}-question quiz`
         );
     }
 
@@ -128,7 +129,7 @@ export async function startCatQuizService({ userId, courseId, assignmentId, ques
         question: catData.next_question,
         currentTheta: catData.temp_theta ?? initialTheta,
         initialTheta,
-        questionCount,
+        questionCount: actualQuestionCount,
         assignment: {
             Id: assignment.Id,
             Name: assignment.Name,

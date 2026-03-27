@@ -1,13 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { bulkGenerateAIQuestions } from '../../services/questionBankService';
+import { fetchCourseById } from '../../services/courseService';
 
 const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId }) => {
     const [config, setConfig] = useState({
         count: 5,
         difficulty: 'Mixed'
     });
+    const [lessons, setLessons] = useState([]);
+    const [selectedLessonId, setSelectedLessonId] = useState('all');
+    const [loadingLessons, setLoadingLessons] = useState(false);
     const [generating, setGenerating] = useState(false);
+
+    const loadCourseLessons = useCallback(async () => {
+        setLoadingLessons(true);
+        try {
+            const courseData = await fetchCourseById(courseId);
+            // Flatten sections and lectures
+            const allLessons = [];
+            if (courseData.Sections) {
+                courseData.Sections.forEach(section => {
+                    if (section.Lectures) {
+                        section.Lectures.forEach(lecture => {
+                            allLessons.push({
+                                id: lecture.Id,
+                                title: lecture.Title,
+                                sectionTitle: section.Title
+                            });
+                        });
+                    }
+                });
+            }
+            setLessons(allLessons);
+        } catch (error) {
+            console.error('Failed to load lessons:', error);
+            toast.error('Could not load course lessons');
+        } finally {
+            setLoadingLessons(false);
+        }
+    }, [courseId]);
+
+    useEffect(() => {
+        if (open && courseId) {
+            loadCourseLessons();
+        }
+    }, [open, courseId, loadCourseLessons]);
 
     if (!open) return null;
 
@@ -16,11 +54,13 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
         const toastId = toast.loading('AI is crafting your questions...');
 
         try {
+            const lessonIdParam = selectedLessonId === 'all' ? null : selectedLessonId;
             const result = await bulkGenerateAIQuestions(
                 bankId,
                 courseId,
                 config.count,
-                config.difficulty
+                config.difficulty,
+                lessonIdParam
             );
 
             toast.success(`Success! ${result.count} questions added to bank.`, { id: toastId });
@@ -74,6 +114,38 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
                             <span>10</span>
                             <span>20</span>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Content Source</label>
+                        <div className="relative">
+                            <select
+                                value={selectedLessonId}
+                                onChange={(e) => setSelectedLessonId(e.target.value)}
+                                disabled={loadingLessons}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-300 outline-none focus:border-purple-500/50 appearance-none disabled:opacity-50 transition-all cursor-pointer"
+                            >
+                                <option value="all" className="bg-slate-900">Entire Course Content</option>
+                                {lessons.map(lesson => (
+                                    <option key={lesson.id} value={lesson.id} className="bg-slate-900">
+                                        [{lesson.sectionTitle}] {lesson.title}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                {loadingLessons ? (
+                                    <div className="w-4 h-4 border-2 border-white/10 border-t-white rounded-full animate-spin"></div>
+                                ) : (
+                                    <span className="material-symbols-outlined text-sm text-slate-500">expand_more</span>
+                                )}
+                            </div>
+                        </div>
+                        <p className="mt-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider italic">
+                            {selectedLessonId === 'all' 
+                                ? 'AI will use all available sections and lectures.' 
+                                : 'AI will focus only on this specific lesson.'
+                            }
+                        </p>
                     </div>
 
                     <div>

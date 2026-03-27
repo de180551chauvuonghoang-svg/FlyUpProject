@@ -9,6 +9,8 @@ import {
   createAssignmentFromQuestionBankService,
   listAssignmentsByQuestionBankService,
   getAssignmentSnapshotDetailService,
+  updateAssignmentSnapshotService,
+  deleteAssignmentSnapshotService,
 } from "../services/assignmentSnapshotService.js";
 
 /**
@@ -139,6 +141,9 @@ export const createAssignment = async (req, res) => {
           create: questions?.map((q) => ({
             Content: q.content,
             Difficulty: q.difficulty || "Medium",
+            ParamA: 1.0,
+            ParamB: q.difficulty === "Easy" ? -1.0 : q.difficulty === "Hard" ? 1.0 : 0.0,
+            ParamC: 0.25,
             McqChoices: {
               create: q.choices.map((c) => ({
                 Content: c.content,
@@ -301,9 +306,10 @@ export const getQuizQuestions = async (req, res) => {
 
     const assignments = await prisma.assignments.findMany({
       where: {
-        Sections: {
-          CourseId: courseId,
-        },
+        OR: [
+          { Sections: { CourseId: courseId } },
+          { CourseId: courseId }
+        ]
       },
       include: {
         McqQuestions: {
@@ -694,9 +700,68 @@ export const getAssignmentSnapshotDetail = async (req, res) => {
     const userId = req.user?.userId;
     const { assignmentId } = req.params;
 
-    console.log("DEBUG: getAssignmentSnapshotDetail Params:", { userId, assignmentId });
+    console.log("[QuizController] DEBUG: getAssignmentSnapshotDetail - Params:", { userId, assignmentId });
+
+    if (!assignmentId) {
+      throw new Error("assignmentId is required");
+    }
 
     const data = await getAssignmentSnapshotDetailService({
+      userId,
+      assignmentId,
+    });
+
+    console.log("[QuizController] DEBUG: getAssignmentSnapshotDetail - Success. Data Keys:", Object.keys(data || {}));
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("[QuizController] ERROR: getAssignmentSnapshotDetail error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Failed to fetch assignment detail",
+    });
+  }
+};
+
+
+export const updateAssignmentSnapshot = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { assignmentId } = req.params;
+    const { name, duration, gradeToPass, sectionId, questionIds } = req.body;
+
+    const data = await updateAssignmentSnapshotService({
+      userId,
+      assignmentId,
+      name,
+      duration,
+      gradeToPass,
+      sectionId,
+      questionIds,
+    });
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("updateAssignmentSnapshot error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Failed to update assignment",
+    });
+  }
+};
+
+export const deleteAssignmentSnapshot = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { assignmentId } = req.params;
+
+    const data = await deleteAssignmentSnapshotService({
       userId,
       assignmentId,
     });
@@ -706,11 +771,10 @@ export const getAssignmentSnapshotDetail = async (req, res) => {
       data,
     });
   } catch (error) {
-    console.error("getAssignmentSnapshotDetail error:", error);
+    console.error("deleteAssignmentSnapshot error:", error);
     res.status(400).json({
       success: false,
-      error: error.message || "Failed to fetch assignment detail",
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: error.message || "Failed to delete assignment",
     });
   }
 };

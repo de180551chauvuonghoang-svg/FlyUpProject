@@ -3,8 +3,15 @@ import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const prismaClientSingleton = () => {
-  if (!process.env.DATABASE_URL || process.env.DATABASE_URL.trim() === '') {
-    console.error('❌ Error: DATABASE_URL is missing or invalid in environment variables.');
+  if (!process.env.DATABASE_URL || 
+      process.env.DATABASE_URL.trim() === '' || 
+      process.env.DATABASE_URL.includes('postgresql://...')) {
+    console.error('\n' + '='.repeat(60));
+    console.error('❌ ERROR: DATABASE_URL IS NOT CONFIGURED');
+    console.error('='.repeat(60));
+    console.error('Vui lòng cập nhật file backend/.env với URL thực tế từ Supabase.');
+    console.error('Database connection is required for FlyUp to function properly.');
+    console.error('='.repeat(60) + '\n');
     process.exit(1);
   }
 

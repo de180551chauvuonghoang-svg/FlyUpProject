@@ -14,7 +14,9 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
 
-ENV_PATH = Path(r"C:\Users\Shi Iu Oi\Desktop\FlyUpProject-1\backend\.env")
+# Try to find the .env in the project's backend folder
+SCRIPT_DIR = Path(__file__).parent
+ENV_PATH = SCRIPT_DIR.parent.parent.parent / "backend" / ".env"
 
 load_dotenv(ENV_PATH)
 
@@ -34,6 +36,7 @@ query_params = dict(parse_qsl(parsed.query))
 
 # psycopg2 không support param này
 query_params.pop("pgbouncer", None)
+query_params.pop("connection_limit", None)
 
 # Supabase thường cần SSL
 query_params.setdefault("sslmode", "require")
@@ -99,12 +102,17 @@ def estimate_theta(items, administered_items, responses, current_theta):
 def load_assignment_items(assignment_id):
     df = pd.read_sql(
         text("""
-            SELECT "Id", "Content", "ParamA", "ParamB", "ParamC"
+            SELECT "Id", "Content",
+                   COALESCE("ParamA", 1.0) as "ParamA",
+                   COALESCE("ParamB", 
+                            CASE 
+                                WHEN "Difficulty" = 'Easy' THEN -1.0
+                                WHEN "Difficulty" = 'Hard' THEN 1.0
+                                ELSE 0.0
+                            END) as "ParamB",
+                   COALESCE("ParamC", 0.25) as "ParamC"
             FROM "McqQuestions"
             WHERE "AssignmentId" = :aid
-              AND "ParamA" IS NOT NULL
-              AND "ParamB" IS NOT NULL
-              AND "ParamC" IS NOT NULL
         """),
         engine,
         params={"aid": assignment_id}

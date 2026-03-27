@@ -35,7 +35,7 @@ export function getGroqClient() {
 
     groqClient = new Groq({
       apiKey: process.env.GROQ_API_KEY,
-      timeout: 10000, // 10 second timeout
+      timeout: 60000, // 60 second timeout
     });
 
     console.log('✅ Groq legacy client initialized');

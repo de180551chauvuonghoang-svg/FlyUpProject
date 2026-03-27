@@ -77,35 +77,6 @@ const QuizPage = ({ assignmentId, courseId, questionCount, onFinish, onBack }) =
         }
     }, [assignmentId, courseId, questionCount, accessToken]);
 
-    useEffect(() => {
-        if (authLoading) return;
-        if (!accessToken) {
-            console.error('[QuizPage] Authentication not ready or missing access token');
-            return;
-        }
-
-        loadInitialQuestion();
-    }, [authLoading, accessToken, loadInitialQuestion]);
-
-    useEffect(() => {
-        if (phase !== 'quiz') return;
-
-        clearInterval(timerRef.current);
-
-        timerRef.current = setInterval(() => {
-            setTimeLeft((t) => {
-                if (t <= 1) {
-                    clearInterval(timerRef.current);
-                    handleNext(true);
-                    return 0;
-                }
-                return t - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(timerRef.current);
-    }, [phase, questionIndex, handleNext]);
-
     const handleNext = useCallback(async (timedOut = false) => {
         if (!currentQuestion || isLoadingNext) return;
         if (!accessToken) {
@@ -212,6 +183,35 @@ const QuizPage = ({ assignmentId, courseId, questionCount, onFinish, onBack }) =
         selectedChoiceIds,
         onFinish,
     ]);
+
+    useEffect(() => {
+        if (authLoading) return;
+        if (!accessToken) {
+            console.error('[QuizPage] Authentication not ready or missing access token');
+            return;
+        }
+
+        loadInitialQuestion();
+    }, [authLoading, accessToken, loadInitialQuestion]);
+
+    useEffect(() => {
+        if (phase !== 'quiz') return;
+
+        clearInterval(timerRef.current);
+
+        timerRef.current = setInterval(() => {
+            setTimeLeft((t) => {
+                if (t <= 1) {
+                    clearInterval(timerRef.current);
+                    handleNext(true);
+                    return 0;
+                }
+                return t - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timerRef.current);
+    }, [phase, questionIndex, handleNext]);
 
     const timerPercent = (timeLeft / TIMER_SECONDS) * 100;
     const timerColor = timeLeft > 15 ? '#7f13ec' : timeLeft > 7 ? '#d69e2e' : '#e53e3e';
