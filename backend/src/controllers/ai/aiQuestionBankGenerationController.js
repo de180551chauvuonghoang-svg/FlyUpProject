@@ -13,6 +13,11 @@ export const bulkGenerateToBank = async (req, res) => {
       return res.status(400).json({ error: "questionBankId and courseId are required" });
     }
 
+    if (!req.user?.userId) {
+      return res.status(401).json({ error: "User context missing. Please login again." });
+    }
+
+
     // 1. Verify access (Instructor must own the bank)
     const bank = await prisma.questionBanks.findUnique({
       where: { Id: questionBankId }
@@ -41,16 +46,22 @@ export const bulkGenerateToBank = async (req, res) => {
 
       for (const q of generatedQuestions) {
         // Create the question record
+        // Map difficulty to IRT parameters
+        let paramB = 0.0;
+        if (q.difficulty === 'Easy') paramB = -1.0;
+        else if (q.difficulty === 'Hard') paramB = 1.0;
+
         await tx.questionBankQuestions.create({
           data: {
             QuestionBankId: questionBankId,
             Content: q.content,
             Difficulty: q.difficulty || 'Medium',
             ParamA: 1.0,
-            ParamB: q.difficulty === 'Easy' ? -1.0 : q.difficulty === 'Hard' ? 1.0 : 0.0,
+            ParamB: paramB,
             ParamC: 0.25,
             Explanation: q.explanation || '',
             Status: 'Published',
+
 
             CreatorId: req.user.userId,
             LastModifierId: req.user.userId,
@@ -68,8 +79,9 @@ export const bulkGenerateToBank = async (req, res) => {
 
       return created;
     }, {
-      timeout: 30000 // Increase timeout to 30 seconds for bulk AI generation
+      timeout: 60000 // Increase timeout to 60 seconds for bulk AI generation
     });
+
 
     return res.status(200).json({
       success: true,

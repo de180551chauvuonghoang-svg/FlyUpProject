@@ -125,6 +125,14 @@ app.use("/api/payouts", payoutRouter);
 app.use((err, req, res, next) => {
   console.error(err.stack);
 
+  // Temporary file logging for debugging
+  try {
+    import('fs').then(fs => {
+       fs.appendFileSync('./backend_error.log', `\n[${new Date().toISOString()}] ${req.method} ${req.url}\n${err.stack}\n`);
+    });
+  } catch (e) {}
+
+
   // Handle JSON parse errors
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
     return res.status(400).json({

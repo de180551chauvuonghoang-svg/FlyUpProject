@@ -603,6 +603,7 @@ export const createAssignmentFromBank = async (req, res) => {
     const userId = req.user?.userId;
 
     const {
+      courseId,
       sectionId,
       name,
       duration,
@@ -610,6 +611,7 @@ export const createAssignmentFromBank = async (req, res) => {
       sourceQuestionBankId,
       questionIds,
     } = req.body;
+
   
     const data = await createAssignmentFromQuestionBankService({
       userId,

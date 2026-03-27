@@ -472,14 +472,13 @@ export default function CourseLessonPage({ isPreview }) {
     setIsGeneratingAIQuiz(true);
     try {
       toast.loading("Đang tạo bộ câu hỏi từ bài giảng...", { id: "ai-quiz-gen" });
-      const token = localStorage.getItem("accessToken");
-      
       const result = await generateInstantAIQuiz({
         courseId,
         lessonId: selectedLessonId,
         count: 10,
         difficulty: "Mixed",
-      }, token);
+      });
+
 
 
       if (result.success) {

@@ -182,7 +182,17 @@ export const generateInstantAIQuiz = async (req, res) => {
       });
     }
 
+    if (!req.user?.userId) {
+      return res.status(401).json({
+        success: false,
+        error: "USER_CONTEXT_MISSING",
+        message: "User context missing. Please login again."
+      });
+    }
+
     console.log(`🤖 Instant AI Quiz generation requested for course: ${courseId}, lesson: ${lessonId}`);
+    console.log(`[DEBUG] count: ${count}, difficulty: ${difficulty}, userId: ${userId}`);
+
 
     // Generate questions using AI service
     const questions = await AIQuestionGenerationService.generateQuestionsFromCourseContent(
@@ -191,6 +201,8 @@ export const generateInstantAIQuiz = async (req, res) => {
       difficulty,
       lessonId
     );
+    console.log(`[DEBUG] Generated ${questions?.length || 0} questions from AI service`);
+
 
     // Save to dedicated AI Quiz tables
     const quiz = await saveAiQuiz({

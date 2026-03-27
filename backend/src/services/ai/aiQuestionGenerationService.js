@@ -40,7 +40,9 @@ export const AIQuestionGenerationService = {
         });
 
         if (!lecture) throw new Error(`Lesson ${lessonId} not found`);
+        console.log(`[DEBUG] Found lecture: ${lecture.Title}, Section: ${lecture.Sections?.Title}`);
         lectures = [lecture];
+
         courseInfo.title = lecture.Sections?.Courses?.Title || '';
         courseInfo.description = lecture.Sections?.Courses?.Description || '';
       } else {
@@ -131,31 +133,31 @@ export const AIQuestionGenerationService = {
 
       const contextContent = `${fallbackContent}\n${materialContent}`;
       const sanitizedContent = contextContent.substring(0, 5000);
+      console.log(`[DEBUG] Context built: ${sanitizedContent.length} chars`);
+
 
       // 2.5 Check context quality
       if (sanitizedContent.length < 50) {
         console.warn('⚠️ AI Context is very short. Questions might be generic.');
       }
 
-      // 3. Build prompt
-      // 3.1 Fetch existing questions to avoid repetition (limit to 20 recent ones)
-      const existingQuestionsData = await prisma.mcqQuestions.findMany({
-        where: {
-          Assignments: {
-            CourseId: courseId
-          }
-        },
-        select: { Content: true },
-        orderBy: { Id: 'desc' },
-        take: 20
-      });
-      const existingQuestionContents = existingQuestionsData.map(q => q.Content);
-      const avoidSection = existingQuestionContents.length > 0 
-        ? `\nIMPORTANT: Do NOT repeat or generate questions similar to these existing ones:\n- ${existingQuestionContents.join('\n- ')}`
-        : "";
+      // 3. Prepare AI Prompt
+      const maxRetries = 2;
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        // ... Logic for systemPrompt, completion, parsing, validation ...
+        // (Moving existing logic inside)
+        const existingQuestionsData = await prisma.mcqQuestions.findMany({
+          where: { Assignments: { CourseId: courseId } },
+          select: { Content: true },
+          orderBy: { Id: 'desc' },
+          take: 20
+        });
+        const existingQuestionContents = existingQuestionsData.map(q => q.Content);
+        const avoidSection = existingQuestionContents.length > 0 
+          ? `\nIMPORTANT: Do NOT repeat these existing ones:\n- ${existingQuestionContents.join('\n- ')}`
+          : "";
 
-      const systemPrompt = `You are a professional MCQ generator. You MUST output a JSON object.
-Keep content and explanations very concise to ensure the full response fits within token limits.
+        const systemPrompt = `You are a professional MCQ generator. You MUST output a JSON object.
 Structure:
 {
   "questions": [
@@ -163,7 +165,6 @@ Structure:
       "content": "string",
       "difficulty": "Easy" | "Medium" | "Hard",
       "explanation": "string",
-
       "choices": [
         { "content": "string", "isCorrect": true },
         { "content": "string", "isCorrect": false },
@@ -173,87 +174,73 @@ Structure:
     }
   ]
 }
-Base questions ONLY on the provided content. Focus on specific facts. 
-IMPORTANT: When generating "Mixed" difficulty, you MUST provide a balanced distribution with at least 2 questions for EACH level (Easy, Medium, Hard).
-${avoidSection}
-Output ONLY valid JSON.`;
+IMPORTANT: Provide at least 2 questions for EACH level (Easy, Medium, Hard) when generating "Mixed" difficulty.
+${avoidSection}`;
 
+        let difficultyRequirement = `difficulty "${difficulty}"`;
+        if (difficulty === 'Mixed' && count >= 10) {
+            difficultyRequirement = `exactly ${count} questions with a MIXED distribution: AT LEAST 2 Easy, 2 Medium, and 2 Hard questions.`;
+        }
 
-      // Calculate distribution for Mixed difficulty to ensure at least 2 questions per level
-      let difficultyRequirement = `difficulty "${difficulty}"`;
-      if (difficulty === 'Mixed' && count >= 6) {
-        const easyCount = Math.floor(count * 0.3) < 2 ? 2 : Math.floor(count * 0.3);
-        const hardCount = Math.floor(count * 0.4) < 2 ? 2 : Math.floor(count * 0.4);
-        const mediumCount = count - easyCount - hardCount;
-        difficultyRequirement = `exactly ${count} questions with a MIXED distribution: ${easyCount} Easy, ${mediumCount} Medium, and ${hardCount} Hard questions. You MUST meet these exact counts`;
-      }
+        console.log(`🤖 [Attempt ${attempt + 1}/${maxRetries}] Generating ${count} AI questions...`);
+        const client = getGroqClient();
+        const completion = await client.chat.completions.create({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Content: ${sanitizedContent}\n\nGenerate ${difficultyRequirement}` }
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.5,
+          max_tokens: 4096,
+        });
 
+        const rawText = completion.choices[0]?.message?.content;
+        if (!rawText) continue;
 
-      console.log(`🤖 Generating ${count} AI questions (model: llama-3.3-70b-versatile, context: ${sanitizedContent.length} chars)`);
+        let parsed;
+        try { parsed = JSON.parse(rawText); } catch (e) { continue; }
 
-      // 4. Call Groq SDK with json_object mode
-      const client = getGroqClient();
-      const completion = await client.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Content to generate questions from:
-${sanitizedContent}
+        const questionsArr = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.questions) ? parsed.questions : null);
+        if (!questionsArr || questionsArr.length === 0) continue;
 
-Generate ${difficultyRequirement} based on the content above. Ensure variety in topics covered.` }
-        ],
-        response_format: { type: 'json_object' },
+        const validatedQuestions = questionsArr.map(q => {
+          let rawDiff = (q.difficulty || q.level || 'Medium').toString().trim();
+          let normalizedDiff = 'Medium';
+          if (/easy/i.test(rawDiff)) normalizedDiff = 'Easy';
+          if (/hard/i.test(rawDiff)) normalizedDiff = 'Hard';
+          if (/medium|inter|avg/i.test(rawDiff)) normalizedDiff = 'Medium';
 
-        temperature: 0.5, // Increased for more variety while maintaining logic
-        max_tokens: 4096,
-      });
-
-      const rawText = completion.choices[0]?.message?.content;
-      if (!rawText) throw new Error('AI returned empty response');
-
-      console.log(`✅ AI responded (${rawText.length} chars)`);
-
-      // 5. Parse JSON
-      let parsed;
-      try {
-        parsed = JSON.parse(rawText);
-      } catch (parseError) {
-        console.error('❌ JSON parse failed. Raw response:', rawText);
-        throw new Error(`Failed to parse AI JSON response: ${parseError.message}`);
-      }
-
-      // Extract array — could be { questions: [...] } or directly [...]
-      const questions = Array.isArray(parsed)
-        ? parsed
-        : Array.isArray(parsed.questions)
-          ? parsed.questions
-          : null;
-
-      if (!questions || questions.length === 0) {
-        throw new Error('AI returned empty question array');
-      }
-
-      // 6. Validate and normalize
-      const validatedQuestions = questions
-        .map(q => ({
-          content: q.content || q.question || 'Untitled Question',
-          difficulty: q.difficulty || 'Medium',
-          explanation: q.explanation || '',
-          choices: Array.isArray(q.choices)
-            ? q.choices.map(c => ({
+          return {
+            content: q.content || q.question || 'Untitled Question',
+            difficulty: normalizedDiff,
+            explanation: q.explanation || '',
+            choices: (q.choices || []).map(c => ({
               content: c.content || c.text || '',
-              isCorrect: !!c.isCorrect
+              isCorrect: !!(c.isCorrect || c.is_correct)
             }))
-            : []
-        }))
-        .filter(q => q.choices.length >= 2 && q.choices.some(c => c.isCorrect));
+          };
+        }).filter(q => q.choices.length >= 2 && q.choices.some(c => c.isCorrect));
 
-      if (validatedQuestions.length === 0) {
-        throw new Error('None of the generated questions passed validation');
+        if (validatedQuestions.length === 0) continue;
+
+        // Check distribution for Mixed
+        if (difficulty === 'Mixed' && count >= 10) {
+          const e = validatedQuestions.filter(q => q.difficulty === 'Easy').length;
+          const m = validatedQuestions.filter(q => q.difficulty === 'Medium').length;
+          const h = validatedQuestions.filter(q => q.difficulty === 'Hard').length;
+
+          if ((e < 2 || m < 2 || h < 2) && attempt < maxRetries - 1) {
+            console.warn(`⚠️ Distribution mix failed (E:${e}, M:${m}, H:${h}). Retrying...`);
+            continue;
+          }
+        }
+
+        console.log(`✅ Returning ${validatedQuestions.length} validated questions`);
+        return validatedQuestions;
       }
+      throw new Error('AI failed to generate valid questions after multiple attempts');
 
-      console.log(`✅ Returning ${validatedQuestions.length} validated questions`);
-      return validatedQuestions;
 
     } catch (error) {
       console.error(`❌ AIQuestionGenerationService Error:`, error.message);

@@ -732,7 +732,7 @@ model WithdrawalRequests {
 }
 
 model AiQuizzes {
-  Id             String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  Id             String           @id @default(uuid()) @db.Uuid
   CourseId       String           @db.Uuid
   LessonId       String?          @db.Uuid
   CreatorId      String           @db.Uuid
@@ -746,7 +746,7 @@ model AiQuizzes {
 }
 
 model AiQuizQuestions {
-  Id           String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  Id           String          @id @default(uuid()) @db.Uuid
   AiQuizId     String          @db.Uuid
   Content      String          @db.VarChar(1000)
   Difficulty   String?         @db.VarChar(50)
@@ -757,7 +757,7 @@ model AiQuizQuestions {
 }
 
 model AiQuizChoices {
-  Id              String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  Id              String          @id @default(uuid()) @db.Uuid
   AiQuizQuestionId String         @db.Uuid
   Content         String          @db.VarChar(500)
   IsCorrect       Boolean         @default(false)

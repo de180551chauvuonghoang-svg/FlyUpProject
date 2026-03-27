@@ -42,22 +42,13 @@ export const finishCatQuiz = async (payload) => {
 /**
  * Generate instant AI practice quiz from lesson content
  */
-export const generateInstantAIQuiz = async (payload, token) => {
-    const response = await fetch(`${API_BASE}/api/ai/quiz/generate-instant`, {
+export const generateInstantAIQuiz = async (payload) => {
+    return await apiCall("/ai/quiz/generate-instant", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify(payload),
     });
-
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data?.error || "Failed to generate AI quiz");
-    }
-    return data;
 };
+
 
 /**
  * Fetch a single AI quiz by ID

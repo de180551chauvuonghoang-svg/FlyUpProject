@@ -375,15 +375,14 @@ export default function Quiz({
                         </div>
                       )}
                     </div>
-
+                    {/* Static Explanation (if provided by DB) */}
+                    {result.explanation && (
+                      <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
+                        <p className="text-xs font-bold text-slate-500 uppercase mb-1">Explanation</p>
+                        <p className="text-sm text-slate-300 italic">{result.explanation}</p>
+                      </div>
+                    )}
                   </div>
-
-                  {result.explanation && (
-                    <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
-                      <p className="text-xs font-bold text-slate-500 uppercase mb-1">Explanation</p>
-                      <p className="text-sm text-slate-300 italic">{result.explanation}</p>
-                    </div>
-                  )}
                 </div>
 
               </div>
