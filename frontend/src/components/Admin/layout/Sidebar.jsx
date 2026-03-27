@@ -5,6 +5,8 @@ import {
   GraduationCap,
   UserCog,
   LogOut,
+  Rocket,
+  DollarSign,
   Bell,
   Home
 } from 'lucide-react';
@@ -48,7 +50,7 @@ const menuItems = [
   }, */
   {
     path: '/admin/notifications',
-    label: 'Review Requests',
+    label: 'Notifications',
     icon: Bell,
     isNotification: true
   },
@@ -90,19 +92,11 @@ function Sidebar() {
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <div className="logo-icon" style={{ background: 'none', boxShadow: 'none' }}>
-          <img 
-            src="/FlyUpTeam.png" 
-            alt="FlyUp Logo" 
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-          />
+        <div className="logo-icon">
+          <img src="/FlyUpTeam.png" alt="FlyUp Logo" />
         </div>
         <div className="logo-text">
-          <img 
-            src="/FLYUPTECHANDEDU.png" 
-            alt="FlyUp Edu & Tech" 
-            style={{ height: '32px', width: 'auto', objectFit: 'contain', marginBottom: '-4px' }}
-          />
+          <span className="logo-title">FLYUP</span>
           <span className="logo-subtitle">Admin Center</span>
         </div>
       </div>
@@ -145,7 +139,7 @@ function Sidebar() {
           <span className="user-name">{user?.fullName || "Admin"}</span>
           <span className="user-role">Administrator</span>
         </div>
-        <button 
+        <button
           onClick={handleLogout}
           className="logout-button"
           title="Log Out"
@@ -153,6 +147,12 @@ function Sidebar() {
           <LogOut size={20} />
         </button>
       </div>
+
+      {/* Logout */}
+      <button className="sidebar-logout" onClick={handleLogout}>
+        <LogOut size={18} />
+        <span>Terminal Exit</span>
+      </button>
     </aside>
   );
 }
