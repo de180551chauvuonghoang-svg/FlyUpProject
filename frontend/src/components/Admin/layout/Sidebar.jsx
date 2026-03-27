@@ -18,7 +18,7 @@ import notificationService from '../../../services/admin/notificationService';
 const menuItems = [
   {
     path: '/',
-    label: 'Home',
+    label: 'Home Page',
     icon: Home,
   },
   {
@@ -41,7 +41,11 @@ const menuItems = [
     label: 'Courses',
     icon: BookOpen,
   },
-
+  /* {
+    path: '/admin/payouts',
+    label: 'Payouts',
+    icon: DollarSign,
+  }, */
   {
     path: '/admin/notifications',
     label: 'Review Requests',

@@ -300,17 +300,26 @@ export const deleteAssignment = async (req, res) => {
 export const getQuizQuestions = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { limit = 10 } = req.query;
+    const { assignmentId, limit = 10 } = req.query;
 
-    console.log(`[QuizController] Fetching quiz for course: ${courseId}`);
+    console.log(`[QuizController] Fetching quiz for course: ${courseId}, assignment: ${assignmentId || 'all'}`);
+
+    const where = {
+      OR: [
+        { Sections: { CourseId: courseId } },
+        { CourseId: courseId }
+      ]
+    };
+
+    if (assignmentId) {
+      // If assignmentId is provided, ONLY fetch from that assignment
+      // Note: We keep the OR as a base but force the Id
+      delete where.OR;
+      where.Id = assignmentId;
+    }
 
     const assignments = await prisma.assignments.findMany({
-      where: {
-        OR: [
-          { Sections: { CourseId: courseId } },
-          { CourseId: courseId }
-        ]
-      },
+      where,
       include: {
         McqQuestions: {
           include: {
@@ -576,7 +585,7 @@ Giải thích súc tích, khích lệ, bằng tiếng Việt:`;
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama3-8b-8192",
+      model: "llama-3.1-8b-instant",
       temperature: 0.4,
       max_tokens: 300,
     });

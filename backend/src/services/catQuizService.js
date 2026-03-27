@@ -94,20 +94,20 @@ async function getAllQuestionsMap(questionIds, assignmentId) {
 const QUIZ_QUESTION_COUNT = 10;
 
 export async function startCatQuizService({ userId, courseId, assignmentId, questionCount }) {
-    // Luôn dùng cố định 10 câu, bỏ qua giá trị questionCount từ client
-    const actualQuestionCount = QUIZ_QUESTION_COUNT;
-
-    const assignment = await getAssignmentOrThrow(assignmentId, courseId);
-
     const totalAvailableQuestions = await prisma.mcqQuestions.count({
         where: { AssignmentId: assignmentId },
     });
 
-    if (totalAvailableQuestions < actualQuestionCount) {
-        throw new Error(
-            `Assignment only has ${totalAvailableQuestions} questions, cannot start ${actualQuestionCount}-question quiz`
-        );
+    if (totalAvailableQuestions === 0) {
+        throw new Error("Assignment has no questions");
     }
+
+    const assignment = await getAssignmentOrThrow(assignmentId, courseId);
+
+    // Use fixed 10 questions by default, but allow fewer if the assignment doesn't have enough
+    const actualQuestionCount = Math.min(QUIZ_QUESTION_COUNT, totalAvailableQuestions);
+
+
 
     const userAbility = await getOrCreateUserAbility(userId, courseId);
     const initialTheta = Number(userAbility.Theta ?? 0);

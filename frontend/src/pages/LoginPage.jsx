@@ -80,7 +80,7 @@ const LoginPage = () => {
       if (role === 'admin') {
         window.location.href = '/admin/dashboard';
       } else if (role === 'instructor') {
-        window.location.href = '/instructor/question-banks';
+        window.location.href = '/instructor/dashboard';
       } else {
         window.location.href = '/';
       }
@@ -137,7 +137,7 @@ const LoginPage = () => {
           if (role === 'admin') {
             window.location.href = '/admin/dashboard';
           } else if (role === 'instructor') {
-            window.location.href = '/instructor/question-banks';
+            window.location.href = '/instructor/dashboard';
           } else {
             window.location.href = '/';
           }
@@ -175,13 +175,12 @@ const LoginPage = () => {
       }
 
       const role = String(data?.user?.Role || data?.user?.role || '').toLowerCase();
-
       toast.success('Welcome back!', { id: toastId });
 
       if (role === 'admin') {
         navigate('/admin/dashboard');
       } else if (role === 'instructor') {
-        navigate('/instructor/question-banks');
+        navigate('/instructor/dashboard');
       } else {
         navigate('/');
       }

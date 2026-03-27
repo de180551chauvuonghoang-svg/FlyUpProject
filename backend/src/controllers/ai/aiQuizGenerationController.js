@@ -168,13 +168,13 @@ export const generateQuiz = async (req, res) => {
  */
 export const generateInstantAIQuiz = async (req, res) => {
   try {
-    const { courseId, lessonId, count = 5, difficulty = 'Mixed' } = req.body;
+    const { courseId, lessonId, count = 10, difficulty = 'Mixed' } = req.body;
 
     if (!courseId) {
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         error: "MISSING_COURSE_ID",
-        message: "courseId is required" 
+        message: "courseId is required"
       });
     }
 
@@ -188,24 +188,44 @@ export const generateInstantAIQuiz = async (req, res) => {
       lessonId
     );
 
-    // Map to frontend-friendly format (matching Quiz component expectations)
-    const formattedQuestions = questions.map((q, idx) => ({
-      id: `ai-${Date.now()}-${idx}`,
-      content: q.content,
-      difficulty: q.difficulty,
-      explanation: q.explanation,
-      choices: q.choices.map((c, cIdx) => ({
-        id: `choice-${idx}-${cIdx}`,
-        content: c.content,
-        isCorrect: c.isCorrect
+    // Save questions to database as an Assignment
+
+    const sectionId = await getPrimarySectionId(prisma, courseId);
+    const userId = req.user?.userId;
+
+    const assignment = await createQuizAssignment(prisma, {
+      name: `AI Practice Quiz - ${new Date().toLocaleDateString('vi-VN')}`,
+      duration: count * 3, // 3 minutes per question
+      gradeToPass: Math.ceil(count * 0.8), // 80% to pass
+      sectionId,
+      userId,
+      courseId,
+      scope: { type: 'instant', lessonId },
+      userTheta: 0,
+      difficultyMix: { [difficulty]: 1 },
+      selectedQuestions: questions.map((q) => ({
+        question: {
+          Content: q.content,
+          Difficulty: q.difficulty,
+          ParamA: 1.0,
+          ParamB: q.difficulty === 'Easy' ? -1.0 : q.difficulty === 'Hard' ? 1.0 : 0.0,
+          ParamC: 0.25,
+          McqChoices: q.choices.map((c) => ({
+            Content: c.content,
+            IsCorrect: !!c.isCorrect,
+          })),
+        },
+        selectionMethod: 'instant'
       }))
-    }));
+    });
+
+    console.log(`✅ Saved AI Quiz as Assignment ${assignment.Id}`);
 
     return res.status(200).json({
       success: true,
       data: {
-        questions: formattedQuestions,
-        totalQuestions: formattedQuestions.length,
+        assignmentId: assignment.Id,
+        totalQuestions: questions.length,
         generatedAt: new Date().toISOString()
       }
     });

@@ -7,7 +7,7 @@
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:cat": "cd TTS/TTS/TTS && python cat_service_api.py",
-    "dev": "concurrently --names \"BACKEND,FRONTEND,CAT\" --prefix-colors \"bgBlue.bold,bgGreen.bold,bgYellow.bold\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:cat\""
+    "dev": "npx concurrently --names \"BACKEND,FRONTEND,CAT\" --prefix-colors \"bgBlue.bold,bgGreen.bold,bgYellow.bold\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:cat\""
   },
   "repository": {
     "type": "git",

@@ -11,6 +11,35 @@ const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(localStorage.getItem('accessToken'));
   const [loading, setLoading] = useState(!!accessToken);
 
+  // Try to refresh the access token using the refresh token
+  const tryRefreshToken = useCallback(async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) return null;
+    try {
+      const response = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const newAccessToken = data.accessToken || data.session?.accessToken;
+        const newRefreshToken = data.refreshToken || data.session?.refreshToken;
+        if (newAccessToken) {
+          localStorage.setItem('accessToken', newAccessToken);
+          setAccessToken(newAccessToken);
+          if (newRefreshToken) {
+            localStorage.setItem('refreshToken', newRefreshToken);
+          }
+          return newAccessToken;
+        }
+      }
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+    }
+    return null;
+  }, []);
+
   const refreshUser = useCallback(async () => {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -23,9 +52,26 @@ const AuthProvider = ({ children }) => {
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
-        } else {
-          // Only clear if 401 Unauthorized, otherwise might be temporary network error
-          if (response.status === 401) {
+        } else if (response.status === 401) {
+          // Access token expired - try to refresh it
+          const newToken = await tryRefreshToken();
+          if (newToken) {
+            // Retry with new token
+            const retryResponse = await fetch(`${API_URL}/auth/me`, {
+              headers: { 'Authorization': `Bearer ${newToken}` }
+            });
+            if (retryResponse.ok) {
+              const retryData = await retryResponse.json();
+              setUser(retryData.user);
+            } else {
+              // Refresh also failed - clear everything
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('refreshToken');
+              setAccessToken(null);
+              setUser(null);
+            }
+          } else {
+            // No refresh token or refresh failed - clear everything
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             setAccessToken(null);
@@ -38,7 +84,7 @@ const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     }
-  }, []);
+  }, [tryRefreshToken]);
 
   useEffect(() => {
     refreshUser();

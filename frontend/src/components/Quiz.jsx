@@ -3,24 +3,29 @@ import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-export default function Quiz({ courseId, onClose }) {
+export default function Quiz({ courseId, assignmentId, onClose, refreshTrigger }) {
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [results, setResults] = useState(null);
+  const [explanations, setExplanations] = useState({}); // { questionId: { loading, text, error } }
 
   useEffect(() => {
     fetchQuestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId]);
+  }, [courseId, assignmentId, refreshTrigger]);
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch(
-        `${API_URL}/quiz/${courseId}/questions?limit=10`,
-      );
+      const url = new URL(`${API_URL}/quiz/${courseId}/questions`);
+      url.searchParams.append("limit", "10");
+      if (assignmentId) {
+        url.searchParams.append("assignmentId", assignmentId);
+      }
+
+      const response = await fetch(url.toString());
       const data = await response.json();
 
       if (data.success) {
@@ -55,6 +60,59 @@ export default function Quiz({ courseId, onClose }) {
     }
   };
 
+  // Fetch AI explanation for a single question
+  const fetchExplanation = async (result, questionData) => {
+    const questionId = result.questionId;
+    setExplanations((prev) => ({
+      ...prev,
+      [questionId]: { loading: true, text: null, error: null },
+    }));
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const userChoice = questionData?.choices?.find(
+        (c) => c.id === result.userAnswer
+      );
+      const correctChoice = questionData?.choices?.find(
+        (c) => c.id === result.correctAnswer
+      );
+
+      const response = await fetch(`${API_URL}/quiz/cat/explain`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          questionContent: result.question,
+          choices: questionData?.choices?.map((c) => ({ content: c.content })) || [],
+          selectedChoiceContent: userChoice?.content || result.userAnswer,
+          correctChoiceContent: correctChoice?.content || "",
+          isCorrect: result.isCorrect,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.explanation) {
+        setExplanations((prev) => ({
+          ...prev,
+          [questionId]: { loading: false, text: data.explanation, error: null },
+        }));
+      } else {
+        setExplanations((prev) => ({
+          ...prev,
+          [questionId]: { loading: false, text: null, error: data.error || "Failed" },
+        }));
+      }
+    } catch (err) {
+      console.error("AI explanation error:", err);
+      setExplanations((prev) => ({
+        ...prev,
+        [questionId]: { loading: false, text: null, error: "Failed to load explanation" },
+      }));
+    }
+  };
+
   const handleSubmit = async () => {
     const unanswered = questions.filter((q) => !selectedAnswers[q.id]);
     if (unanswered.length > 0) {
@@ -81,6 +139,14 @@ export default function Quiz({ courseId, onClose }) {
         setResults(data.data);
         setIsSubmitted(true);
         toast.success(`Quiz submitted! Score: ${data.data.score}%`);
+
+        // Auto-fetch AI explanations for all questions
+        if (data.data.results) {
+          data.data.results.forEach((result) => {
+            const qData = questions.find((q) => q.id === result.questionId);
+            fetchExplanation(result, qData);
+          });
+        }
       } else {
         toast.error("Failed to submit quiz");
       }
@@ -95,6 +161,7 @@ export default function Quiz({ courseId, onClose }) {
     setCurrentQuestion(0);
     setIsSubmitted(false);
     setResults(null);
+    setExplanations({});
     fetchQuestions();
   };
 
@@ -143,44 +210,94 @@ export default function Quiz({ courseId, onClose }) {
 
         {/* Results Details */}
         <div className="space-y-4">
-          {results.results.map((result, index) => (
-            <div
-              key={result.questionId}
-              className={`glass-panel rounded-xl p-6 border-2 ${
-                result.isCorrect
-                  ? "border-green-500/30 bg-green-500/5"
-                  : "border-red-500/30 bg-red-500/5"
-              }`}
-            >
-              <div className="flex items-start gap-4">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    result.isCorrect ? "bg-green-500" : "bg-red-500"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-white text-sm">
-                    {result.isCorrect ? "check" : "close"}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-white font-bold mb-2">
-                    Question {index + 1}
-                  </h4>
-                  <p className="text-slate-300 mb-3">{result.question}</p>
-                  <div className="text-sm">
-                    <p className="text-slate-400">
-                      {result.isCorrect ? "✓ Correct!" : "✗ Incorrect"}
-                    </p>
-                    {!result.isCorrect && (
-                      <p className="text-green-400 mt-1">
-                        Correct answer: {result.explanation}
+          {results.results.map((result, index) => {
+            const explanation = explanations[result.questionId];
+            return (
+              <div
+                key={result.questionId}
+                className={`glass-panel rounded-xl p-6 border-2 ${
+                  result.isCorrect
+                    ? "border-green-500/30 bg-green-500/5"
+                    : "border-red-500/30 bg-red-500/5"
+                }`}
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
+                      result.isCorrect ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-white text-sm">
+                      {result.isCorrect ? "check" : "close"}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-white font-bold mb-2">
+                      Question {index + 1}
+                    </h4>
+                    <p className="text-slate-300 mb-3">{result.question}</p>
+                    <div className="text-sm">
+                      <p className="text-slate-400">
+                        {result.isCorrect ? "✓ Correct!" : "✗ Incorrect"}
                       </p>
-                    )}
+                      {!result.isCorrect && (
+                        <p className="text-green-400 mt-1">
+                          Correct answer: {result.explanation}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* AI Explanation Section */}
+                    <div className="mt-4">
+                      {explanation?.loading && (
+                        <div className="rounded-lg bg-white/5 border border-white/10 p-4 animate-pulse">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-5 h-5 rounded-full bg-purple-500/30 animate-spin border-2 border-transparent border-t-purple-400"></div>
+                            <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">
+                              AI is analyzing...
+                            </span>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="h-3 bg-white/10 rounded w-full"></div>
+                            <div className="h-3 bg-white/10 rounded w-4/5"></div>
+                            <div className="h-3 bg-white/10 rounded w-3/5"></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {explanation?.text && (
+                        <div className={`rounded-lg p-4 border ${
+                          result.isCorrect
+                            ? "bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/20"
+                            : "bg-gradient-to-br from-amber-500/10 to-orange-500/5 border-amber-500/20"
+                        }`}
+                        style={{ animation: "fadeIn 0.5s ease-out" }}
+                        >
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">🤖</span>
+                            <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">
+                              FlyUp AI Tutor
+                            </span>
+                          </div>
+                          <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-line">
+                            {explanation.text}
+                          </p>
+                        </div>
+                      )}
+
+                      {explanation?.error && (
+                        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3">
+                          <p className="text-red-300 text-xs">
+                            ⚠️ Could not load AI explanation
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Action Buttons */}
@@ -341,6 +458,14 @@ export default function Quiz({ courseId, onClose }) {
           ))}
         </div>
       </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
+

@@ -50,27 +50,59 @@ export async function createQuizAssignment(prisma, {
     selectedQuestions,
   });
 
-  // Create assignment
-  // NOTE: Metadata field needs to be added to schema as nullable Json field
-  const assignment = await prisma.assignments.create({
-    data: {
-      Name: name || `AI Quiz: ${new Date().toLocaleDateString()}`,
-      Duration: duration || 30,
-      QuestionCount: selectedQuestions.length,
-      GradeToPass: gradeToPass || 60,
-      SectionId: sectionId,
-      CreatorId: userId,
-      // Metadata: metadata, // Uncomment when Metadata field is added
-    },
-  });
+  // Use a transaction to create assignment and its questions/choices
+  return await prisma.$transaction(async (tx) => {
+    // 1. Create assignment
+    const assignment = await tx.assignments.create({
+      data: {
+        Name: name || `AI Quiz: ${new Date().toLocaleDateString()}`,
+        Duration: duration || 30,
+        QuestionCount: selectedQuestions.length,
+        GradeToPass: gradeToPass || 6.0, // Default passing grade
+        SectionId: sectionId,
+        CourseId: courseId, // Ensure CourseId is saved!
+        CreatorId: userId,
+      },
+    });
 
-  // TEMPORARY WORKAROUND: Store metadata separately if needed
-  // This could be stored in Redis or a separate table until schema is updated
-  // For now, we'll return the assignment and metadata separately
-  return {
-    ...assignment,
-    _metadata: metadata, // Temporary field for metadata
-  };
+    // 2. Create questions and choices if provided
+    if (selectedQuestions && selectedQuestions.length > 0) {
+      for (const qData of selectedQuestions) {
+        // Handle different structures of selectedQuestions
+        const q = qData.question || qData;
+        
+        const createdQuestion = await tx.mcqQuestions.create({
+          data: {
+            AssignmentId: assignment.Id,
+            Content: q.Content || q.content,
+            Difficulty: q.Difficulty || q.difficulty || "Mixed",
+            ParamA: q.ParamA || 1.0,
+            ParamB: q.ParamB || 0.0,
+            ParamC: q.ParamC || 0.25,
+            SourceQuestionBankQuestionId: q.SourceQuestionBankQuestionId || null
+          }
+        });
+
+        // Create choices for this question
+        const choices = q.McqChoices || q.choices || [];
+        if (choices.length > 0) {
+          await tx.mcqChoices.createMany({
+            data: choices.map(c => ({
+              McqQuestionId: createdQuestion.Id,
+              Content: c.Content || c.content,
+              IsCorrect: c.IsCorrect ?? c.isCorrect ?? false,
+              SourceQuestionBankChoiceId: c.SourceQuestionBankChoiceId || null
+            }))
+          });
+        }
+      }
+    }
+
+    return {
+      ...assignment,
+      _metadata: metadata,
+    };
+  });
 }
 
 /**

@@ -20,11 +20,12 @@ import InstructorDashboard from './pages/InstructorDashboard';
 import InstructorCreateCoursePage from './pages/InstructorCreateCoursePage';
 import InstructorUploadPage from './pages/InstructorUploadPage';
 import InstructorEditCoursePage from './pages/InstructorEditCoursePage';
-import InstructorPreviewPage from './pages/InstructorPreviewPage';
 import CourseLessonPage from './pages/CourseLessonPage';
 import InstructorStudentsPage from './pages/InstructorStudentsPage';
 import InstructorCommunicationPage from './pages/InstructorCommunicationPage';
 import InstructorToolsPage from './pages/InstructorToolsPage';
+import CertificatePage from './pages/CertificatePage';
+
 // NEW: question bank module
 import QuestionBankListPage from './pages/QuestionBankListPage';
 import InstructorRoute from './components/Auth/InstructorRoute';
@@ -118,16 +119,18 @@ function App() {
           <Route path="/my-learning" element={<MyLearningPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-          <Route path="/instructor/create-course" element={<InstructorCreateCoursePage />} />
-          <Route path="/instructor/upload" element={<InstructorUploadPage />} />
-          <Route path="/edit-course/:id" element={<InstructorEditCoursePage />} />
-          <Route path="/instructor/preview/:id" element={<InstructorPreviewPage />} />
-          <Route path="/instructor/students" element={<InstructorStudentsPage />} />
-          <Route path="/instructor/communication" element={<InstructorCommunicationPage />} />
-          <Route path="/instructor/tools" element={<InstructorToolsPage />} />
+          <Route path="/instructor/dashboard" element={<InstructorRoute><InstructorDashboard /></InstructorRoute>} />
+          <Route path="/instructor/create-course" element={<InstructorRoute><InstructorCreateCoursePage /></InstructorRoute>} />
+          <Route path="/instructor/upload" element={<InstructorRoute><InstructorUploadPage /></InstructorRoute>} />
+          <Route path="/edit-course/:id" element={<InstructorRoute><InstructorEditCoursePage /></InstructorRoute>} />
+          <Route path="/instructor/preview/:courseId" element={<InstructorRoute><CourseLessonPage isPreview={true} /></InstructorRoute>} />
+          <Route path="/instructor/students" element={<InstructorRoute><InstructorStudentsPage /></InstructorRoute>} />
+          <Route path="/instructor/communication" element={<InstructorRoute><InstructorCommunicationPage /></InstructorRoute>} />
+          <Route path="/instructor/tools" element={<InstructorRoute><InstructorToolsPage /></InstructorRoute>} />
           <Route path="/learning/:courseId" element={<CourseLessonPage />} />
           <Route path="/learning/:courseId/lesson/:lessonId" element={<CourseLessonPage />} />
+          <Route path="/certificate/:courseId" element={<CertificatePage />} />
+
           
           <Route
               path="/instructor/question-banks"

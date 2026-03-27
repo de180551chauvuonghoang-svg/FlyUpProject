@@ -9,13 +9,13 @@ export const createReview = async (userId, courseId, { rating, content }) => {
     where: {
       CreatorId: userId,
       CourseId: courseId,
-      Status: 'Active' // Ensure enrollment is active
+      Status: 'Completed' // Restricted to 100% completion
     }
   });
 
   if (!enrollment) {
-    console.warn(`[ReviewService] Enrollment not found or not active for User: ${userId}, Course: ${courseId}`);
-    throw new Error('You must be enrolled in this course to leave a review.');
+    console.warn(`[ReviewService] Enrollment not found or not completed for User: ${userId}, Course: ${courseId}`);
+    throw new Error('You must complete 100% of the course to leave a review.');
   }
 
   // 2. Validate Rating
@@ -123,7 +123,7 @@ export const getCourseReviews = async (courseId, page = 1, limit = 10) => {
       user: {
         Id: r.Users.Id,
         FullName: r.Users.FullName,
-        AvatarUrl: r.Users.AvatarUrl || 'https://via.placeholder.com/40?text=User'
+        AvatarUrl: r.Users.AvatarUrl || ''
       },
       Rating: r.Rating,
       Content: r.Content,

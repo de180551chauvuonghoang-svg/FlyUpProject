@@ -129,6 +129,19 @@ export const handleCassoWebhook = async (req, res) => {
               }
             });
 
+            // --- NEW: Update Counters (LearnerCount and EnrollmentCount) ---
+            // Update User EnrollmentCount
+            await tx.users.update({
+              where: { Id: checkout.UserId },
+              data: { EnrollmentCount: { increment: 1 } }
+            });
+
+            // Update Courses LearnerCount
+            await tx.courses.update({
+              where: { Id: courseId },
+              data: { LearnerCount: { increment: 1 } }
+            });
+
             // Calculate Instructor Share (70%)
             // Handle proportional discount if total amount < sum of course prices
             const totalOriginalPrice = coursesInCheckout.reduce((sum, c) => sum + (c.Price || 0), 0);

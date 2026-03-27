@@ -1539,3 +1539,134 @@ export const markLectureComplete = async (req, res) => {
     res.status(500).json({ success: false, error: "Failed to mark lecture complete" });
   }
 };
+
+// ─── FINISH COURSE & SEND CERTIFICATE ──────────────────────────────────────
+export const finishCourse = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id: courseId } = req.params;
+    const prisma = (await import("../lib/prisma.js")).default;
+    const { sendCertificateEmail } = await import("../services/emailService.js");
+
+    // 1. Verify user's enrollment and progress
+    const enrollment = await prisma.enrollments.findFirst({
+      where: { CreatorId: userId, CourseId: courseId },
+      include: {
+        Users: {
+          select: { FullName: true, Email: true }
+        },
+        Courses: {
+          include: {
+            Sections: {
+              include: {
+                Lectures: { select: { Id: true } }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!enrollment) {
+      return res.status(404).json({ success: false, error: "Enrollment not found" });
+    }
+
+    // 2. Check if all lectures are completed
+    const allLectureIds = enrollment.Courses.Sections.flatMap(s => s.Lectures.map(l => l.Id));
+    const totalLectures = allLectureIds.length;
+    
+    let completedMilestones = [];
+    try {
+      completedMilestones = JSON.parse(enrollment.LectureMilestones || "[]");
+    } catch (e) {
+      completedMilestones = [];
+    }
+
+    // Use a Set to handle potential duplicates in milestones
+    const uniqueCompletedIds = new Set(completedMilestones.filter(id => allLectureIds.includes(id)));
+    const completedCount = uniqueCompletedIds.size;
+
+    console.log(`[finishCourse] User ${userId} finishing course ${courseId}. Unique Completed: ${completedCount}, Total required: ${totalLectures}`);
+
+    if (completedCount < totalLectures && totalLectures > 0) {
+      // Allow a small margin of error if somehow count is off (optional, but keeping it strict for now with better logs)
+      return res.status(400).json({ 
+        success: false, 
+        error: `Course not yet completed. You have finished ${completedCount} of ${totalLectures} lectures.`, 
+        completed: completedCount, 
+        total: totalLectures 
+      });
+    }
+
+    // 3. Update enrollment status to Completed
+    const updatedEnrollment = await prisma.enrollments.update({
+      where: { 
+        CreatorId_CourseId: { 
+          CreatorId: userId, 
+          CourseId: courseId 
+        } 
+      },
+      data: { 
+        Status: "Completed"
+      }
+    });
+
+    // 4. Send Certificate Email
+    try {
+      await sendCertificateEmail(
+        enrollment.Users.Email, 
+        enrollment.Users.FullName, 
+        enrollment.Courses.Title
+      );
+    } catch (emailError) {
+      console.error("Failed to send certificate email:", emailError);
+      // Don't fail the whole request if email fails, but log it
+    }
+
+    res.json({
+      success: true,
+      message: "Congratulations! You have successfully completed the course.",
+      data: {
+        completionDate: updatedEnrollment.LastModificationTime,
+        courseTitle: enrollment.Courses.Title
+      }
+    });
+
+  } catch (error) {
+    console.error("Finish course error:", error);
+    res.status(500).json({ success: false, error: "Failed to complete course" });
+  }
+};
+
+export const debugCompleteCourse = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id: courseId } = req.params;
+    const prisma = (await import("../lib/prisma.js")).default;
+
+    const course = await prisma.courses.findUnique({
+      where: { Id: courseId },
+      include: {
+        Sections: {
+          include: {
+            Lectures: true
+          }
+        }
+      }
+    });
+
+    if (!course) return res.status(404).json({ error: "Course not found" });
+
+    const allLectureIds = course.Sections.flatMap(s => s.Lectures.map(l => l.Id));
+
+    await prisma.enrollments.update({
+      where: { CreatorId_CourseId: { CreatorId: userId, CourseId: courseId } },
+      data: { LectureMilestones: JSON.stringify(allLectureIds) }
+    });
+
+    res.json({ success: true, message: "All lectures marked as complete!" });
+  } catch (error) {
+    console.error("Debug complete error:", error);
+    res.status(500).json({ error: "Failed to debug complete course" });
+  }
+};
