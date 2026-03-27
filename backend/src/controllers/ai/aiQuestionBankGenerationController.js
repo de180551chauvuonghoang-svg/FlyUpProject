@@ -6,7 +6,8 @@ import prisma from '../../lib/prisma.js';
  */
 export const bulkGenerateToBank = async (req, res) => {
   try {
-    const { questionBankId, courseId, lessonId, count = 5, difficulty = 'Mixed' } = req.body;
+    const { questionBankId, courseId, lessonId, count = 10, difficulty = 'Mixed' } = req.body;
+
 
     if (!questionBankId || !courseId) {
       return res.status(400).json({ error: "questionBankId and courseId are required" });
@@ -49,7 +50,8 @@ export const bulkGenerateToBank = async (req, res) => {
             ParamB: q.difficulty === 'Easy' ? -1.0 : q.difficulty === 'Hard' ? 1.0 : 0.0,
             ParamC: 0.25,
             Explanation: q.explanation || '',
-            Status: 'Draft',
+            Status: 'Published',
+
             CreatorId: req.user.userId,
             LastModifierId: req.user.userId,
             QuestionBankChoices: {

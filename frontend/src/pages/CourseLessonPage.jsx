@@ -458,9 +458,10 @@ export default function CourseLessonPage() {
       const result = await generateInstantAIQuiz({
         courseId,
         lessonId: selectedLessonId,
-        count: 5,
+        count: 10,
         difficulty: "Mixed",
       }, token);
+
 
       if (result.success) {
         // No need to invalidate courseAssignments since it's stored separately now
@@ -473,7 +474,8 @@ export default function CourseLessonPage() {
         setCurrentAiQuizId(result.data.aiQuizId);
         setCurrentAiQuizData(result.data.questions);
 
-        toast.success("Đã tạo xong 5 câu hỏi thực hành!", { id: "ai-quiz-gen" });
+        toast.success("Đã tạo xong 10 câu hỏi thực hành!", { id: "ai-quiz-gen" });
+
       } else {
         toast.error(result.message || "Không thể tạo câu hỏi AI", { id: "ai-quiz-gen" });
       }

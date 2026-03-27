@@ -169,7 +169,8 @@ export const generateQuiz = async (req, res) => {
  */
 export const generateInstantAIQuiz = async (req, res) => {
   try {
-    const { courseId, lessonId, count = 5, difficulty = 'Mixed' } = req.body;
+    const { courseId, lessonId, count = 10, difficulty = 'Mixed' } = req.body;
+
     const userId = req.user?.userId;
 
     if (!courseId) {
