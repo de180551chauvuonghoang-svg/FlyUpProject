@@ -152,13 +152,15 @@ export const AIQuestionGenerationService = {
         ? `\nIMPORTANT: Do NOT repeat or generate questions similar to these existing ones:\n- ${existingQuestionContents.join('\n- ')}`
         : "";
 
-      const systemPrompt = `You are a professional MCQ generator. You MUST output a JSON object with the following structure:
+      const systemPrompt = `You are a professional MCQ generator. You MUST output a JSON object.
+Keep content and explanations very concise to ensure the full response fits within token limits.
+Structure:
 {
   "questions": [
     {
       "content": "string",
       "difficulty": "${difficulty}",
-      "explanation": "string",
+      "explanation": "concise string",
       "choices": [
         { "content": "string", "isCorrect": true },
         { "content": "string", "isCorrect": false },
@@ -174,7 +176,7 @@ Output ONLY valid JSON.`;
       const userPrompt = `Content to generate questions from:
 ${sanitizedContent}
 
-Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on the content above. Ensure variety in topics covered.`;
+Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on the content above. Be concise.`;
 
       console.log(`🤖 Generating ${count} AI questions (model: llama-3.3-70b-versatile, context: ${sanitizedContent.length} chars)`);
 
