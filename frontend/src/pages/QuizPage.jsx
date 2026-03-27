@@ -56,8 +56,7 @@ const QuizPage = ({ assignmentId, courseId, questionCount, onFinish, onBack }) =
                     assignmentId,
                     courseId,
                     questionCount,
-                },
-                accessToken
+                }
             );
 
             setCurrentQuestion(data.question ?? null);
@@ -109,8 +108,7 @@ const QuizPage = ({ assignmentId, courseId, questionCount, onFinish, onBack }) =
                     responses,
                     currentTheta,
                     timeSpentForQuestion: spentThisQuestion,
-                },
-                accessToken
+                }
             );
 
             const updatedAnsweredQuestions = answerData.answeredQuestions ?? [];
@@ -141,8 +139,7 @@ const QuizPage = ({ assignmentId, courseId, questionCount, onFinish, onBack }) =
                         selectedChoiceIds: updatedSelectedChoiceIds,
                         timeSpentInSec: totalTimeSpentRef.current,
                         initialTheta: quizStartThetaRef.current,
-                    },
-                    accessToken
+                    }
                 );
 
                 onFinish({
