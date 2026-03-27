@@ -29,7 +29,7 @@ const options = {
       },
     ],
   },
-  apis: ['./src/routers/*.js'], // Path to the API docs
+  apis: ['./src/routers/**/*.js'], // Path to the API docs
 };
 
 const swaggerSpec = swaggerJsdoc(options);

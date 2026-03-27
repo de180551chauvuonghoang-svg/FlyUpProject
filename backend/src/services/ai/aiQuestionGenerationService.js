@@ -1,9 +1,10 @@
+import { PDFParse } from 'pdf-parse';
 import { getGroqClient } from '../../utils/ai-providers/groqClient.js';
 import prisma from '../../lib/prisma.js';
 import axios from 'axios';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { PDFParse } = require('pdf-parse');
+
+
+
 
 /**
  * Service for generating MCQ questions specifically from course content.
@@ -98,7 +99,6 @@ export const AIQuestionGenerationService = {
                 console.log(`📄 Extracting text from PDF: ${material.Url}`);
                 const response = await axios.get(material.Url, { timeout: 10000, responseType: 'arraybuffer' });
 
-
                 const parser = new PDFParse({ data: response.data });
                 const data = await parser.getText();
                 await parser.destroy();
@@ -106,6 +106,8 @@ export const AIQuestionGenerationService = {
                 if (data.text) {
                   const rawText = data.text.trim();
                   console.log(`✅ [AI] Extracted ${rawText.length} chars. Preview: "${rawText.substring(0, 100).replace(/\n/g, ' ')}..."`);
+
+
 
                   if (rawText.length > 20) {
                     // Clean up multiple spaces/newlines from PDF extraction
@@ -159,8 +161,9 @@ Structure:
   "questions": [
     {
       "content": "string",
-      "difficulty": "${difficulty}",
-      "explanation": "concise string",
+      "difficulty": "Easy" | "Medium" | "Hard",
+      "explanation": "string",
+
       "choices": [
         { "content": "string", "isCorrect": true },
         { "content": "string", "isCorrect": false },
@@ -170,13 +173,21 @@ Structure:
     }
   ]
 }
-Base questions ONLY on the provided content. Focus on specific facts. ${avoidSection}
+Base questions ONLY on the provided content. Focus on specific facts. 
+IMPORTANT: When generating "Mixed" difficulty, you MUST provide a balanced distribution with at least 2 questions for EACH level (Easy, Medium, Hard).
+${avoidSection}
 Output ONLY valid JSON.`;
 
-      const userPrompt = `Content to generate questions from:
-${sanitizedContent}
 
-Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on the content above. Be concise.`;
+      // Calculate distribution for Mixed difficulty to ensure at least 2 questions per level
+      let difficultyRequirement = `difficulty "${difficulty}"`;
+      if (difficulty === 'Mixed' && count >= 6) {
+        const easyCount = Math.floor(count * 0.3) < 2 ? 2 : Math.floor(count * 0.3);
+        const hardCount = Math.floor(count * 0.4) < 2 ? 2 : Math.floor(count * 0.4);
+        const mediumCount = count - easyCount - hardCount;
+        difficultyRequirement = `exactly ${count} questions with a MIXED distribution: ${easyCount} Easy, ${mediumCount} Medium, and ${hardCount} Hard questions. You MUST meet these exact counts`;
+      }
+
 
       console.log(`🤖 Generating ${count} AI questions (model: llama-3.3-70b-versatile, context: ${sanitizedContent.length} chars)`);
 
@@ -186,9 +197,13 @@ Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on
         model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: `Content to generate questions from:
+${sanitizedContent}
+
+Generate ${difficultyRequirement} based on the content above. Ensure variety in topics covered.` }
         ],
         response_format: { type: 'json_object' },
+
         temperature: 0.5, // Increased for more variety while maintaining logic
         max_tokens: 4096,
       });

@@ -38,3 +38,62 @@ export const finishCatQuiz = async (payload) => {
         body: JSON.stringify(payload),
     });
 };
+
+/**
+ * Generate instant AI practice quiz from lesson content
+ */
+export const generateInstantAIQuiz = async (payload, token) => {
+    const response = await fetch(`${API_BASE}/api/ai/quiz/generate-instant`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data?.error || "Failed to generate AI quiz");
+    }
+    return data;
+};
+
+/**
+ * Fetch a single AI quiz by ID
+ */
+export const fetchAiQuiz = async (aiQuizId, token) => {
+    const response = await fetch(`${API_BASE}/api/ai/quiz/${aiQuizId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data?.error || "Failed to fetch AI quiz");
+    }
+    return data;
+};
+
+/**
+ * Fetch AI quizzes for a specific lesson/course
+ */
+export const fetchAiQuizzesByLesson = async (courseId, lessonId, token) => {
+    const response = await fetch(`${API_BASE}/api/ai/quiz/lesson/${courseId}/${lessonId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data?.error || "Failed to fetch AI quizzes for lesson");
+    }
+    return data;
+};
+

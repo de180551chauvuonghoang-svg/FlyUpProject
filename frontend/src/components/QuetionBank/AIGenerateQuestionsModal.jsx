@@ -5,9 +5,10 @@ import { fetchCourseById } from '../../services/courseService';
 
 const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId }) => {
     const [config, setConfig] = useState({
-        count: 5,
+        count: 10,
         difficulty: 'Mixed'
     });
+
     const [lessons, setLessons] = useState([]);
     const [selectedLessonId, setSelectedLessonId] = useState('all');
     const [loadingLessons, setLoadingLessons] = useState(false);
@@ -102,7 +103,8 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
                         </div>
                         <input 
                             type="range"
-                            min="1"
+                            min="10"
+
                             max="20"
                             step="1"
                             value={config.count}
@@ -110,10 +112,11 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
                             className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-500"
                         />
                         <div className="flex justify-between mt-2 text-[10px] font-bold text-slate-600 uppercase">
-                            <span>1</span>
                             <span>10</span>
+                            <span>15</span>
                             <span>20</span>
                         </div>
+
                     </div>
 
                     <div>
