@@ -44,12 +44,13 @@ const CreateAssignmentFromBankPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const presetCourseId = searchParams.get('courseId') || '';
+    const presetSectionId = searchParams.get('sectionId') || '';
     const presetSourceQuestionBankId = searchParams.get('sourceQuestionBankId') || '';
 
 
     const [form, setForm] = useState({
         courseId: presetCourseId,
-        sectionId: '',
+        sectionId: presetSectionId,
         name: '',
         duration: 30,
         gradeToPass: 8,
@@ -102,10 +103,10 @@ const CreateAssignmentFromBankPage = () => {
                     setForm(prev => ({ ...prev, sourceQuestionBankId: '' }));
                 }
                 
-                setForm((prev) => ({
-                    ...prev,
-                    sectionId: '',
-                }));
+                // Only clear sectionId if it's NOT the preset one we just loaded
+                if (form.sectionId && !sectionsData.some(s => s.Id === form.sectionId)) {
+                    setForm(prev => ({ ...prev, sectionId: '' }));
+                }
             } catch (error) {
                 toast.error(error.message || 'Failed to load sections or banks');
             } finally {

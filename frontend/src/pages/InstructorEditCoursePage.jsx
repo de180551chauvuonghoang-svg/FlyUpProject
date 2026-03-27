@@ -1268,7 +1268,7 @@ export default function InstructorEditCoursePage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              openAssignmentModal("section", section.id);
+                              navigate(`/instructor/create-assignment-from-bank?courseId=${id}&sectionId=${section.id}`);
                             }}
                             className="p-2 text-purple-500 hover:text-purple-400 transition-colors"
                             title="Add assignment"
