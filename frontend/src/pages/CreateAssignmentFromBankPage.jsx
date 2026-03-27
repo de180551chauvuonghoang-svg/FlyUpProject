@@ -116,7 +116,7 @@ const CreateAssignmentFromBankPage = () => {
         };
 
         loadDependentData();
-    }, [form.courseId, form.sourceQuestionBankId]);
+    }, [form.courseId, form.sourceQuestionBankId, form.sectionId]);
 
     // Fetch questions when bank is selected
     useEffect(() => {
