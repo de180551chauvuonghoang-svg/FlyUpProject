@@ -1,0 +1,1 @@
+web: gunicorn cat_service_api:app

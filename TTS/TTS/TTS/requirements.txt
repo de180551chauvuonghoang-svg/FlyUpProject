@@ -1,0 +1,9 @@
+numpy
+pandas
+catsim
+flask
+flask_cors
+sqlalchemy
+psycopg2-binary
+python-dotenv
+gunicorn
