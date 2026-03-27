@@ -76,6 +76,7 @@ router.put("/:id/publish", authenticateJWT, courseController.publishCourse);
 router.put("/:id/unpublish", authenticateJWT, courseController.unpublishCourse);
 router.put("/:id", authenticateJWT, courseController.updateCourse);
 router.delete("/:id", authenticateJWT, courseController.deleteCourse);
+router.post("/:id/finish", authenticateJWT, courseController.finishCourse);
 
 /**
  * @swagger

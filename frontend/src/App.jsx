@@ -20,11 +20,12 @@ import InstructorDashboard from './pages/InstructorDashboard';
 import InstructorCreateCoursePage from './pages/InstructorCreateCoursePage';
 import InstructorUploadPage from './pages/InstructorUploadPage';
 import InstructorEditCoursePage from './pages/InstructorEditCoursePage';
-import InstructorPreviewPage from './pages/InstructorPreviewPage';
 import CourseLessonPage from './pages/CourseLessonPage';
 import InstructorStudentsPage from './pages/InstructorStudentsPage';
 import InstructorCommunicationPage from './pages/InstructorCommunicationPage';
 import InstructorToolsPage from './pages/InstructorToolsPage';
+import CertificatePage from './pages/CertificatePage';
+
 // NEW: question bank module
 import QuestionBankListPage from './pages/QuestionBankListPage';
 import InstructorRoute from './components/Auth/InstructorRoute';
@@ -122,12 +123,14 @@ function App() {
           <Route path="/instructor/create-course" element={<InstructorCreateCoursePage />} />
           <Route path="/instructor/upload" element={<InstructorUploadPage />} />
           <Route path="/edit-course/:id" element={<InstructorEditCoursePage />} />
-          <Route path="/instructor/preview/:id" element={<InstructorPreviewPage />} />
+          <Route path="/instructor/preview/:courseId" element={<CourseLessonPage isPreview={true} />} />
           <Route path="/instructor/students" element={<InstructorStudentsPage />} />
           <Route path="/instructor/communication" element={<InstructorCommunicationPage />} />
           <Route path="/instructor/tools" element={<InstructorToolsPage />} />
           <Route path="/learning/:courseId" element={<CourseLessonPage />} />
           <Route path="/learning/:courseId/lesson/:lessonId" element={<CourseLessonPage />} />
+          <Route path="/certificate/:courseId" element={<CertificatePage />} />
+
           
           <Route
               path="/instructor/question-banks"

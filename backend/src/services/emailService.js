@@ -536,3 +536,68 @@ function createCourseRejectedEmailTemplate(instructorName, courseTitle, reason) 
 </html>
   `;
 }
+
+export const sendCertificateEmail = async (to, name, courseTitle) => {
+  try {
+    const gmail = createGmailClient();
+    if (!gmail) {
+      console.log('📧 [DEV MODE] Certificate Email would be sent to:', to);
+      return true;
+    }
+
+    const html = createCertificateEmailTemplate(name, courseTitle);
+    return await sendEmailViaGmail(to, `Course Certificate: ${courseTitle}`, html);
+  } catch (error) {
+    console.error('Error sending certificate email:', error);
+    return false;
+  }
+};
+
+function createCertificateEmailTemplate(name, courseTitle) {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Course Certificate</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333;">
+  <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);">
+    <div style="background: linear-gradient(135deg, #6e3cec 0%, #a855f7 100%); padding: 40px 20px; text-align: center;">
+      <img src="https://swp-fly-up.vercel.app/FluyUpLogo.png" alt="Fly Up Logo" style="width: 80px; height: 80px; background: white; border-radius: 50%; padding: 10px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: contain;">
+      <h1 style="color: white; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">Congratulations!</h1>
+      <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 16px;">You've earned your certificate</p>
+    </div>
+    
+    <div style="padding: 40px 30px; text-align: center;">
+      <p style="font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 16px;">Well done, ${name}!</p>
+      <p style="font-size: 16px; line-height: 1.6; color: #4a4a4a; margin-bottom: 24px;">
+        Hard work pays off! You have successfully completed the course <strong>"${courseTitle}"</strong>. 
+        Your dedication and effort have led you to this milestone.
+      </p>
+      
+      <div style="background-color: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; margin: 30px 0;">
+        <span style="material-symbols-outlined; font-size: 48px; color: #a855f7;">🏆</span>
+        <h2 style="color: #1a1a1a; margin-top: 15px; margin-bottom: 5px;">Certificate Earned</h2>
+        <p style="color: #64748b; font-size: 14px;">"${courseTitle}"</p>
+      </div>
+
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="http://localhost:5173/my-learning" style="display: inline-block; background: linear-gradient(135deg, #6e3cec 0%, #a855f7 100%); color: white; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(110, 60, 236, 0.3);">View Your Certificate</a>
+      </div>
+      
+      <p style="margin-top: 40px; font-size: 14px; color: #888;">
+        You can download or print your certificate from your "My Learning" dashboard at any time.
+      </p>
+    </div>
+    
+    <div style="background-color: #f8f9fa; padding: 24px; text-align: center; font-size: 13px; color: #888; border-top: 1px solid #eaeaea;">
+      <p style="margin: 5px 0;">&copy; ${new Date().getFullYear()} Fly Up Team. All rights reserved.</p>
+      <p style="margin: 5px 0;">The sky is not the limit, it's just the beginning. 🚀</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}

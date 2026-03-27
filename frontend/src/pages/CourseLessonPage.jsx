@@ -4,10 +4,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuth from "../hooks/useAuth";
 import Quiz from "../components/Quiz";
 import toast from "react-hot-toast";
+import { sendMessage } from "../services/chatbotService";
 import {
   fetchCourseLessons,
   fetchEnrollmentProgress,
   markLectureComplete,
+  finishCourse,
+  debugCompleteCourse,
 } from "../services/lessonService";
 import { fetchAssignmentsByCourse } from "../services/quizService";
 import QuizPreTestPage from "./QuizPreTestPage";
@@ -80,7 +83,7 @@ const MOCK_CURRENT_LESSON = {
   By the end of this lesson, you'll have a solid understanding of how to properly declare and use variables in your JavaScript applications.`,
 };
 
-export default function CourseLessonPage() {
+export default function CourseLessonPage({ isPreview }) {
   const { courseId, lessonId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -102,7 +105,7 @@ export default function CourseLessonPage() {
   // AI Assistant states
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
-  const [summaryLang, setSummaryLang] = useState("vi");
+  const [summaryLang, setSummaryLang] = useState("en");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const cloudAudioRef = useRef(null);
 
@@ -119,6 +122,22 @@ export default function CourseLessonPage() {
   const maxTimePlayed = useRef(0);
   const [isLessonCompleted, setIsLessonCompleted] = useState(false);
   const [lastUpdateText, setLastUpdateText] = useState("Last updated recently");
+
+  // Understand Prompt & AI Chat states
+  const [showUnderstandPrompt, setShowUnderstandPrompt] = useState(false);
+  const hasShownUnderstandPrompt = useRef(false);
+  const [chatMessages, setChatMessages] = useState([
+    { text: "Hello! I'm your AI Learning Assistant for this lesson. Do you have any questions about what you just watched?", sender: 'bot' }
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
+  // Review & Debug states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
 
 
@@ -169,8 +188,10 @@ export default function CourseLessonPage() {
   // Instructors should use the instructor dashboard to preview their courses
   useEffect(() => {
     const checkInstructorPreview = () => {
-      // Always set to false - this page is for enrolled students
-      const shouldPreview = false;
+      // Set to true if isPreview prop is true OR URL is specifically for instructor preview
+      const isPreviewPath = window.location.pathname.includes('/instructor/preview/');
+      const shouldPreview = !!isPreview || isPreviewPath;
+      
       console.log("[CourseLessonPage] Instructor preview check:", {
         user: user?.id,
         isInstructor:
@@ -180,7 +201,7 @@ export default function CourseLessonPage() {
           "instructor",
         lessonId,
         shouldPreview,
-        note: "Always false - use instructor dashboard for preview",
+        note: shouldPreview ? "Active - instructor preview mode" : "Always false - use instructor dashboard for preview",
       });
       setIsInstructorPreview(shouldPreview);
     };
@@ -481,6 +502,48 @@ export default function CourseLessonPage() {
     }
   };
 
+  const handleChatSend = async () => {
+    if (!chatInput.trim() || isChatLoading) return;
+
+    const userMessage = chatInput.trim();
+    setChatMessages(prev => [...prev, { text: userMessage, sender: 'user' }]);
+    setChatInput("");
+    setIsChatLoading(true);
+
+    try {
+      // Provide lesson context to the chatbot
+      const context = `Context: The student is watching the lesson "${currentLesson?.Title}". Content summary: ${currentLesson?.Content?.substring(0, 500)}... 
+      Please answer their question based on this lesson.
+      
+      Question: ${userMessage}`;
+
+      const response = await sendMessage(context);
+      setChatMessages(prev => [...prev, { text: response.response, sender: 'bot' }]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      toast.error("AI Assistant is currently busy. Please try again.");
+      setChatMessages(prev => [...prev, { text: "Xin lỗi, tôi gặp sự cố kết nối. Bạn vui lòng thử lại sau nhé!", sender: 'bot' }]);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  const handleAskAI = () => {
+    setShowUnderstandPrompt(false);
+    setActiveTab("ai");
+    // Small delay to ensure tab is rendered before scrolling or focusing
+    setTimeout(() => {
+      document.getElementById('ai-chat-input')?.focus();
+      document.getElementById('ai-assistant-tab')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages]);
+
   useEffect(() => {
     return () => handleStop();
   }, []);
@@ -560,7 +623,7 @@ export default function CourseLessonPage() {
       enrollment.LectureMilestones || "[]",
     ).length;
     const totalLectures = course?.LectureCount || 1;
-    return Math.round((completedLectures / totalLectures) * 100);
+    return Math.min(Math.round((completedLectures / totalLectures) * 100), 100);
   };
 
   // Get material icon based on type
@@ -852,7 +915,79 @@ export default function CourseLessonPage() {
     toast.success("Bạn đã hoàn thành bài giảng cuối cùng!");
   };
 
+  const handleDebugComplete = async () => {
+    if (!isInstructorPreview) return;
+    const toastId = toast.loading("Debug: Hoàn thành nhanh khóa học...");
+    try {
+      await debugCompleteCourse(courseId);
+      toast.success("Debug: Đã mở khóa toàn bộ bài học!", { id: toastId });
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["enrollmentProgress", courseId, user?.id] });
+      window.location.reload(); // Quick refresh to update tree
+    } catch (error) {
+      console.error("Debug complete error:", error);
+      toast.error("Lỗi debug", { id: toastId });
+    }
+  };
+
+  const handleReviewSubmit = async () => {
+    if (!reviewRating) {
+      toast.error("Vui lòng chọn số sao đánh giá");
+      return;
+    }
+    setIsSubmittingReview(true);
+    try {
+      if (!isInstructorPreview) {
+        // Real submission
+        await apiCall(`/courses/${courseId}/reviews`, {
+          method: "POST",
+          body: { rating: reviewRating, content: reviewComment }
+        });
+      }
+      toast.success("Cảm ơn bạn đã đánh giá khóa học!");
+      setShowReviewModal(false);
+      navigate(`/certificate/${courseId}`);
+    } catch (error) {
+      console.error("Review submission error:", error);
+      toast.error("Không thể gửi đánh giá, nhưng bạn vẫn có thể nhận chứng chỉ.");
+      navigate(`/certificate/${courseId}`);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleFinishCourse = async () => {
+    if (progress < 100) {
+      toast.error("Vui lòng hoàn thành tất cả các bài học để nhận chứng chỉ!");
+      return;
+    }
+
+    const toastId = toast.loading("Đang xử lý hoàn thành khóa học...");
+    try {
+      await finishCourse(courseId);
+      toast.success("Chúc mừng! Bạn đã hoàn thành khóa học.", { id: toastId });
+      
+      // Invalidate queries to refresh enrollment status
+      if (user?.id) {
+        queryClient.invalidateQueries({ queryKey: ["enrollmentProgress", courseId, user.id] });
+        queryClient.invalidateQueries({ queryKey: ["userEnrollments", user.id] });
+      }
+
+      // Show review modal instead of direct redirect
+      setShowReviewModal(true);
+    } catch (error) {
+      console.error("Failed to finish course:", error);
+      toast.error("Có lỗi xảy ra khi hoàn thành khóa học. Vui lòng thử lại sau.", { id: toastId });
+    }
+  };
+
   const handleCompleteLesson = async () => {
+    if (isInstructorPreview) {
+      toast.success("Preview: Lesson marked as complete (no data saved).");
+      setIsLessonCompleted(true);
+      return;
+    }
+
     if (isLessonCompleted || courseId === "demo") {
       setIsLessonCompleted(true);
       return;
@@ -880,7 +1015,22 @@ export default function CourseLessonPage() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark">
+    <div className="flex h-screen w-full bg-background-light dark:bg-background-dark relative">
+      {isInstructorPreview && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-gradient-to-r from-amber-600 to-orange-600 text-white text-center py-2 px-4 shadow-xl flex items-center justify-center gap-4">
+          <div className="flex items-center gap-2 font-bold text-sm">
+            <span className="material-symbols-outlined text-[18px]">visibility</span>
+            PREVIEW MODE — Experience your course as a student would
+          </div>
+          <button 
+            onClick={() => navigate("/instructor/dashboard")}
+            className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-xs font-bold transition-all flex items-center gap-1 border border-white/10"
+          >
+            <span className="material-symbols-outlined text-[14px]">logout</span>
+            Exit Preview
+          </button>
+        </div>
+      )}
       {/* Left Sidebar */}
       <aside className="w-[340px] flex-shrink-0 flex flex-col glass-panel border-r border-glass-border h-full relative z-20">
         {/* Header Area */}
@@ -927,6 +1077,31 @@ export default function CourseLessonPage() {
               ></div>
             </div>
           </div>
+          
+          {/* Finish Course Button */}
+          {progress >= 100 && enrollment?.Status !== 'Completed' && (
+            <button
+              onClick={handleFinishCourse}
+              className="mt-4 w-full py-2.5 bg-gradient-to-r from-primary to-purple-600 rounded-xl text-white font-bold shadow-neon hover:shadow-neon-strong transition-all flex items-center justify-center gap-2 group"
+            >
+              <span className="material-symbols-outlined text-[20px] group-hover:rotate-12 transition-transform">
+                emoji_events
+              </span>
+              Finish Course
+            </button>
+          )}
+
+          {/* Instructor Debug Tool */}
+          {isInstructorPreview && (
+            <button
+              onClick={handleDebugComplete}
+              className="mt-3 w-full py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl text-amber-500 text-xs font-bold transition-all flex items-center justify-center gap-2"
+              title="Only visible in Preview Mode"
+            >
+              <span className="material-symbols-outlined text-[16px]">bug_report</span>
+              DEBUG: Quick Complete
+            </button>
+          )}
         </div>
 
         {/* Scrollable Course Tree */}
@@ -1120,12 +1295,21 @@ export default function CourseLessonPage() {
                     if (!video.seeking && video.currentTime > maxTimePlayed.current) {
                       maxTimePlayed.current = video.currentTime;
                     }
-                    if (user?.id && currentLessonId) {
+                    if (!isInstructorPreview && user?.id && currentLessonId) {
                       const cacheKey = `flyup_video_progress_${user.id}_${currentLessonId}`;
                       localStorage.setItem(cacheKey, JSON.stringify({
                         currentTime: video.currentTime,
                         maxTime: maxTimePlayed.current
                       }));
+                    }
+
+                    // 50% Understand Prompt Trigger
+                    if (video.duration > 0 && 
+                        video.currentTime / video.duration > 0.5 && 
+                        !hasShownUnderstandPrompt.current && 
+                        !isLessonCompleted) {
+                      setShowUnderstandPrompt(true);
+                      hasShownUnderstandPrompt.current = true;
                     }
                   }}
                   onSeeking={(e) => {
@@ -1200,6 +1384,38 @@ export default function CourseLessonPage() {
                 </div>
               </>
             )}
+
+            {/* Understand Prompt Overlay */}
+            {showUnderstandPrompt && (
+              <div className="absolute inset-x-0 bottom-0 p-6 z-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="glass-panel border-primary/30 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl shadow-primary/20 bg-[#130d1a]/95 backdrop-blur-xl">
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-primary animate-bounce">psychology</span>
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold text-sm sm:text-base">Do you understand the content so far?</h4>
+                      <p className="text-slate-400 text-xs sm:text-sm">Let me know if you need the AI to explain anything!</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button 
+                      onClick={() => setShowUnderstandPrompt(false)}
+                      className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all border border-white/10"
+                    >
+                      I understand
+                    </button>
+                    <button 
+                      onClick={handleAskAI}
+                      className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-primary hover:bg-purple-600 text-white text-sm font-bold transition-all shadow-neon flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                      Ask AI
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Bar */}
@@ -1210,7 +1426,16 @@ export default function CourseLessonPage() {
               </h1>
               <p className="text-slate-400 text-sm">{lastUpdateText}</p>
             </div>
-            <div className="flex gap-3 w-full md:w-auto">
+            <div className="flex flex-wrap gap-3 w-full md:w-auto">
+              {isInstructorPreview && (
+                <button
+                  onClick={() => navigate(`/edit-course/${courseId}`)}
+                  className="flex-1 md:flex-none h-11 px-6 rounded-lg bg-slate-800/50 hover:bg-slate-700 text-white text-sm font-bold border border-white/10 transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[20px]">edit</span>
+                  Edit This Lecture
+                </button>
+              )}
               <button
                 onClick={() => {
                   if (!isLessonCompleted) handleCompleteLesson();
@@ -1502,17 +1727,17 @@ export default function CourseLessonPage() {
             )}
 
             {activeTab === "ai" && (
-              <div className="glass-panel rounded-xl p-8 relative overflow-hidden">
+              <div className="glass-panel rounded-xl p-8 relative overflow-hidden flex flex-col min-h-[500px]" id="ai-assistant-tab">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none"></div>
 
                 <div className="flex items-center justify-between mb-6 relative z-10">
                   <div>
                     <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                       <span className="material-symbols-outlined text-purple-400">auto_awesome</span>
-                      Trợ lý AI
+                      AI Learning Assistant
                     </h3>
                     <p className="text-slate-400 text-sm">
-                      Tóm tắt nhanh kiến thức và đọc bài giảng cho bạn
+                      Ask anything about the lesson or use our support tools
                     </p>
                   </div>
 
@@ -1534,82 +1759,120 @@ export default function CourseLessonPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-4 relative z-10">
-                  {customFileText && (
-                    <div className="px-4 py-3 bg-indigo-500/20 text-indigo-300 text-sm rounded-lg border border-indigo-500/30 flex items-start gap-3 relative">
-                      <span className="material-symbols-outlined mt-0.5 text-indigo-400">description</span>
-                      <div className="flex-1">
-                        <p className="font-medium mb-1">Đang sử dụng tài liệu tùy chỉnh ({customFileText.length} ký tự)</p>
-                        <button onClick={() => setCustomFileText("")} className="text-xs text-indigo-400 underline font-bold hover:text-white transition-colors">Hủy bỏ và trở lại dùng nội dung khóa học</button>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      accept=".txt,.pdf,.docx"
-                    />
+                <div className="flex flex-col flex-1 gap-6 relative z-10">
+                  {/* Tools Strip */}
+                  <div className="flex flex-wrap gap-2 pb-4 border-b border-white/5">
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploading}
-                      className="px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold border border-glass-border flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                      className="px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700 text-white text-xs font-bold border border-glass-border flex items-center gap-2 transition-all disabled:opacity-50"
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        upload_file
-                      </span>
-                      {isUploading ? "Đang đọc..." : "Upload tài liệu"}
+                      <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                      {isUploading ? "Reading..." : "Custom Docs"}
                     </button>
 
                     <button
                       onClick={handleSummarize}
                       disabled={isSummarizing || (!currentLesson?.Content && !customFileText)}
-                      className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="px-4 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 text-xs font-bold border border-purple-500/30 flex items-center gap-2 transition-all disabled:opacity-50"
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {isSummarizing ? "hourglass_empty" : "auto_awesome"}
-                      </span>
-                      {isSummarizing ? "Đang tóm tắt..." : "Tóm tắt"}
+                      <span className="material-symbols-outlined text-[16px]">{isSummarizing ? "hourglass_empty" : "summarize"}</span>
+                      {isSummarizing ? "Summarizing..." : "Summarize Lesson"}
                     </button>
 
                     {!isSpeaking ? (
                       <button
                         onClick={handleSpeak}
                         disabled={!currentLesson?.Content && !customFileText && !aiSummary}
-                        className="px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="px-4 py-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-bold border border-cyan-500/30 flex items-center gap-2 transition-all disabled:opacity-50"
                       >
-                        <span className="material-symbols-outlined text-[20px] text-cyan-400">
-                          volume_up
-                        </span>
-                        Nghe bài học
+                        <span className="material-symbols-outlined text-[16px]">volume_up</span>
+                        Listen
                       </button>
                     ) : (
                       <button
                         onClick={handleStop}
-                        className="px-6 py-3 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold border border-red-500/30 transition-all flex items-center justify-center gap-2"
+                        className="px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/30 flex items-center gap-2 transition-all"
                       >
-                        <span className="material-symbols-outlined text-[20px]">
-                          stop_circle
-                        </span>
-                        Dừng phát
+                        <span className="material-symbols-outlined text-[16px]">stop_circle</span>
+                        Stop
                       </button>
                     )}
                   </div>
 
+                  {/* Chat Area */}
+                  <div className="flex-1 flex flex-col bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[400px] min-h-[300px] custom-scrollbar">
+                      {chatMessages.map((msg, idx) => (
+                        <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                          <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
+                            msg.sender === 'user' 
+                              ? 'bg-primary text-white rounded-br-none shadow-lg shadow-primary/10' 
+                              : 'bg-slate-800 text-slate-200 border border-white/5 rounded-bl-none shadow-sm'
+                          }`}>
+                            {msg.text}
+                          </div>
+                        </div>
+                      ))}
+                      {isChatLoading && (
+                        <div className="flex justify-start">
+                          <div className="bg-slate-800 p-3 rounded-2xl rounded-bl-none border border-white/5 flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                            <div className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                          </div>
+                        </div>
+                      )}
+                      <div ref={chatEndRef}></div>
+                    </div>
+
+                    <div className="p-3 bg-[#13131a] border-t border-white/5">
+                      <div className="flex gap-2">
+                        <input
+                          id="ai-chat-input"
+                          type="text"
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && handleChatSend()}
+                          placeholder="What would you like to ask about this lesson?"
+                          className="flex-1 bg-slate-900 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary border border-white/10 placeholder:text-slate-500"
+                        />
+                        <button
+                          onClick={handleChatSend}
+                          disabled={!chatInput.trim() || isChatLoading}
+                          className="size-10 rounded-xl bg-primary hover:bg-purple-600 text-white flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">send</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary Result (if any) */}
                   {aiSummary && (
-                    <div className="mt-4 p-6 rounded-xl bg-slate-900/60 border border-purple-500/20">
-                      <h4 className="text-sm font-bold text-purple-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                        Bản tóm tắt AI
-                      </h4>
-                      <div className="prose prose-sm prose-invert max-w-none text-slate-300 whitespace-pre-wrap leading-relaxed">
+                    <div className="mt-2 p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 animate-in zoom-in duration-300">
+                      <div className="flex items-center justify-between mb-2">
+                         <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[14px]">summarize</span>
+                          Lesson Summary
+                        </h4>
+                        <button onClick={() => setAiSummary("")} className="text-slate-500 hover:text-white transition-colors">
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </div>
+                      <div className="text-slate-300 text-xs whitespace-pre-wrap leading-relaxed max-h-[150px] overflow-y-auto custom-scrollbar">
                         {aiSummary}
                       </div>
                     </div>
                   )}
+
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept=".txt,.pdf,.docx"
+                  />
                 </div>
               </div>
             )}
@@ -1834,6 +2097,70 @@ function AIQuizRenderer({ questions, onClose }) {
           </button>
         )}
       </div>
+
+      {/* Course Review Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-[#130d1a] border border-glass-border rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+            {/* Decoration */}
+            <div className="absolute -top-24 -right-24 size-48 bg-primary/20 blur-[60px] rounded-full group-hover:bg-primary/30 transition-all duration-700"></div>
+            
+            <div className="relative z-10 text-center space-y-6">
+              <div className="size-20 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20 animate-bounce">
+                <span className="material-symbols-outlined text-4xl text-white">rate_review</span>
+              </div>
+              
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">How was your learning?</h2>
+                <p className="text-slate-400 text-sm">Your feedback helps instructors improve the course and helps other students decide.</p>
+              </div>
+
+              {/* Star Rating */}
+              <div className="flex justify-center gap-2 py-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setReviewRating(star)}
+                    onMouseEnter={() => setReviewRating(star)}
+                    className="transition-transform hover:scale-125 focus:outline-none"
+                  >
+                    <span className={`material-symbols-outlined text-4xl ${star <= reviewRating ? 'text-yellow-400 fill-1' : 'text-slate-600'}`} style={{ fontVariationSettings: star <= reviewRating ? "'FILL' 1" : "'FILL' 0" }}>
+                      star
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Comment Field */}
+              <div className="space-y-2 text-left">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Write your feedback</label>
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="What did you like or dislike about this course? (Optional)"
+                  className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 transition-all resize-none text-sm"
+                ></textarea>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => navigate(`/certificate/${courseId}`)}
+                  className="flex-1 py-3 px-4 rounded-xl border border-white/10 text-slate-400 font-bold hover:bg-white/5 transition-all text-sm"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleReviewSubmit}
+                  disabled={isSubmittingReview}
+                  className="flex-[2] py-3 px-4 rounded-xl bg-gradient-to-r from-primary to-purple-600 text-white font-bold shadow-neon hover:shadow-neon-strong transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
+                >
+                  {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

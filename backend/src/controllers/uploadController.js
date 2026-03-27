@@ -149,6 +149,15 @@ export async function uploadVideoController(req, res) {
       message: error.message,
       stack: error.stack,
     });
+
+    // Handle specific Supabase size error
+    if (error.message.includes("exceeded the maximum allowed size")) {
+      return res.status(413).json({
+        error: "File too large",
+        message: "The video file exceeds the maximum allowed size (usually 50MB for free tier). Please compress it and try again.",
+      });
+    }
+
     res.status(500).json({
       error: "Upload failed",
       message: error.message,

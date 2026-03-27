@@ -13,10 +13,8 @@ export const fetchCourseLessons = async (
       isInstructorPreview,
     );
 
-    // Use instructor endpoint if previewing own course
-    const endpoint = isInstructorPreview
-      ? `/courses/instructor/course/${courseId}`
-      : `/courses/${courseId}`;
+    // Use standard course endpoint - backend handles visibility for authenticated instructors
+    const endpoint = `/courses/${courseId}`;
 
     const data = await apiCall(endpoint);
     console.log("[lessonService] Course data received:", data);
@@ -79,6 +77,34 @@ export const fetchEnrollmentProgress = async (userId, courseId) => {
       "[lessonService] Failed to fetch enrollment progress:",
       error,
     );
+    throw error;
+  }
+};
+
+// Finish course and get certificate
+export const finishCourse = async (courseId) => {
+  try {
+    console.log("[lessonService] Finishing course:", courseId);
+    const data = await apiCall(`/courses/${courseId}/finish`, {
+      method: "POST",
+    });
+    return data.data || data;
+  } catch (error) {
+    console.error("[lessonService] Failed to finish course:", error);
+    throw error;
+  }
+};
+
+// Debug: Mark all as complete
+export const debugCompleteCourse = async (courseId) => {
+  try {
+    console.log("[lessonService] Debug completing all for:", courseId);
+    const data = await apiCall(`/courses/${courseId}/debug-complete`, {
+      method: "POST",
+    });
+    return data.data || data;
+  } catch (error) {
+    console.error("[lessonService] Failed to debug complete:", error);
     throw error;
   }
 };

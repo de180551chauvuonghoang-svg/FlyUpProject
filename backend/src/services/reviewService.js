@@ -123,7 +123,7 @@ export const getCourseReviews = async (courseId, page = 1, limit = 10) => {
       user: {
         Id: r.Users.Id,
         FullName: r.Users.FullName,
-        AvatarUrl: r.Users.AvatarUrl || 'https://via.placeholder.com/40?text=User'
+        AvatarUrl: r.Users.AvatarUrl || ''
       },
       Rating: r.Rating,
       Content: r.Content,

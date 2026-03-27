@@ -61,16 +61,25 @@ export default function InstructorEditCoursePage() {
 
   const fetchCourseData = async () => {
     try {
-      const res = await fetch(`${API_URL}/courses/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      // Parallel fetch course details and assignments
+      const [courseRes, assignRes] = await Promise.all([
+        fetch(`${API_URL}/courses/${id}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }),
+        fetch(`${API_URL}/quiz/course/${id}/assignments`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        })
+      ]);
 
-      if (!res.ok) throw new Error("Course not found");
+      if (!courseRes.ok) throw new Error("Course not found");
+      
+      const [courseData, assignData] = await Promise.all([
+        courseRes.json(),
+        assignRes.json()
+      ]);
 
-      const data = await res.json();
-      const course = data.data || data;
+      const course = courseData.data || courseData;
+      const allAssignments = assignData.data || [];
 
       // Set basic info
       setFormData({
@@ -84,19 +93,25 @@ export default function InstructorEditCoursePage() {
       });
       setThumbnailPreview(course.ThumbUrl || null);
 
-      // Fetch assignments for this course
-      const assignRes = await fetch(`${API_URL}/quiz/course/${id}/assignments`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
+      // Pre-index assignments for faster lookup
+      const assignmentsBySection = {};
+      const courseAssignments = [];
+      
+      allAssignments.forEach(a => {
+        if (a.SectionId) {
+          if (!assignmentsBySection[a.SectionId]) assignmentsBySection[a.SectionId] = [];
+          assignmentsBySection[a.SectionId].push(a);
+        } else {
+          courseAssignments.push(a);
+        }
       });
-      const assignData = await assignRes.json();
-      const allAssignments = assignData.data || [];
 
       // Set sections and lectures
       const sectionsData = (course.Sections || []).map((section) => ({
         id: section.Id,
         title: section.Title,
         isExisting: true,
-        assignments: allAssignments.filter(a => a.SectionId === section.Id).map(a => ({
+        assignments: (assignmentsBySection[section.Id] || []).map(a => ({
           id: a.Id,
           name: a.Name,
           duration: a.Duration,
@@ -139,7 +154,7 @@ export default function InstructorEditCoursePage() {
       }));
 
       // Set final course assignment
-      const finalAssign = allAssignments.find(a => a.CourseId === id && !a.SectionId);
+      const finalAssign = courseAssignments.find(a => a.CourseId === id && !a.SectionId);
       if (finalAssign) {
         setFinalAssignment({
           id: finalAssign.Id,
@@ -433,6 +448,13 @@ export default function InstructorEditCoursePage() {
       return;
     }
 
+    // Limit to 50MB
+    const MAX_SIZE = 50 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast.error("Video file is too large (max 50MB). Please compress it.");
+      return;
+    }
+
     // Capture video duration
     const video = document.createElement("video");
     video.preload = "metadata";
@@ -680,7 +702,13 @@ export default function InstructorEditCoursePage() {
               headers: { Authorization: `Bearer ${accessToken}` },
               body: videoFormData,
             });
-            if (!videoRes.ok) throw new Error(`Failed to upload video for: ${lecture.title}`);
+            if (!videoRes.ok) {
+              const errorData = await videoRes.json().catch(() => ({}));
+              if (videoRes.status === 413) {
+                throw new Error(`Video too large (max 50MB) for: ${lecture.title}`);
+              }
+              throw new Error(errorData.message || `Failed to upload video for: ${lecture.title}`);
+            }
           }
 
           // Handle Materials Upload

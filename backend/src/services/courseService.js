@@ -187,7 +187,7 @@ export const getCourses = async (filters = {}) => {
         description: course.Intro || course.Description,
         image:
           course.ThumbUrl ||
-          "https://via.placeholder.com/400x225?text=Course+Image",
+          "",
         category: course.Categories.Title,
         categoryId: course.Categories.Id,
         rating: parseFloat(avgRating),
@@ -200,7 +200,7 @@ export const getCourses = async (filters = {}) => {
         instructorName: instructor.FullName,
         instructorImg:
           instructor.AvatarUrl ||
-          "https://via.placeholder.com/100?text=Instructor",
+          "",
         learnerCount: course.LearnerCount,
         createdAt: course.CreationTime,
       };

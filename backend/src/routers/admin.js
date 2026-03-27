@@ -797,7 +797,7 @@ router.get('/courses', async (req, res) => {
             return {
                 id: course.Id,
                 title: course.Title,
-                thumbnail: course.ThumbUrl || 'https://via.placeholder.com/400x225?text=No+Image',
+                thumbnail: course.ThumbUrl || '',
                 price: parseFloat(course.Price),
                 status: mappedStatus,
                 rejectReason: course.RejectionReason,

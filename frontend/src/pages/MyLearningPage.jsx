@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import useAuth from '../hooks/useAuth';
@@ -12,7 +12,12 @@ import CourseCard from '../components/Courses/CourseCard';
 const MyLearningPage = () => {
     const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('in_progress');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = searchParams.get('tab') || 'in_progress';
+
+    const setActiveTab = (tab) => {
+        setSearchParams({ tab });
+    };
 
     // Redirect if not logged in
     useEffect(() => {
@@ -108,6 +113,15 @@ const MyLearningPage = () => {
                             <span className="material-symbols-outlined text-lg">{isCompleted ? 'visibility' : 'play_circle'}</span>
                             {isCompleted ? 'Review Course' : 'Continue Learning'}
                         </button>
+                        {isCompleted && (
+                            <button 
+                                onClick={() => navigate(`/certificate/${enrollment.course?.Id}`)}
+                                className="w-full mt-2 py-2.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold text-sm transition-all border border-emerald-500/30 flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined text-lg">emoji_events</span>
+                                View Certificate
+                            </button>
+                        )}
                     </div>
                 </div>
             </article>
@@ -160,8 +174,11 @@ const MyLearningPage = () => {
                         </div>
                         {/* Stats Cards */}
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full xl:w-auto">
-                            <div className="flex flex-col gap-1 p-4 rounded-2xl bg-surface-dark border border-white/5 hover:border-primary/40 transition-colors shadow-card">
-                                <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
+                            <div 
+                                onClick={() => setActiveTab('in_progress')}
+                                className="flex flex-col gap-1 p-4 rounded-2xl bg-surface-dark border border-white/5 hover:border-primary/40 transition-colors shadow-card cursor-pointer group"
+                            >
+                                <div className="flex items-center gap-2 text-slate-400 text-sm font-medium group-hover:text-primary transition-colors">
                                     <span className="material-symbols-outlined text-primary text-lg">school</span>
                                     In Progress
                                 </div>
@@ -170,13 +187,18 @@ const MyLearningPage = () => {
                                     <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full">Courses</span>
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-1 p-4 rounded-2xl bg-surface-dark border border-white/5 hover:border-primary/40 transition-colors shadow-card">
-                                <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
+                            <div 
+                                onClick={() => setActiveTab('completed')}
+                                className="flex flex-col gap-1 p-4 rounded-2xl bg-surface-dark border border-white/5 hover:border-primary/40 transition-colors shadow-card cursor-pointer group"
+                            >
+                                <div className="flex items-center gap-2 text-slate-400 text-sm font-medium group-hover:text-primary transition-colors">
                                     <span className="material-symbols-outlined text-amber-400 text-lg">emoji_events</span>
                                     Certificates
                                 </div>
+                                <div className="flex items-baseline gap-2">
                                     <span className="text-2xl font-bold text-white">{completedCount}</span>
                                     <span className="text-xs font-medium text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-full">{completedCount > 0 ? 'Earned' : 'Coming soon'}</span>
+                                </div>
                             </div>
                             <div className="flex flex-col gap-1 p-4 col-span-2 md:col-span-1 rounded-2xl bg-surface-dark border border-white/5 hover:border-primary/40 transition-colors shadow-card">
                                 <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
