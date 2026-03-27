@@ -18,7 +18,7 @@ export const AIQuestionGenerationService = {
    * @param {string|null} lessonId - Optional: generate from a specific lesson's materials
    * @returns {Promise<Array>} Array of generated questions
    */
-  async generateQuestionsFromCourseContent(courseId, count = 5, difficulty = 'Mixed', lessonId = null) {
+  async generateQuestionsFromCourseContent(courseId, count = 10, difficulty = 'Mixed', lessonId = null) {
     try {
       // 1. Fetch relevant content
       let lectures = [];
@@ -32,7 +32,7 @@ export const AIQuestionGenerationService = {
             LectureMaterial: true, // Fetch all to avoid case mismatch
             Sections: {
               select: {
-                Course: { select: { Title: true, Description: true } }
+                Courses: { select: { Title: true, Description: true } }
               }
             }
           }
@@ -40,8 +40,8 @@ export const AIQuestionGenerationService = {
 
         if (!lecture) throw new Error(`Lesson ${lessonId} not found`);
         lectures = [lecture];
-        courseInfo.title = lecture.Sections?.Course?.Title || '';
-        courseInfo.description = lecture.Sections?.Course?.Description || '';
+        courseInfo.title = lecture.Sections?.Courses?.Title || '';
+        courseInfo.description = lecture.Sections?.Courses?.Description || '';
       } else {
         const course = await prisma.courses.findUnique({
           where: { Id: courseId },
@@ -84,7 +84,7 @@ export const AIQuestionGenerationService = {
               const isPdf = url.endsWith('.pdf');
               const materialTypeRaw = material.Type || '';
               const isDocumentType = materialTypeRaw.toLowerCase() === 'document';
-              
+
               console.log(`🔍 [AI] Material processing: ${material.Url} (Type: ${materialTypeRaw}, isDocument: ${isDocumentType})`);
 
               if (isPlainText || (isDocumentType && !isPdf)) {
@@ -97,8 +97,8 @@ export const AIQuestionGenerationService = {
               } else if (isPdf) {
                 console.log(`📄 Extracting text from PDF: ${material.Url}`);
                 const response = await axios.get(material.Url, { timeout: 10000, responseType: 'arraybuffer' });
-                
-                
+
+
                 const parser = new PDFParse({ data: response.data });
                 const data = await parser.getText();
                 await parser.destroy();
@@ -106,7 +106,7 @@ export const AIQuestionGenerationService = {
                 if (data.text) {
                   const rawText = data.text.trim();
                   console.log(`✅ [AI] Extracted ${rawText.length} chars. Preview: "${rawText.substring(0, 100).replace(/\n/g, ' ')}..."`);
-                  
+
                   if (rawText.length > 20) {
                     // Clean up multiple spaces/newlines from PDF extraction
                     const cleanText = rawText.replace(/\s+/g, ' ').substring(0, 4000);
@@ -136,6 +136,22 @@ export const AIQuestionGenerationService = {
       }
 
       // 3. Build prompt
+      // 3.1 Fetch existing questions to avoid repetition (limit to 20 recent ones)
+      const existingQuestionsData = await prisma.mcqQuestions.findMany({
+        where: {
+          Assignments: {
+            CourseId: courseId
+          }
+        },
+        select: { Content: true },
+        orderBy: { Id: 'desc' },
+        take: 20
+      });
+      const existingQuestionContents = existingQuestionsData.map(q => q.Content);
+      const avoidSection = existingQuestionContents.length > 0 
+        ? `\nIMPORTANT: Do NOT repeat or generate questions similar to these existing ones:\n- ${existingQuestionContents.join('\n- ')}`
+        : "";
+
       const systemPrompt = `You are a professional MCQ generator. You MUST output a JSON object with the following structure:
 {
   "questions": [
@@ -152,12 +168,13 @@ export const AIQuestionGenerationService = {
     }
   ]
 }
-Base questions ONLY on the provided content. Focus on specific facts. Output ONLY valid JSON.`;
+Base questions ONLY on the provided content. Focus on specific facts. ${avoidSection}
+Output ONLY valid JSON.`;
 
       const userPrompt = `Content to generate questions from:
 ${sanitizedContent}
 
-Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on the content above.`;
+Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on the content above. Ensure variety in topics covered.`;
 
       console.log(`🤖 Generating ${count} AI questions (model: llama-3.3-70b-versatile, context: ${sanitizedContent.length} chars)`);
 
@@ -170,7 +187,7 @@ Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on
           { role: 'user', content: userPrompt }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.1, // Set very low for consistency
+        temperature: 0.5, // Increased for more variety while maintaining logic
         max_tokens: 4096,
       });
 
@@ -192,8 +209,8 @@ Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on
       const questions = Array.isArray(parsed)
         ? parsed
         : Array.isArray(parsed.questions)
-        ? parsed.questions
-        : null;
+          ? parsed.questions
+          : null;
 
       if (!questions || questions.length === 0) {
         throw new Error('AI returned empty question array');
@@ -207,9 +224,9 @@ Generate exactly ${count} MCQ questions with difficulty "${difficulty}" based on
           explanation: q.explanation || '',
           choices: Array.isArray(q.choices)
             ? q.choices.map(c => ({
-                content: c.content || c.text || '',
-                isCorrect: !!c.isCorrect
-              }))
+              content: c.content || c.text || '',
+              isCorrect: !!c.isCorrect
+            }))
             : []
         }))
         .filter(q => q.choices.length >= 2 && q.choices.some(c => c.isCorrect));

@@ -34,9 +34,9 @@ export const getWalletDashboard = async (req, res) => {
         
         res.json({
             balance: instructor.Balance.toString(),
-            bankName: '', 
-            bankAccountNumber: '', 
-            bankAccountName: '',
+            bankName: instructor.BankName || '', 
+            bankAccountNumber: instructor.BankAccountNumber || '', 
+            bankAccountName: instructor.BankAccountName || '',
             totalCoursesSold: totalSold,
             courseCount: instructor._count.Courses
         });
@@ -51,7 +51,28 @@ export const getWalletDashboard = async (req, res) => {
  */
 export const updateBankDetails = async (req, res) => {
     try {
-        res.json({ success: true, message: 'Bank details are no longer required' });
+        const userId = req.user.userId;
+        const { bankName, bankAccountNumber, bankAccountName } = req.body;
+
+        const instructor = await prisma.instructors.findFirst({
+            where: { CreatorId: userId }
+        });
+
+        if (!instructor) {
+            return res.status(404).json({ error: 'Instructor profile not found' });
+        }
+
+        await prisma.instructors.update({
+            where: { Id: instructor.Id },
+            data: {
+                BankName: bankName,
+                BankAccountNumber: bankAccountNumber,
+                BankAccountName: bankAccountName,
+                LastModificationTime: new Date()
+            }
+        });
+
+        res.json({ success: true, message: 'Bank details updated successfully' });
     } catch (error) {
         console.error('Update bank details error:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -91,14 +112,17 @@ export const requestWithdrawal = async (req, res) => {
         });
         const totalSold = courses.reduce((sum, c) => sum + (c.LearnerCount || 0), 0);
 
-        // Create withdrawal request
+        // Create withdrawal request with bank snapshot
         const request = await prisma.withdrawalRequests.create({
             data: {
                 InstructorId: instructor.Id,
                 Amount: amountBigInt,
                 Status: 'PENDING',
                 TotalCoursesSold: totalSold,
-                TotalEarnings: instructor.Balance
+                TotalEarnings: instructor.Balance,
+                BankName: instructor.BankName,
+                BankAccountNumber: instructor.BankAccountNumber,
+                BankAccountName: instructor.BankAccountName
             }
         });
 
@@ -209,6 +233,9 @@ export const getAllWithdrawalRequests = async (req, res) => {
                     totalSold: r.TotalCoursesSold,
                     totalEarnings: r.TotalEarnings.toString()
                 },
+                bankName: r.BankName,
+                accountNumber: r.BankAccountNumber,
+                accountName: r.BankAccountName,
                 instructor: {
                     id: r.InstructorId,
                     name: r.Instructor.Users_Instructors_CreatorIdToUsers.FullName,

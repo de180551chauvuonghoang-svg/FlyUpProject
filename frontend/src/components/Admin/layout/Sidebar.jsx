@@ -43,11 +43,11 @@ const menuItems = [
     label: 'Courses',
     icon: BookOpen,
   },
-  {
+  /* {
     path: '/admin/payouts',
     label: 'Payouts',
     icon: DollarSign,
-  },
+  }, */
   {
     path: '/admin/notifications',
     label: 'Yêu cầu duyệt',

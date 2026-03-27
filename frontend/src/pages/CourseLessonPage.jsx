@@ -115,8 +115,9 @@ export default function CourseLessonPage({ isPreview }) {
 
   // AI Quiz states
   const [isGeneratingAIQuiz, setIsGeneratingAIQuiz] = useState(false);
-  const [aiQuizQuestions, setAiQuizQuestions] = useState([]);
-  const [showAIQuiz, setShowAIQuiz] = useState(false);
+  const [quizRefreshTrigger, setQuizRefreshTrigger] = useState(0);
+  const [hasGeneratedQuiz, setHasGeneratedQuiz] = useState(false);
+  const [currentAssignmentId, setCurrentAssignmentId] = useState(null);
 
   // Video tracking & UI states
   const maxTimePlayed = useRef(0);
@@ -481,6 +482,7 @@ export default function CourseLessonPage({ isPreview }) {
         },
         body: JSON.stringify({
           courseId,
+          lessonId: selectedLessonId,
           count: 5,
           difficulty: "Mixed",
         }),
@@ -488,9 +490,17 @@ export default function CourseLessonPage({ isPreview }) {
 
       const result = await res.json();
       if (result.success) {
-        setAiQuizQuestions(result.data.questions);
-        setShowAIQuiz(true);
-        toast.success("Đã tạo xong 5 câu hỏi thực hành!", { id: "ai-quiz-gen" });
+        // Invalidate Quiz queries so the new questions are fetched from the backend pool
+        queryClient.invalidateQueries({ queryKey: ["courseAssignments", courseId] });
+        
+        // Switch to the Q&A tab to view the questions
+        setActiveTab("qa");
+        // Trigger Quiz component refetch
+        setQuizRefreshTrigger(prev => prev + 1);
+        setHasGeneratedQuiz(true);
+        setCurrentAssignmentId(result.data.assignmentId);
+
+        toast.success("Đã tạo xong 5 câu hỏi thực hành và lưu vào ngân hàng đề!", { id: "ai-quiz-gen" });
       } else {
         toast.error(result.message || "Không thể tạo câu hỏi AI", { id: "ai-quiz-gen" });
       }
@@ -1499,7 +1509,7 @@ export default function CourseLessonPage({ isPreview }) {
               >
                 Q&A{" "}
                 <span className="bg-slate-800 text-xs px-1.5 rounded-sm">
-                  12
+                  {assignments?.length || 0}
                 </span>
               </button>
               <button
@@ -1706,10 +1716,43 @@ export default function CourseLessonPage({ isPreview }) {
                     </span>
                   </div>
                 </div>
-                <Quiz
-                  courseId={courseId}
-                  onClose={() => setActiveTab("overview")}
-                />
+                <div className="space-y-6">
+                  {hasGeneratedQuiz ? (
+                    <Quiz
+                      courseId={courseId}
+                      assignmentId={currentAssignmentId}
+                      onClose={() => setActiveTab("overview")}
+                      refreshTrigger={quizRefreshTrigger}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 px-6 text-center glass-panel rounded-3xl border-dashed border-2 border-white/10">
+                      <div className="size-20 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 animate-bounce">
+                        <span className="material-symbols-outlined text-4xl text-purple-400">psychology</span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-white mb-2">Sẵn sàng luyện tập?</h3>
+                      <p className="text-slate-400 max-w-md mb-8">
+                        AI sẽ dựa trên nội dung bài giảng này để tạo ra bộ câu hỏi trắc nghiệm giúp bạn củng cố kiến thức ngay lập tức.
+                      </p>
+                      <button
+                        onClick={handleGenerateAIQuiz}
+                        disabled={isGeneratingAIQuiz}
+                        className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-2xl hover:shadow-xl hover:shadow-purple-500/20 active:scale-95 transition-all disabled:opacity-50"
+                      >
+                        {isGeneratingAIQuiz ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white/10 border-t-white rounded-full animate-spin"></div>
+                            <span>Đang tạo câu hỏi...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined">magic_button</span>
+                            <span>Bắt đầu Sinh câu hỏi AI</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1919,26 +1962,6 @@ export default function CourseLessonPage({ isPreview }) {
         />
       )}
 
-      {/* AI Instant Quiz Modal */}
-      {showAIQuiz && aiQuizQuestions.length > 0 && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6">
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar relative">
-            <button
-              onClick={() => setShowAIQuiz(false)}
-              className="absolute top-6 right-6 size-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all z-10"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <div className="p-1">
-              {/* Reuse Quiz component logic but with custom questions */}
-              <AIQuizRenderer
-                questions={aiQuizQuestions}
-                onClose={() => setShowAIQuiz(false)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -2164,4 +2187,6 @@ function AIQuizRenderer({ questions, onClose }) {
     </div>
   );
 }
+=======
+>>>>>>> fix-ai-assistant-generate-quiz
 
