@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { bulkGenerateAIQuestions } from '../../services/questionBankService';
 import { fetchCourseById } from '../../services/courseService';
+import useAuth from '../../hooks/useAuth';
 
 const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId }) => {
     const [config, setConfig] = useState({
@@ -13,11 +14,12 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
     const [selectedLessonId, setSelectedLessonId] = useState('all');
     const [loadingLessons, setLoadingLessons] = useState(false);
     const [generating, setGenerating] = useState(false);
+    const { accessToken } = useAuth();
 
     const loadCourseLessons = useCallback(async () => {
         setLoadingLessons(true);
         try {
-            const courseData = await fetchCourseById(courseId);
+            const courseData = await fetchCourseById(courseId, accessToken);
             // Flatten sections and lectures
             const allLessons = [];
             if (courseData.Sections) {

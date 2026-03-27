@@ -166,7 +166,7 @@ export default function CourseDetailsPage() {
   // React Query for caching
   const { data, isLoading, error: queryError } = useQuery({
     queryKey: ['course', courseId],
-    queryFn: () => fetchCourseById(courseId),
+    queryFn: () => fetchCourseById(courseId, accessToken),
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1
   });

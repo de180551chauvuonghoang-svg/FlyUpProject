@@ -7,8 +7,15 @@ export const fetchCourses = async (params) => {
     return res.json();
 };
 
-export const fetchCourseById = async (id) => {
-    const res = await fetch(`${API_URL}/courses/${id}`);
+export const fetchCourseById = async (id, token = null) => {
+    const headers = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_URL}/courses/${id}`, {
+        headers: headers
+    });
     if (!res.ok) {
         if (res.status === 404) throw new Error('Course not found');
         throw new Error('Failed to fetch course');
