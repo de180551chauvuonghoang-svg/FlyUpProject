@@ -7,6 +7,8 @@ import defaultAvatar from '../../assets/default-avatar.png';
 import useCart from '../../hooks/useCart';
 import { Share2 } from 'lucide-react';
 import ShareModal from '../ShareModal';
+import { fetchUnreadCount } from '../../services/notificationService';
+import { Bell } from 'lucide-react';
 
 const Header = () => {
   const { user, loading, signOut } = useAuth();
@@ -25,6 +27,13 @@ const Header = () => {
   }, [queryClient]);
 
   const dropdownRef = useRef(null);
+
+  const { data: unreadData } = useQuery({
+    queryKey: ['unreadNotificationsCount'],
+    queryFn: fetchUnreadCount,
+    enabled: !!user,
+    refetchInterval: 1000 * 60, // Refetch every minute
+  });
 
   // Prefetch courses on mount for instant loading
   useEffect(() => {
@@ -119,6 +128,17 @@ const Header = () => {
                   </span>
                 )}
               </Link>
+              
+              {user && (
+                <Link to="/notifications" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-[#16161e] border border-transparent hover:border-[#2a2a3a] text-white transition-all relative" title="Notifications">
+                  <Bell className="w-5 h-5" />
+                  {unreadData?.count > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[10px] font-bold shadow-neon-sm animate-pulse">
+                    {unreadData.count > 9 ? '9+' : unreadData.count}
+                  </span>
+                  )}
+                </Link>
+              )}
               {loading ? (
                 <div className="flex items-center gap-3">
                    <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse"></div>

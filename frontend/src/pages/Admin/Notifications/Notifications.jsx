@@ -16,8 +16,8 @@ import {
 import notificationService from '../../../services/admin/notificationService';
 
 /**
- * Notifications Page (Review Requests)
- * Displays list of course submission requests from instructors
+ * Notifications Page (Review Notifications)
+ * Displays list of course submission notifications from instructors
  */
 function Notifications() {
     const navigate = useNavigate();
@@ -77,7 +77,7 @@ function Notifications() {
                 >
                     <h1 className="page-title inline-title">
                         <span className="title-accent">Review</span>{' '}
-                        <span className="title-main">Requests</span>
+                        <span className="title-main">Notifications</span>
                     </h1>
                     <p className="page-subtitle">Manage course publication requests from instructors</p>
                 </motion.div>
@@ -115,8 +115,8 @@ function Notifications() {
                 ) : notifications.length === 0 ? (
                     <div className="empty-state card">
                         <Bell size={48} className="empty-icon" />
-                        <h3>No requests found</h3>
-                        <p>All requests have been processed or there are no new requests.</p>
+                        <h3>No notifications found</h3>
+                        <p>All notifications have been processed or there are no new notifications.</p>
                     </div>
                 ) : (
                     <div className="notification-grid">
