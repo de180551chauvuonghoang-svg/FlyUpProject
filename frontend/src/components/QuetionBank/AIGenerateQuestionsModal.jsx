@@ -42,7 +42,7 @@ const AIGenerateQuestionsModal = ({ open, onClose, onGenerated, bankId, courseId
         } finally {
             setLoadingLessons(false);
         }
-    }, [courseId]);
+    }, [courseId, accessToken]);
 
     useEffect(() => {
         if (open && courseId) {
