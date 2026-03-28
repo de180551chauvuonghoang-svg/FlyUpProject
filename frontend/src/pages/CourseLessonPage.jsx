@@ -1946,8 +1946,9 @@ export default function CourseLessonPage({ isPreview }) {
       {activeOverlay === 'result' && quizResult && (
         <QuizResultPage
           result={quizResult}
-          assignmentId={selectedAssignment?.Id}
-          onClose={() => setActiveOverlay(null)}
+          assignmentName={selectedAssignment?.Name}
+          onNextLesson={() => setActiveOverlay(null)}
+          onBack={() => setActiveOverlay(null)}
         />
       )}
 
