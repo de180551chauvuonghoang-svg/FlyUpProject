@@ -705,7 +705,16 @@ export default function InstructorCreateCoursePage() {
                     </div>
                     <div className="flex items-center gap-2">
                        <button onClick={(e) => { e.stopPropagation(); addLecture(section.id); }} className="p-2 text-green-500 hover:text-green-400" title="Add lecture"><Plus size={18} /></button>
-                       <button onClick={(e) => { e.stopPropagation(); openAssignmentModal("section", section.id); }} className="p-2 text-purple-500 hover:text-purple-400" title="Add assignment"><ClipboardList size={18} /></button>
+                       <button 
+                         onClick={(e) => { 
+                           e.stopPropagation(); 
+                           navigate(`/instructor/create-assignment-from-bank?sectionId=${section.id}`);
+                         }} 
+                         className="p-2 text-purple-500 hover:text-purple-400" 
+                         title="Add assignment"
+                       >
+                         <ClipboardList size={18} />
+                       </button>
                        <button onClick={(e) => { e.stopPropagation(); removeSection(section.id); }} className="p-2 text-red-500 hover:text-red-400" title="Delete section"><Trash2 size={18} /></button>
                        <span className={`material-symbols-outlined text-slate-400 transition-transform ${expandedSectionId === section.id ? 'rotate-180' : ''}`}>expand_more</span>
                     </div>
@@ -813,7 +822,7 @@ export default function InstructorCreateCoursePage() {
                 </h3>
                 {!finalAssignment && (
                   <button
-                    onClick={() => openAssignmentModal("course", null)}
+                    onClick={() => navigate(`/instructor/create-assignment-from-bank`)}
                     className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-all text-sm font-bold flex items-center gap-2"
                   >
                     <Plus size={16} /> Add Final Exam

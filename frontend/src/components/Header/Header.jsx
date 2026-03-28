@@ -93,7 +93,6 @@ const Header = () => {
               >
                 Courses
               </Link>
-              <Link className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" to="/courses">Course</Link>
               <Link className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" to="/my-learning">My Learning</Link>
               <Link className="text-sm font-medium text-gray-300 hover:text-primary transition-colors" to="/community">Community</Link>
             </nav>

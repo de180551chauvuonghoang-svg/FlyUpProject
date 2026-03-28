@@ -1514,7 +1514,7 @@ export default function InstructorEditCoursePage() {
                   </h3>
                   {!finalAssignment && (
                     <button
-                      onClick={() => openAssignmentModal("course", id)}
+                      onClick={() => navigate(`/instructor/create-assignment-from-bank?courseId=${id}`)}
                       className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-all text-sm font-bold flex items-center gap-2"
                     >
                       <Plus size={16} /> Add Final Exam
@@ -1537,7 +1537,7 @@ export default function InstructorEditCoursePage() {
                     </div>
                     <div className="flex items-center gap-2">
                        <button 
-                        onClick={() => openAssignmentModal("course", id, finalAssignment)}
+                        onClick={() => navigate(`/instructor/create-assignment-from-bank?courseId=${id}&assignmentId=${finalAssignment.id}`)}
                         className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm rounded-lg transition-colors border border-slate-700"
                       >
                         Edit Exam
