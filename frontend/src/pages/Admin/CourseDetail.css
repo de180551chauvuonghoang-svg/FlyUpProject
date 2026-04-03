@@ -675,3 +675,164 @@
         grid-template-columns: 1fr;
     }
 }
+/* --- Students Section (Clickable Stat Card) --- */
+.cd-stat-card.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.cd-stat-card.clickable:hover, .cd-stat-card.clickable.active {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.cd-stat-chevron {
+  position: absolute;
+  right: 15px;
+  color: var(--text-secondary, #94a3b8);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+}
+
+.cd-stat-card.clickable:hover .cd-stat-chevron {
+  opacity: 1;
+}
+
+.cd-stat-chevron.open {
+  transform: rotate(-180deg);
+  opacity: 1;
+  color: #818cf8;
+}
+
+.cd-students-section {
+  background: var(--bg-card, rgba(30, 41, 59, 0.7));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.07));
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.cd-students-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.07));
+}
+
+.cd-tx-icon {
+  color: #818cf8;
+  background: rgba(129, 140, 248, 0.15);
+  padding: 6px;
+  border-radius: 8px;
+  box-sizing: content-box;
+}
+
+.cd-tx-count {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #94a3b8);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.cd-students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.cd-student-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cd-student-card:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.cd-student-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.cd-student-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cd-student-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary, #f8fafc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cd-student-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.cd-student-meta > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cd-student-status {
+  margin-top: 4px;
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  max-width: fit-content;
+}
+
+.cd-student-status.active {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.cd-student-status.archived, .cd-student-status.inactive {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.cd-tx-empty, .cd-tx-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--text-secondary, #94a3b8);
+  gap: 12px;
+}

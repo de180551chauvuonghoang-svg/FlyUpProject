@@ -51,6 +51,7 @@ import swaggerSpec from "./configs/swagger.js";
 //import routers question bank
 import questionBankRouter from './routers/questionBank.js';
 import payoutRouter from "./routers/payout.js";
+import notificationsRouter from "./routers/notifications.js";
 
 // Dynamic import worker after env vars are loaded to ensure Redis connection works
 import("./workers/emailWorker.js").catch((err) =>
@@ -119,6 +120,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/question-banks", questionBankRouter);
 // Payout Routes
 app.use("/api/payouts", payoutRouter);
+// Notifications Routes
+app.use("/api/notifications", notificationsRouter);
 
 // Error handling middleware
 
