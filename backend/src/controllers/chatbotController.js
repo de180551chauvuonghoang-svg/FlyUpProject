@@ -63,24 +63,15 @@ export const chat = async (req, res) => {
 
     const courseContext = courses.map(c => {
         const rating = c.RatingCount > 0 ? (Number(c.TotalRating) / c.RatingCount).toFixed(1) : "New";
-        
-        // Format price to VND
-        const priceFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(c.Price || 0);
-        
-        return `
-        - COURSE ID: ${c.Id}
-        - TITLE: "${c.Title}"
-        - INSTRUCTOR: ${c.Instructors?.Users_Instructors_CreatorIdToUsers?.FullName || 'Unknown'}
-        - CATEGORY: ${c.Categories?.Title || 'General'}
-        - LEVEL: ${c.Level}
-        - PRICE: ${priceFormatted} (Rating: ${rating} ⭐)
-        - KEY OUTCOMES: ${c.Outcomes}
-        - DESCRIPTION: ${c.Description}
-        ----------------------------------`;
+        const priceFormatted = (c.Price || 0).toLocaleString('vi-VN') + 'đ';
+        const instructor = c.Instructors?.Users_Instructors_CreatorIdToUsers?.FullName || 'Giảng viên';
+        const category = c.Categories?.Title || 'Chung';
+        const highlight = (c.Outcomes || c.Description || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+        return `- "${c.Title}" (ID: ${c.Id}) | ${category} | ${c.Level} | ${priceFormatted} (${rating}⭐) | GV: ${instructor}${highlight ? ' | ' + highlight : ''}`;
     }).join("\n");
 
     // 2. Construct the system prompt
-    const model = "llama-3.3-70b-versatile";
+    const model = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 
     const systemPrompt = `
     You are "FlyUp AI Tutor & Counselor", a professional and helpful educational assistant.

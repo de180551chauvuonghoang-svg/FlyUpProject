@@ -49,8 +49,7 @@ export const chat = async (req, res) => {
     const courseContext = await courseCache.getCourseContext();
 
     // 2. Construct the prompt
-    // Use openai/gpt-oss-20b on Groq (Latest supported model)
-    const model = "openai/gpt-oss-20b";
+    const model = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
 
     const systemPrompt = `
     You are "FlyUp", a professional and concise Academic Counselor.
@@ -76,8 +75,8 @@ export const chat = async (req, res) => {
         role: "system",
         content: systemPrompt
       },
-      // Add conversation history if available
-      ...conversationHistory,
+      // Add recent conversation history (last 6 messages to stay within token limits)
+      ...(conversationHistory || []).slice(-6),
       // Add current user message
       {
         role: "user",
