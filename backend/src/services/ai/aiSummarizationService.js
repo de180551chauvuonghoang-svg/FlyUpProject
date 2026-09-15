@@ -78,7 +78,7 @@ export const AISummarizationService = {
 
       // 2. Generate summary using AI
       const groq = getGroqProvider();
-      const model = groq('llama-3.3-70b-versatile');
+      const model = groq(process.env.GROQ_MODEL || 'openai/gpt-oss-120b');
 
       const prompt = `
         Bạn là một trợ lý AI học thuật chuyên nghiệp. Hãy tóm tắt nội dung sau đây một cách súc tích, dễ hiểu và giữ lời giọng văn sư phạm.

@@ -20,21 +20,12 @@ const formatCourseContext = (courses) => {
       ? (Number(c.TotalRating) / c.RatingCount).toFixed(1)
       : "New";
 
-    const priceFormatted = new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(c.Price || 0);
+    const priceFormatted = (c.Price || 0).toLocaleString('vi-VN') + 'đ';
+    const instructor = c.Instructors?.Users_Instructors_CreatorIdToUsers?.FullName || 'Giảng viên';
+    const category = c.Categories?.Title || 'Chung';
+    const highlight = (c.Outcomes || c.Description || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
 
-    return `
-    - COURSE ID: ${c.Id}
-    - TITLE: "${c.Title}"
-    - INSTRUCTOR: ${c.Instructors?.Users_Instructors_CreatorIdToUsers?.FullName || 'Unknown'}
-    - CATEGORY: ${c.Categories?.Title || 'General'}
-    - LEVEL: ${c.Level}
-    - PRICE: ${priceFormatted} (Rating: ${rating} ⭐)
-    - KEY OUTCOMES: ${c.Outcomes}
-    - DESCRIPTION: ${c.Description}
-    ----------------------------------`;
+    return `- "${c.Title}" (ID: ${c.Id}) | ${category} | ${c.Level} | ${priceFormatted} (${rating}⭐) | GV: ${instructor}${highlight ? ' | ' + highlight : ''}`;
   }).join("\n");
 };
 
