@@ -54,9 +54,11 @@ export function getGroqClient() {
  * @param {number} params.timeout - Request timeout in ms
  * @returns {Promise<string>} AI generated text
  */
+export const DEFAULT_GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+
 export async function generateCompletion({
   messages,
-  model = 'llama-3.3-70b-versatile',
+  model = DEFAULT_GROQ_MODEL,
   temperature = 0.7,
   max_tokens = 1024,
   timeout = 8000

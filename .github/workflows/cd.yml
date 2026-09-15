@@ -1,0 +1,76 @@
+name: CD - FlyUp Deployment
+
+on:
+  push:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. Kiểm tra build và tính toàn vẹn trước khi deploy
+  pre-deploy-check:
+    name: Pre-deployment Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "./frontend/package-lock.json"
+
+      - name: Verify Frontend Build
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify Prisma Schema
+        working-directory: ./backend
+        run: |
+          sed -i '/generator erd/,/}/d' prisma/schema.prisma
+          npm ci
+          npx prisma generate
+
+  # 2. Triển khai Backend
+  deploy-backend:
+    name: Deploy Backend API
+    needs: pre-deploy-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Backend Deploy Webhook
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL || secrets.BACKEND_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            echo "🚀 Triggering backend deploy hook..."
+            curl -fsSL -X POST "$DEPLOY_HOOK"
+            echo "✅ Backend deployment triggered successfully!"
+          else
+            echo "ℹ️ Secret RENDER_DEPLOY_HOOK_URL hoặc BACKEND_DEPLOY_HOOK chưa cấu hình."
+            echo "Nếu bạn dùng Render/Railway có bật 'Auto-Deploy', dịch vụ sẽ tự động deploy khi có commit mới vào main."
+          fi
+
+  # 3. Tạo thông báo tóm tắt trên GitHub Actions
+  deployment-summary:
+    name: Deployment Summary
+    needs: [pre-deploy-check, deploy-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Summary Report
+        run: |
+          echo "### 🚀 FlyUp Deployment Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Author:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend:** [fly-up-project.vercel.app](https://fly-up-project.vercel.app) *(Tự động đồng bộ bởi Vercel)*" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend:** Đã xác thực Prisma & kích hoạt triển khai." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✨ **Pipeline CD hoàn tất thành công!**" >> $GITHUB_STEP_SUMMARY
