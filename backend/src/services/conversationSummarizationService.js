@@ -50,7 +50,7 @@ Summary:`;
           content: summarizationPrompt
         }
       ],
-      model: "openai/gpt-oss-20b",
+      model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
       temperature: 0.3, // Lower temperature for more consistent summaries
       max_tokens: 500
     });

@@ -185,7 +185,7 @@ ${avoidSection}`;
         console.log(`🤖 [Attempt ${attempt + 1}/${maxRetries}] Generating ${count} AI questions...`);
         const client = getGroqClient();
         const completion = await client.chat.completions.create({
-          model: 'llama-3.3-70b-versatile',
+          model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: `Content: ${sanitizedContent}\n\nGenerate ${difficultyRequirement}` }

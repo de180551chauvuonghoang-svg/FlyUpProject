@@ -4,10 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev:cat": "cd TTS/TTS/TTS && python cat_service_api.py",
-    "dev": "npx concurrently --names \"BACKEND,FRONTEND,CAT\" --prefix-colors \"bgBlue.bold,bgGreen.bold,bgYellow.bold\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:cat\""
+    "start": "npm run dev",
+    "dev": "concurrently --kill-others-on-fail --names \"BACKEND,FRONTEND\" --prefix-colors \"blue.bold,green.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:cat": "TTS\\venv\\Scripts\\python.exe TTS/TTS/TTS/cat_service_api.py",
+    "dev:all": "concurrently --names \"BACKEND,FRONTEND,TTS\" --prefix-colors \"blue.bold,green.bold,yellow.bold\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:cat\"",
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "build:frontend": "npm --prefix frontend run build"
   },
   "repository": {
     "type": "git",

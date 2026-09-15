@@ -14,7 +14,7 @@ export const AgentFactory = {
     switch (provider.toLowerCase()) {
       case 'groq':
         const groq = getGroqProvider();
-        return groq(modelName || 'llama-3.3-70b-versatile');
+        return groq(modelName || process.env.GROQ_MODEL || 'openai/gpt-oss-120b');
       
       // Future providers can be added here
       // case 'openai':

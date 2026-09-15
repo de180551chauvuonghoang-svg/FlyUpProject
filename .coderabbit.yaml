@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "vi-VN"
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "draft"
+      - "wip"
+  tools:
+    ast-grep:
+      enabled: true
+    biome:
+      enabled: false
+    eslint:
+      enabled: true
+    github-checks:
+      enabled: true
+    gitleaks:
+      enabled: true
+    markdownlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+  path_filters:
+    - "!**/package-lock.json"
+    - "!**/*.min.js"
+    - "!dist/**"
+    - "!build/**"
+    - "!node_modules/**"
+    - "!TTS/venv/**"
+    - "!others/**"
+    - "!*.docx"
+    - "!*.sql"
+
+chat:
+  auto_reply: true

@@ -156,7 +156,7 @@ async function generateAIRecommendations(user, enrollments, courses, limit) {
 
   // Call AI
   const { output } = await generateText({
-    model: AgentFactory.getModel('groq', 'llama-3.3-70b-versatile'),
+    model: AgentFactory.getModel('groq'),
     providerOptions: {
       groq: {
         structuredOutputs: false,

@@ -78,10 +78,10 @@ export const chatStream = async (req, res) => {
 
     try {
       const result = streamText({
-        model: AgentFactory.getModel('groq', 'llama-3.3-70b-versatile'),
+        model: AgentFactory.getModel('groq'),
         system: systemPrompt,
         messages: [
-          ...conversationHistory.map(m => ({
+          ...(conversationHistory || []).slice(-6).map(m => ({
             role: m.role,
             content: m.content
           })),

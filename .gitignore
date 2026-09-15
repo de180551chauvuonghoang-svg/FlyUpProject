@@ -16,3 +16,5 @@ client_secret_*.json
 *.7z
 *.tmp
 *.bak
+venv/
+TTS/venv/
