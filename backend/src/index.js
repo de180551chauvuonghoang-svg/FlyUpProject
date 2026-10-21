@@ -91,9 +91,11 @@ BigInt.prototype.toJSON = function() {
   return this.toString();
 };
 
+import { getSystemHealth } from "./utils/systemHealth.js";
+
 // Health check route
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", message: "FlyUp Backend is running!" });
+  res.json(getSystemHealth());
 });
 
 // API Routes
