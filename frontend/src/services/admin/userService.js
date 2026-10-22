@@ -119,6 +119,27 @@ const userService = {
       method: 'GET',
     });
   },
+  /**
+   * Get courses a user is enrolled in (for Learners)
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>}
+   */
+  getUserEnrollments: async (userId) => {
+    return fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}/enrollments`, {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Get courses created by an instructor
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>}
+   */
+  getUserCourses: async (userId) => {
+    return fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}/courses`, {
+      method: 'GET',
+    });
+  },
 };
 
 export default userService;

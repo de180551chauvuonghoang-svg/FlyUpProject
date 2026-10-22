@@ -17,10 +17,13 @@ import {
     Star,
     PlayCircle,
     DollarSign,
-    SlidersHorizontal
+    SlidersHorizontal,
+    Trash2,
+    AlertTriangle
 } from 'lucide-react';
 
 import courseService from '../../../services/admin/courseService';
+import '../CourseDetail/CourseDetail.css';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { useClickOutside } from '../../../hooks/useClickOutside';
 
@@ -43,6 +46,14 @@ function Courses() {
     const [isLoading, setIsLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+    const [courseToReject, setCourseToReject] = useState(null);
+    const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+    const [archiveReason, setArchiveReason] = useState('');
+    const [courseToArchive, setCourseToArchive] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [courseToDelete, setCourseToDelete] = useState(null);
 
     // Ref to track if we should reset page
     const shouldResetPage = useRef(false);
@@ -125,13 +136,23 @@ function Courses() {
     };
 
     // Handle reject course
-    const handleRejectCourse = async (courseId) => {
+    const handleRejectCourse = (courseId) => {
+        const course = courses.find(c => c.id === courseId);
+        setCourseToReject(course);
+        setRejectReason('');
+        setIsRejectModalOpen(true);
+        setActiveDropdown(null);
+    };
+
+    const confirmRejectCourse = async () => {
+        if (!courseToReject) return;
         try {
-            setActionLoading(courseId);
-            await courseService.rejectCourse(courseId, 'Content does not meet quality standards');
+            setActionLoading(courseToReject.id);
+            await courseService.rejectCourse(courseToReject.id, rejectReason || 'Content does not meet quality standards');
             toast.success('Course rejected');
+            setIsRejectModalOpen(false);
+            setCourseToReject(null);
             await fetchCourses(currentPage, searchQuery, statusFilter);
-            setActiveDropdown(null);
         } catch (error) {
             toast.error('Failed to reject course');
         } finally {
@@ -139,14 +160,23 @@ function Courses() {
         }
     };
 
-    // Handle archive course
-    const handleArchiveCourse = async (courseId) => {
+    const handleArchiveCourse = (courseId) => {
+        const course = courses.find(c => c.Id === courseId);
+        setCourseToArchive(course);
+        setIsArchiveModalOpen(true);
+        setActiveDropdown(null);
+    };
+
+    const confirmArchiveCourse = async () => {
+        if (!courseToArchive) return;
         try {
-            setActionLoading(courseId);
-            await courseService.archiveCourse(courseId);
+            setActionLoading(courseToArchive.Id);
+            await courseService.archiveCourse(courseToArchive.Id, archiveReason || 'Course content is no longer required or has been replaced.');
             toast.success('Course archived');
+            setIsArchiveModalOpen(false);
+            setArchiveReason('');
+            setCourseToArchive(null);
             await fetchCourses(currentPage, searchQuery, statusFilter);
-            setActiveDropdown(null);
         } catch (error) {
             toast.error('Failed to archive course');
         } finally {
@@ -164,6 +194,30 @@ function Courses() {
             setActiveDropdown(null);
         } catch (error) {
             toast.error('Failed to unarchive course');
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    // Handle delete course
+    const handleDeleteCourse = (courseId) => {
+        const course = courses.find(c => c.id === courseId);
+        setCourseToDelete(course);
+        setIsDeleteModalOpen(true);
+        setActiveDropdown(null);
+    };
+
+    const confirmDeleteCourse = async () => {
+        if (!courseToDelete) return;
+        try {
+            setActionLoading(courseToDelete.id);
+            await courseService.deleteCourse(courseToDelete.id);
+            toast.success('Course deleted permanently');
+            setIsDeleteModalOpen(false);
+            setCourseToDelete(null);
+            await fetchCourses(currentPage, searchQuery, statusFilter);
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete course');
         } finally {
             setActionLoading(null);
         }
@@ -387,6 +441,14 @@ function Courses() {
                                         {actionLoading === course.id ? 'Unarchiving...' : 'Unarchive'}
                                     </button>
                                 )}
+                                <button
+                                    className="dropdown-item danger"
+                                    onClick={() => handleDeleteCourse(course.id)}
+                                    disabled={actionLoading === course.id}
+                                >
+                                    <Trash2 size={14} />
+                                    {actionLoading === course.id ? 'Deleting...' : 'Delete'}
+                                </button>
                             </div>
                         )}
                     </div>
@@ -471,6 +533,12 @@ function Courses() {
                     <div className="status-filters" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', margin: 0 }}>
                         <Filter size={16} style={{ marginRight: '4px' }} />
                         <button
+                            className={`filter-btn ${statusFilter === 'ALL' ? 'active' : ''}`}
+                            onClick={() => handleStatusFilter('ALL')}
+                        >
+                            All
+                        </button>
+                        <button
                             className={`filter-btn ${statusFilter === 'PENDING' ? 'active' : ''}`}
                             onClick={() => handleStatusFilter('PENDING')}
                         >
@@ -508,7 +576,7 @@ function Courses() {
                                 <th>Instructor</th>
                                 <th>Content</th>
                                 <th>Status</th>
-                                <th>Metrics</th>
+                                <th>Preview</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -561,7 +629,155 @@ function Courses() {
                     </div>
                 )}
             </section>
+        
+            {/* Rejection Modal */}
+            {isRejectModalOpen && (
+                <div className="cd-modal-overlay" onClick={() => { setIsRejectModalOpen(false); setCourseToReject(null); }}>
+                    <motion.div 
+                        className="cd-modal-content"
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="cd-modal-header">
+                            <XCircle className="cd-modal-icon" size={24} />
+                            <h3>Reject Course</h3>
+                        </div>
+                        <div className="cd-modal-body">
+                            <p>Are you sure you want to reject <strong>{courseToReject?.Title || courseToReject?.title}</strong>? This will notify the instructor.</p>
+                            <label className="cd-modal-label">Reason for Rejection</label>
+                            <textarea
+                                className="cd-modal-textarea"
+                                placeholder="e.g. Quality standards not met, missing resources..."
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="cd-modal-footer">
+                            <button 
+                                className="cd-modal-btn cd-modal-btn-cancel"
+                                onClick={() => { setIsRejectModalOpen(false); setCourseToReject(null); }}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="cd-modal-btn cd-modal-btn-confirm"
+                                onClick={confirmRejectCourse}
+                                disabled={actionLoading === (courseToReject?.id || courseToReject?.Id)}
+                            >
+                                {actionLoading === (courseToReject?.id || courseToReject?.Id) ? 'Processing...' : 'Confirm Rejection'}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {/* Archive Modal */}
+            {isArchiveModalOpen && (
+                <div className="cd-modal-overlay" onClick={() => { setIsArchiveModalOpen(false); setCourseToArchive(null); }}>
+                    <motion.div
+                        className="cd-modal-content"
+                        style={{ borderColor: 'rgba(245, 158, 11, 0.3)' }}
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="cd-modal-header">
+                            <Archive className="cd-modal-icon" style={{ color: '#f59e0b' }} size={24} />
+                            <h3>Archive Course</h3>
+                        </div>
+                        <div className="cd-modal-body">
+                            <p>Are you sure you want to archive <strong>{courseToArchive?.Title}</strong>? This will hide the course from the public listing.</p>
+                            <label className="cd-modal-label">Reason for Archiving (Optional)</label>
+                            <textarea
+                                className="cd-modal-textarea"
+                                placeholder="Provide a reason for the instructor..."
+                                value={archiveReason}
+                                onChange={(e) => setArchiveReason(e.target.value)}
+                                spellCheck="false"
+                            />
+                        </div>
+                        <div className="cd-modal-footer">
+                            <button
+                                className="cd-modal-btn cd-modal-btn-cancel"
+                                onClick={() => { setIsArchiveModalOpen(false); setCourseToArchive(null); setArchiveReason(''); }}
+                                disabled={!!actionLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="cd-modal-btn cd-modal-btn-confirm"
+                                style={{ background: '#f59e0b', borderColor: '#f59e0b' }}
+                                onClick={confirmArchiveCourse}
+                                disabled={!!actionLoading}
+                            >
+                                {actionLoading === (courseToArchive?.id || courseToArchive?.Id) ? (
+                                    <div className="cd-btn-spinner" />
+                                ) : (
+                                    <>
+                                        <Archive size={16} />
+                                        Archive Course
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {isDeleteModalOpen && (
+                <div className="cd-modal-overlay" onClick={() => { setIsDeleteModalOpen(false); setCourseToDelete(null); }}>
+                    <motion.div 
+                        className="cd-modal-content"
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="cd-modal-header logout-header">
+                            <div className="cd-modal-icon-container" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                                <AlertTriangle size={24} />
+                            </div>
+                            <h2 className="cd-modal-title">Delete Course</h2>
+                        </div>
+                        
+                        <div className="cd-modal-body">
+                            <p className="cd-modal-desc" style={{ textAlign: 'center', marginBottom: '24px' }}>
+                                Are you sure you want to permanently delete <strong>{courseToDelete?.title}</strong>? 
+                                <br />
+                                This action <span style={{ color: '#ef4444', fontWeight: 'bold' }}>cannot be undone</span>.
+                            </p>
+                        </div>
+
+                        <div className="cd-modal-footer">
+                            <button 
+                                className="cd-modal-btn cd-modal-btn-cancel"
+                                onClick={() => { setIsDeleteModalOpen(false); setCourseToDelete(null); }}
+                                disabled={!!actionLoading}
+                            >
+                                No, Keep it
+                            </button>
+                            <button 
+                                className="cd-modal-btn cd-modal-btn-confirm"
+                                style={{ background: '#ef4444', borderColor: '#ef4444' }}
+                                onClick={confirmDeleteCourse}
+                                disabled={!!actionLoading}
+                            >
+                                {actionLoading === (courseToDelete?.id || courseToDelete?.Id) ? (
+                                    <div className="cd-btn-spinner" />
+                                ) : (
+                                    <>
+                                        <Trash2 size={16} />
+                                        Permanently Delete
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
+
     );
 }
 

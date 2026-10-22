@@ -62,6 +62,11 @@ function CourseDetail() {
     const [toast, setToast] = useState(null);
     const [expandedSections, setExpandedSections] = useState({});
 
+    // Students Section State
+    const [students, setStudents] = useState([]);
+    const [showStudents, setShowStudents] = useState(false);
+    const [studentsLoading, setStudentsLoading] = useState(false);
+
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
         setTimeout(() => setToast(null), 3000);
@@ -299,12 +304,17 @@ function CourseDetail() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
             >
-                <div className="cd-stat-card">
+                <div
+                    className={`cd-stat-card clickable ${showStudents ? 'active' : ''}`}
+                    onClick={handleToggleStudents}
+                    title="Click to view enrolled students"
+                >
                     <Users size={20} className="cd-stat-icon students" />
                     <div>
                         <span className="cd-stat-value">{course.enrolledCount ?? 0}</span>
                         <span className="cd-stat-label">Students</span>
                     </div>
+                    <ChevronDown size={16} className={`cd-stat-chevron ${showStudents ? 'open' : ''}`} />
                 </div>
                 <div className="cd-stat-card">
                     <PlayCircle size={20} className="cd-stat-icon lessons" />
@@ -336,6 +346,67 @@ function CourseDetail() {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Students Section */}
+            {showStudents && (
+                <motion.div
+                    className="cd-students-section"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <div className="cd-students-header">
+                        <Users size={18} className="cd-tx-icon" />
+                        <h3 className="cd-card-title" style={{ margin: 0, border: 'none', paddingBottom: 0 }}>
+                            Enrolled Students
+                        </h3>
+                        <span className="cd-tx-count">{students.length} student{students.length !== 1 ? 's' : ''}</span>
+                    </div>
+
+                    {studentsLoading ? (
+                        <div className="cd-tx-loading">
+                            <div className="cd-spinner" />
+                            <span>Loading students...</span>
+                        </div>
+                    ) : students.length === 0 ? (
+                        <div className="cd-tx-empty">
+                            <Users size={32} />
+                            <p>No students enrolled in this course yet</p>
+                        </div>
+                    ) : (
+                        <div className="cd-students-grid">
+                            {students.map(student => (
+                                <div
+                                    key={student.id}
+                                    className="cd-student-card"
+                                    onClick={() => navigate(`/admin/users/${student.id}`)}
+                                    title="View student profile"
+                                >
+                                    <img
+                                        src={student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name || 'User')}&background=random&color=fff`}
+                                        alt={student.name}
+                                        className="cd-student-avatar"
+                                    />
+                                    <div className="cd-student-info">
+                                        <h4 className="cd-student-name">{student.name}</h4>
+                                        <div className="cd-student-meta">
+                                            <span className="cd-student-email">
+                                                <Mail size={12} /> {student.email}
+                                            </span>
+                                            <span className="cd-student-date">
+                                                <Calendar size={12} /> {new Date(student.enrolledAt).toLocaleDateString()}
+                                            </span>
+                                            <span className={`cd-student-status ${student.status?.toLowerCase()}`}>
+                                                {student.status || 'Active'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </motion.div>
+            )}
 
             {/* Main Content Grid */}
             <motion.div

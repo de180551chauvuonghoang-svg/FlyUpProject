@@ -23,6 +23,8 @@ import {
     ChevronLeft,
     ChevronRight,
     ExternalLink,
+    ChevronDown,
+    Users,
 } from 'lucide-react';
 
 import userService from '../../../services/admin/userService';
@@ -44,6 +46,13 @@ function UserDetail() {
     const [txPagination, setTxPagination] = useState(null);
     const [txPage, setTxPage] = useState(1);
     const [txLoading, setTxLoading] = useState(false);
+    const [isSalesHistory, setIsSalesHistory] = useState(false);
+
+    const [courses, setCourses] = useState([]);
+    const [showCourses, setShowCourses] = useState(false);
+    const [coursesLoading, setCoursesLoading] = useState(false);
+    const [isLockModalOpen, setIsLockModalOpen] = useState(false);
+    const [lockReason, setLockReason] = useState('');
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -69,6 +78,7 @@ function UserDetail() {
             const result = await userService.getUserTransactions(id, { page, limit: 5 });
             setTransactions(result.transactions);
             setTxPagination(result.pagination);
+            setIsSalesHistory(result.isInstructor);
         } catch (err) {
             console.error('Failed to fetch transactions:', err);
         } finally {
@@ -77,23 +87,48 @@ function UserDetail() {
     };
 
     useEffect(() => {
+        setTxPage(1);
         fetchUser();
-        fetchTransactions(1);
-         
     }, [id]);
 
     useEffect(() => {
-        if (txPage > 1) {
-            fetchTransactions(txPage);
-        }
-         
-    }, [txPage]);
+        fetchTransactions(txPage);
+    }, [id, txPage]);
 
-    const handleLock = async () => {
+    const handleToggleCourses = async () => {
+        if (showCourses) {
+            setShowCourses(false);
+            return;
+        }
+        try {
+            setCoursesLoading(true);
+            let result;
+            if (user?.role?.toUpperCase() === 'INSTRUCTOR') {
+                result = await userService.getUserCourses(id);
+            } else {
+                result = await userService.getUserEnrollments(id);
+            }
+            setCourses(result.courses || []);
+            setShowCourses(true);
+        } catch (err) {
+            console.error('Failed to fetch courses/enrollments:', err);
+            showToast('Failed to load courses', 'error');
+        } finally {
+            setCoursesLoading(false);
+        }
+    };
+
+    const handleLock = () => {
+        setLockReason('');
+        setIsLockModalOpen(true);
+    };
+
+    const confirmLock = async () => {
         try {
             setActionLoading(true);
-            await userService.lockUser(id);
+            await userService.lockUser(id, lockReason || 'Violation of terms of service');
             showToast('User locked successfully');
+            setIsLockModalOpen(false);
             await fetchUser();
         } catch (err) {
             showToast(err.message || 'Failed to lock user', 'error');
@@ -232,12 +267,17 @@ function UserDetail() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
             >
-                <div className="ud-stat-card">
+                <div
+                    className={`ud-stat-card clickable ${showCourses ? 'active' : ''}`}
+                    onClick={handleToggleCourses}
+                    title={user?.role?.toUpperCase() === 'INSTRUCTOR' ? "Click to view created courses" : "Click to view enrolled courses"}
+                >
                     <BookOpen size={20} className="ud-stat-icon enrollments" />
                     <div>
-                        <span className="ud-stat-value">{user.enrollmentCount ?? 0}</span>
-                        <span className="ud-stat-label">Enrollments</span>
+                        <span className="ud-stat-value">{user?.role?.toUpperCase() === 'INSTRUCTOR' ? (user.courseCount ?? 0) : (user.enrollmentCount ?? 0)}</span>
+                        <span className="ud-stat-label">{user?.role?.toUpperCase() === 'INSTRUCTOR' ? 'Courses' : 'Enrollments'}</span>
                     </div>
+                    <ChevronDown size={16} className={`ud-stat-chevron ${showCourses ? 'open' : ''}`} />
                 </div>
 
                 <div className="ud-stat-card">
@@ -266,6 +306,71 @@ function UserDetail() {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Courses / Enrollments Section */}
+            {showCourses && (
+                <motion.div
+                    className="ud-courses-section"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <div className="ud-courses-header">
+                        <BookOpen size={18} className="ud-tx-icon" />
+                        <h3 className="ud-card-title" style={{ margin: 0, border: 'none', paddingBottom: 0 }}>
+                            {user?.role?.toUpperCase() === 'INSTRUCTOR' ? 'Courses Created' : 'Enrolled Courses'}
+                        </h3>
+                        <span className="ud-tx-count">{courses.length} course{courses.length !== 1 ? 's' : ''}</span>
+                    </div>
+
+                    {coursesLoading ? (
+                        <div className="ud-tx-loading">
+                            <div className="ud-spinner" />
+                            <span>Loading courses...</span>
+                        </div>
+                    ) : courses.length === 0 ? (
+                        <div className="ud-tx-empty">
+                            <BookOpen size={32} />
+                            <p>{user?.role?.toUpperCase() === 'INSTRUCTOR' ? 'No courses created yet' : 'Not enrolled in any courses yet'}</p>
+                        </div>
+                    ) : (
+                        <div className="ud-courses-grid">
+                            {courses.map(course => (
+                                <div
+                                    key={course.id}
+                                    className="ud-course-card"
+                                    onClick={() => navigate(`/admin/courses`)}
+                                >
+                                    <div className="ud-course-thumb">
+                                        {course.thumbnail ? (
+                                            <img src={course.thumbnail} alt={course.title} />
+                                        ) : (
+                                            <div className="ud-course-thumb-placeholder">
+                                                <BookOpen size={24} />
+                                            </div>
+                                        )}
+                                        <span className={`ud-course-status ${(course.approvalStatus || course.status).toLowerCase()}`}>
+                                            {course.approvalStatus || course.status}
+                                        </span>
+                                    </div>
+                                    <div className="ud-course-info">
+                                        <h4 className="ud-course-title">{course.title}</h4>
+                                        <div className="ud-course-meta">
+                                            <span className="ud-course-category">{course.category}</span>
+                                            <span className="ud-course-learners">
+                                                <Users size={12} /> {course.learnerCount}
+                                            </span>
+                                            <span className="ud-course-price">
+                                                {course.price > 0 ? `${course.price}` : 'Free'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </motion.div>
+            )}
 
             {/* Details Grid */}
             <motion.div
@@ -333,12 +438,12 @@ function UserDetail() {
                     <div className="ud-tx-title-row">
                         <Receipt size={18} className="ud-tx-icon" />
                         <h3 className="ud-card-title" style={{ margin: 0, border: 'none', paddingBottom: 0 }}>
-                            Transaction History
+                            {isSalesHistory ? 'Sales History' : 'Transaction History'}
                         </h3>
                     </div>
                     {txPagination && (
                         <span className="ud-tx-count">
-                            {txPagination.totalItems} transaction{txPagination.totalItems !== 1 ? 's' : ''}
+                            {txPagination.totalItems} {isSalesHistory ? 'sale' : 'transaction'}{txPagination.totalItems !== 1 ? 's' : ''}
                         </span>
                     )}
                 </div>
@@ -363,7 +468,7 @@ function UserDetail() {
                                         <th>Courses</th>
                                         <th>Amount</th>
                                         <th>Discount</th>
-                                        <th>Gateway</th>
+                                        <th>{isSalesHistory ? 'Learner' : 'Gateway'}</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -400,7 +505,9 @@ function UserDetail() {
                                                 )}
                                             </td>
                                             <td>
-                                                <span className="ud-tx-gateway">{tx.gateway}</span>
+                                                <span className="ud-tx-gateway">
+                                                    {isSalesHistory ? tx.buyerName : tx.gateway}
+                                                </span>
                                             </td>
                                             <td>
                                                 <span className={`ud-tx-status ${tx.isSuccessful ? 'success' : 'failed'}`}>
@@ -442,6 +549,49 @@ function UserDetail() {
                     </>
                 )}
             </motion.div>
+            {/* Custom Lock Modal */}
+            {isLockModalOpen && (
+                <div className="ud-modal-overlay" onClick={() => setIsLockModalOpen(false)}>
+                    <motion.div 
+                        className="ud-modal-content"
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="ud-modal-header">
+                            <Lock className="ud-modal-icon" size={24} />
+                            <h3>Lock Account</h3>
+                        </div>
+                        <div className="ud-modal-body">
+                            <p>Are you sure you want to suspend <strong>{user?.fullName}</strong>? Locked users cannot access the platform until reactivated.</p>
+                            <label className="ud-modal-label">Reason for Suspension</label>
+                            <textarea
+                                className="ud-modal-textarea"
+                                placeholder="e.g. Violation of Community Guidelines, Fraudulent Activity..."
+                                value={lockReason}
+                                onChange={(e) => setLockReason(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="ud-modal-footer">
+                            <button 
+                                className="ud-modal-btn ud-modal-btn-cancel"
+                                onClick={() => setIsLockModalOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="ud-modal-btn ud-modal-btn-confirm"
+                                onClick={confirmLock}
+                                disabled={actionLoading}
+                            >
+                                {actionLoading ? 'Processing...' : 'Confirm Lock'}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
         </div>
     );
 }

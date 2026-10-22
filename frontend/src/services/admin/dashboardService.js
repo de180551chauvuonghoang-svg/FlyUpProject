@@ -129,7 +129,7 @@ const dashboardService = {
 
     // Sheet 2-4: Enrollment charts for each period
     const periods = ['monthly', 'quarterly', 'yearly'];
-    const periodLabels = { monthly: 'Monthly (30 days)', quarterly: 'Quarterly (12 weeks)', yearly: 'Yearly (12 months)' };
+    const periodLabels = { monthly: 'Monthly (12 months)', quarterly: 'Quarterly (12 weeks)', yearly: 'Yearly (5 years)' };
 
     for (const period of periods) {
       try {

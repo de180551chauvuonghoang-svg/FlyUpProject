@@ -24,6 +24,7 @@ import {
     Target,
     ListChecks,
     FileText,
+    RotateCcw,
 } from 'lucide-react';
 
 import courseService from '../../../services/admin/courseService';
@@ -64,6 +65,10 @@ function CourseDetail() {
     const [showStudents, setShowStudents] = useState(false);
     const [students, setStudents] = useState([]);
     const [studentsLoading, setStudentsLoading] = useState(false);
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+    const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+    const [archiveReason, setArchiveReason] = useState('');
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -101,13 +106,17 @@ function CourseDetail() {
         }
     };
 
-    const handleReject = async () => {
-        const reason = prompt('Enter rejection reason:');
-        if (reason === null) return; // cancelled
+    const handleReject = () => {
+        setRejectReason('');
+        setIsRejectModalOpen(true);
+    };
+
+    const confirmReject = async () => {
         try {
             setActionLoading(true);
-            await courseService.rejectCourse(id, reason || 'Content does not meet quality standards');
+            await courseService.rejectCourse(id, rejectReason || 'Content does not meet quality standards');
             showToast('Course rejected');
+            setIsRejectModalOpen(false);
             await fetchCourse();
         } catch (err) {
             showToast(err.message || 'Failed to reject course', 'error');
@@ -116,15 +125,33 @@ function CourseDetail() {
         }
     };
 
-    const handleArchive = async () => {
-        if (!confirm('Are you sure you want to archive this course?')) return;
+    const handleArchive = () => {
+        setIsArchiveModalOpen(true);
+    };
+
+    const confirmArchive = async () => {
         try {
             setActionLoading(true);
-            await courseService.archiveCourse(id);
+            await courseService.archiveCourse(id, archiveReason || 'Course content is no longer required or has been replaced.');
             showToast('Course archived successfully');
+            setIsArchiveModalOpen(false);
+            setArchiveReason('');
             await fetchCourse();
         } catch (err) {
             showToast(err.message || 'Failed to archive course', 'error');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleUnarchive = async () => {
+        try {
+            setActionLoading(true);
+            await courseService.unarchiveCourse(id);
+            showToast('Course unarchived successfully');
+            await fetchCourse();
+        } catch (err) {
+            showToast(err.message || 'Failed to unarchive course', 'error');
         } finally {
             setActionLoading(false);
         }
@@ -288,6 +315,16 @@ function CourseDetail() {
                                 {actionLoading ? 'Archiving...' : 'Archive'}
                             </button>
                         )}
+                        {course.status === 'ARCHIVED' && (
+                            <button
+                                className="cd-btn cd-btn-success"
+                                onClick={handleUnarchive}
+                                disabled={actionLoading}
+                            >
+                                <RotateCcw size={15} />
+                                {actionLoading ? 'Unarchiving...' : 'Unarchive'}
+                            </button>
+                        )}
                     </div>
                 </div>
             </motion.div>
@@ -304,6 +341,21 @@ function CourseDetail() {
                     <div>
                         <strong>Rejection Reason</strong>
                         <p>{course.rejectReason}</p>
+                    </div>
+                </motion.div>
+            )}
+
+            {course.status === 'ARCHIVED' && course.archiveReason && (
+                <motion.div
+                    className="cd-archive-banner"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    <Archive size={18} />
+                    <div>
+                        <strong>Archive Reason</strong>
+                        <p>{course.archiveReason}</p>
                     </div>
                 </motion.div>
             )}
@@ -488,6 +540,44 @@ function CourseDetail() {
                             <InfoRow icon={<User size={14} />} label="Course ID" value={course.id} mono />
                         </div>
                     </div>
+
+                    {/* Archive Reason Sidebar Card */}
+                    {course.status === 'ARCHIVED' && (
+                        <div className="cd-card cd-reason-card archive">
+                            <h3 className="cd-card-title">
+                                <Archive size={15} /> Archive Reason
+                                <button 
+                                    className="cd-reason-edit-btn" 
+                                    onClick={() => setIsArchiveModalOpen(true)}
+                                    title="Edit Reason"
+                                >
+                                    Edit
+                                </button>
+                            </h3>
+                            <div className="cd-reason-text">
+                                {course.archiveReason || 'No reason provided for this archived course.'}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Rejection Reason Sidebar Card (Optional addition for consistency) */}
+                    {course.status === 'REJECTED' && (
+                        <div className="cd-card cd-reason-card reject">
+                            <h3 className="cd-card-title">
+                                <XCircle size={15} /> Rejection Reason
+                                <button 
+                                    className="cd-reason-edit-btn" 
+                                    onClick={() => setIsRejectModalOpen(true)}
+                                    title="Edit Reason"
+                                >
+                                    Edit
+                                </button>
+                            </h3>
+                            <div className="cd-reason-text">
+                                {course.rejectReason || 'No reason provided for this rejection.'}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </motion.div>
 
@@ -541,6 +631,103 @@ function CourseDetail() {
                         </div>
                     </motion.div>
                 </motion.div>
+            )}
+
+            {/* Rejection Modal */}
+            {isRejectModalOpen && (
+                <div className="cd-modal-overlay" onClick={() => setIsRejectModalOpen(false)}>
+                    <motion.div 
+                        className="cd-modal-content"
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="cd-modal-header">
+                            <XCircle className="cd-modal-icon" size={24} />
+                            <h3>Reject Course</h3>
+                        </div>
+                        <div className="cd-modal-body">
+                            <p>Are you sure you want to reject <strong>{course?.title}</strong>? This will notify the instructor to make necessary changes.</p>
+                            <label className="cd-modal-label">Reason for Rejection</label>
+                            <textarea
+                                className="cd-modal-textarea"
+                                placeholder="e.g. Quality standards not met, missing resources, incorrect category..."
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="cd-modal-footer">
+                            <button 
+                                className="cd-modal-btn cd-modal-btn-cancel"
+                                onClick={() => setIsRejectModalOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="cd-modal-btn cd-modal-btn-confirm"
+                                onClick={confirmReject}
+                                disabled={actionLoading}
+                            >
+                                {actionLoading ? 'Processing...' : 'Confirm Rejection'}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+            {/* Archive Modal */}
+            {isArchiveModalOpen && (
+                <div className="cd-modal-overlay">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="cd-modal-content"
+                        style={{ borderColor: 'rgba(245, 158, 11, 0.3)' }}
+                    >
+                        <div className="cd-modal-header">
+                            <Archive size={24} className="cd-modal-icon" style={{ color: '#f59e0b' }} />
+                            <h3>Archive Course</h3>
+                        </div>
+                        <div className="cd-modal-body">
+                            <p>Are you sure you want to archive <strong>{course?.Title}</strong>? This will hide the course from the public listing.</p>
+                            <label className="cd-modal-label">Reason for Archiving (Optional)</label>
+                            <textarea
+                                className="cd-modal-textarea"
+                                value={archiveReason}
+                                onChange={(e) => setArchiveReason(e.target.value)}
+                                placeholder="Provide a reason for the instructor..."
+                                spellCheck="false"
+                            />
+                        </div>
+                        <div className="cd-modal-footer">
+                            <button
+                                className="cd-modal-btn cd-modal-btn-cancel"
+                                onClick={() => {
+                                    setIsArchiveModalOpen(false);
+                                    setArchiveReason('');
+                                }}
+                                disabled={actionLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="cd-modal-btn cd-modal-btn-confirm"
+                                style={{ background: '#f59e0b', borderColor: '#f59e0b' }}
+                                onClick={confirmArchive}
+                                disabled={actionLoading}
+                            >
+                                {actionLoading ? (
+                                    <div className="cd-btn-spinner" />
+                                ) : (
+                                    <>
+                                        <Archive size={16} />
+                                        Archive Course
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
             )}
         </div>
     );

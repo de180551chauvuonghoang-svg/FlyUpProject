@@ -1,7 +1,8 @@
 import express from 'express';
 import prisma from '../lib/prisma.js';
 import { authenticateJWT, authorizeRoles } from '../middleware/authMiddleware.js';
-import { sendCourseApprovedEmail, sendCourseRejectedEmail } from '../services/emailService.js';
+import { sendCourseApprovedEmail, sendCourseRejectedEmail, sendAccountLockedEmail, sendAccountUnlockedEmail, sendCourseArchivedEmail, sendCourseUnarchivedEmail } from '../services/emailService.js';
+import * as notificationService from '../services/notificationService.js';
 
 const router = express.Router();
 
@@ -215,6 +216,14 @@ router.get('/users/:id', async (req, res) => {
             where: { CreatorId: id }
         });
 
+        // Count courses if the user is an instructor
+        let courseCount = 0;
+        if (user.Role?.toUpperCase() === 'INSTRUCTOR') {
+            courseCount = await prisma.courses.count({
+                where: { CreatorId: id }
+            });
+        }
+
         res.json({
             user: {
                 id: user.Id,
@@ -230,6 +239,7 @@ router.get('/users/:id', async (req, res) => {
                 createdAt: user.CreationTime,
                 lastLogin: user.LastModificationTime,
                 enrollmentCount,
+                courseCount,
                 isVerified: user.IsVerified,
                 loginProvider: user.LoginProvider,
                 systemBalance: user.SystemBalance?.toString() || '0'
@@ -237,6 +247,103 @@ router.get('/users/:id', async (req, res) => {
         });
     } catch (error) {
         console.error('Admin get user by id error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * GET /api/admin/users/:id/enrollments
+ * Get courses a specific user is enrolled in (for Learners)
+ */
+router.get('/users/:id/enrollments', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const enrollments = await prisma.enrollments.findMany({
+            where: { CreatorId: id },
+            include: {
+                Courses: {
+                    select: {
+                        Id: true,
+                        Title: true,
+                        ThumbUrl: true,
+                        Price: true,
+                        Status: true,
+                        ApprovalStatus: true,
+                        LearnerCount: true,
+                        Categories: {
+                            select: { Title: true }
+                        }
+                    }
+                }
+            },
+            orderBy: { CreationTime: 'desc' }
+        });
+
+        // Filter out broken enrollments (where course no longer exists) and map them
+        const mappedCourses = enrollments
+            .filter(e => e.Courses != null)
+            .map(e => ({
+                id: e.Courses.Id,
+                title: e.Courses.Title,
+                thumbnail: e.Courses.ThumbUrl,
+                price: e.Courses.Price,
+                status: e.Courses.Status,
+                approvalStatus: e.Courses.ApprovalStatus,
+                learnerCount: e.Courses.LearnerCount,
+                enrolledAt: e.CreationTime,
+                category: e.Courses.Categories?.Title || '—'
+            }));
+
+        res.json({ courses: mappedCourses });
+    } catch (error) {
+        console.error('Admin get user enrollments error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * GET /api/admin/users/:id/courses
+ * Get courses created by a specific user (for Instructors)
+ */
+router.get('/users/:id/courses', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const courses = await prisma.courses.findMany({
+            where: { CreatorId: id },
+            select: {
+                Id: true,
+                Title: true,
+                ThumbUrl: true,
+                Price: true,
+                Status: true,
+                ApprovalStatus: true,
+                LearnerCount: true,
+                _count: { select: { Enrollments: true } },
+                CreationTime: true,
+                Categories: {
+                    select: { Title: true }
+                }
+            },
+            orderBy: { CreationTime: 'desc' }
+        });
+
+        const mappedCourses = courses.map(course => ({
+            id: course.Id,
+            title: course.Title,
+            thumbnail: course.ThumbUrl || 'https://via.placeholder.com/400x225?text=No+Image',
+            price: parseFloat(course.Price),
+            status: course.Status,
+            approvalStatus: course.ApprovalStatus,
+            learnerCount: course._count?.Enrollments ?? course.LearnerCount,
+            createdAt: course.CreationTime,
+            category: course.Categories?.Title || 'Unknown'
+        }));
+
+        res.json({ courses: mappedCourses });
+    } catch (error) {
+        console.error('Admin get user courses error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -285,6 +392,10 @@ router.put('/users/:id/lock', async (req, res) => {
                 IsApproved: true
             }
         });
+
+        // Send lock notification email asynchronously
+        sendAccountLockedEmail(updatedUser.Email, updatedUser.FullName, reason)
+            .catch(err => console.error('Failed to send lock email to', updatedUser.Email, err));
 
         res.json({
             success: true,
@@ -351,6 +462,10 @@ router.put('/users/:id/unlock', async (req, res) => {
                 status: 'ACTIVE'
             }
         });
+
+        // Send activation notification email asynchronously
+        sendAccountUnlockedEmail(updatedUser.Email, updatedUser.FullName)
+            .catch(err => console.error('Failed to send unlock email to', updatedUser.Email, err));
     } catch (error) {
         console.error('Admin unlock user error:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -368,20 +483,30 @@ router.get('/users/:id/transactions', async (req, res) => {
         const { page = 1, limit = 5 } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        // Verify user exists
+        // Verify user exists and check role
         const user = await prisma.users.findUnique({
             where: { Id: id },
-            select: { Id: true }
+            select: { Id: true, Role: true }
         });
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        const isInstructor = user.Role && user.Role.toUpperCase() === 'INSTRUCTOR';
+
+        // For instructors, show sales of their courses. For learners, show their purchases.
+        const where = isInstructor
+            ? {
+                Enrollments: { some: { Courses: { CreatorId: id } } },
+                IsSuccessful: true
+            }
+            : { CreatorId: id };
+
         // Get bills with related enrollments and courses
         const [bills, total] = await Promise.all([
             prisma.bills.findMany({
-                where: { CreatorId: id },
+                where,
                 skip,
                 take: parseInt(limit),
                 select: {
@@ -395,7 +520,15 @@ router.get('/users/:id/transactions', async (req, res) => {
                     IsSuccessful: true,
                     CouponCode: true,
                     CreationTime: true,
+                    Users: { // Include buyer info
+                        select: {
+                            FullName: true,
+                            UserName: true
+                        }
+                    },
                     Enrollments: {
+                        // For instructors, only show their own courses from the bill
+                        where: isInstructor ? { Courses: { CreatorId: id } } : undefined,
                         select: {
                             Courses: {
                                 select: {
@@ -408,7 +541,7 @@ router.get('/users/:id/transactions', async (req, res) => {
                 },
                 orderBy: { CreationTime: 'desc' }
             }),
-            prisma.bills.count({ where: { CreatorId: id } })
+            prisma.bills.count({ where })
         ]);
 
         const mappedBills = bills.map(bill => ({
@@ -422,6 +555,7 @@ router.get('/users/:id/transactions', async (req, res) => {
             isSuccessful: bill.IsSuccessful,
             couponCode: bill.CouponCode,
             createdAt: bill.CreationTime,
+            buyerName: bill.Users?.FullName || bill.Users?.UserName || 'Unknown',
             courses: bill.Enrollments.map(e => ({
                 id: e.Courses.Id,
                 title: e.Courses.Title
@@ -430,6 +564,7 @@ router.get('/users/:id/transactions', async (req, res) => {
 
         res.json({
             transactions: mappedBills,
+            isInstructor, // Send flag to frontend for label switching
             pagination: {
                 currentPage: parseInt(page),
                 totalPages: Math.ceil(total / parseInt(limit)),
@@ -755,10 +890,13 @@ router.get('/courses', async (req, res) => {
         // Filter by status
         if (status === 'PENDING') {
             where.ApprovalStatus = 'Pending';
+            where.Status = { not: 'Archived' };
         } else if (status === 'APPROVED') {
             where.ApprovalStatus = 'APPROVED';
+            where.Status = { not: 'Archived' };
         } else if (status === 'REJECTED') {
             where.ApprovalStatus = 'Rejected';
+            where.Status = { not: 'Archived' };
         } else if (status === 'ARCHIVED') {
             where.Status = 'Archived';
         }
@@ -779,6 +917,7 @@ router.get('/courses', async (req, res) => {
                     RejectionReason: true,
                     LectureCount: true,
                     LearnerCount: true,
+                    _count: { select: { Enrollments: true } },
                     RatingCount: true,
                     TotalRating: true,
                     CreationTime: true,
@@ -839,7 +978,7 @@ router.get('/courses', async (req, res) => {
                 rejectReason: course.RejectionReason,
                 totalLessons,
                 totalDuration: `${totalLessons} lessons`,
-                enrolledCount: course.LearnerCount,
+                enrolledCount: course._count?.Enrollments ?? course.LearnerCount,
                 rating: parseFloat(rating),
                 category: course.Categories?.Title || 'Unknown',
                 instructor: {
@@ -914,6 +1053,40 @@ router.get('/courses/:id/students', async (req, res) => {
 });
 
 /**
+ * DELETE /api/admin/courses/:id
+ * Permanently delete a course and its related data
+ */
+router.delete('/courses/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if course exists
+        const course = await prisma.courses.findUnique({
+            where: { Id: id }
+        });
+
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        // Delete related CAT_Logs manually as they don't have cascade delete in schema
+        await prisma.cAT_Logs.deleteMany({
+            where: { CourseId: id }
+        });
+
+        // Delete the course (Prisma will handle other cascades)
+        await prisma.courses.delete({
+            where: { Id: id }
+        });
+
+        res.json({ message: 'Course deleted successfully' });
+    } catch (error) {
+        console.error('Admin delete course error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
  * GET /api/admin/courses/:id
  * Get course details by ID
  */
@@ -935,10 +1108,12 @@ router.get('/courses/:id', async (req, res) => {
                 Status: true,
                 ApprovalStatus: true,
                 RejectionReason: true,
+                DismissReason: true,
                 Outcomes: true,
                 Requirements: true,
                 LectureCount: true,
                 LearnerCount: true,
+                _count: { select: { Enrollments: true } },
                 RatingCount: true,
                 TotalRating: true,
                 CreationTime: true,
@@ -1014,11 +1189,12 @@ router.get('/courses/:id', async (req, res) => {
                 level: course.Level,
                 status: mappedStatus,
                 rejectReason: course.RejectionReason,
+                archiveReason: course.DismissReason,
                 outcomes: course.Outcomes,
                 requirements: course.Requirements,
                 totalLessons,
                 totalDuration: `${totalLessons} lessons`,
-                enrolledCount: course.LearnerCount,
+                enrolledCount: course._count?.Enrollments ?? course.LearnerCount,
                 rating: parseFloat(rating),
                 ratingCount: course.RatingCount,
                 category: course.Categories?.Title,
@@ -1109,6 +1285,14 @@ router.put('/courses/:id/approve', async (req, res) => {
             ).catch(err => console.error('Failed to send course approved email:', err));
         }
 
+        // Send in-app notification to instructor
+        if (existingCourse.Instructors?.CreatorId) {
+            notificationService.createApprovalNotification(
+                existingCourse.Instructors.CreatorId,
+                updatedCourse.Title
+            ).catch(err => console.error('Failed to create approval notification:', err));
+        }
+
         res.json({
             success: true,
             message: 'Course approved successfully',
@@ -1187,6 +1371,15 @@ router.put('/courses/:id/reject', async (req, res) => {
             ).catch(err => console.error('Failed to send course rejected email:', err));
         }
 
+        // Send in-app notification to instructor
+        if (existingCourse.Instructors?.CreatorId) {
+            notificationService.createRejectionNotification(
+                existingCourse.Instructors.CreatorId,
+                updatedCourse.Title,
+                updatedCourse.RejectionReason || "Course rejected by admin"
+            ).catch(err => console.error('Failed to create rejection notification:', err));
+        }
+
         res.json({
             success: true,
             message: 'Course rejected',
@@ -1210,11 +1403,23 @@ router.put('/courses/:id/reject', async (req, res) => {
 router.put('/courses/:id/archive', async (req, res) => {
     try {
         const { id } = req.params;
+        const { reason } = req.body;
 
         // Check if course exists
         const existingCourse = await prisma.courses.findUnique({
             where: { Id: id },
-            select: { Id: true, Title: true, Status: true }
+            include: {
+                Instructors: {
+                    include: {
+                        Users_Instructors_CreatorIdToUsers: {
+                            select: {
+                                FullName: true,
+                                Email: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!existingCourse) {
@@ -1226,6 +1431,7 @@ router.put('/courses/:id/archive', async (req, res) => {
             where: { Id: id },
             data: {
                 Status: 'Archived',
+                DismissReason: reason || null,
                 LastModificationTime: new Date()
             },
             select: {
@@ -1234,6 +1440,26 @@ router.put('/courses/:id/archive', async (req, res) => {
                 Status: true
             }
         });
+
+        // Send archive email to instructor
+        const instructorUser = existingCourse.Instructors?.Users_Instructors_CreatorIdToUsers;
+        if (instructorUser?.Email) {
+            sendCourseArchivedEmail(
+                instructorUser.Email,
+                instructorUser.FullName,
+                updatedCourse.Title,
+                reason
+            ).catch(err => console.error('Failed to send course archived email:', err));
+        }
+
+        // Send in-app notification to instructor
+        if (existingCourse.Instructors?.CreatorId) {
+            notificationService.createArchiveNotification(
+                existingCourse.Instructors.CreatorId,
+                updatedCourse.Title,
+                reason
+            ).catch(err => console.error('Failed to create archive notification:', err));
+        }
 
         res.json({
             success: true,
@@ -1261,7 +1487,18 @@ router.put('/courses/:id/unarchive', async (req, res) => {
         // Check if course exists
         const existingCourse = await prisma.courses.findUnique({
             where: { Id: id },
-            select: { Id: true, Title: true, Status: true }
+            include: {
+                Instructors: {
+                    include: {
+                        Users_Instructors_CreatorIdToUsers: {
+                            select: {
+                                FullName: true,
+                                Email: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!existingCourse) {
@@ -1277,6 +1514,7 @@ router.put('/courses/:id/unarchive', async (req, res) => {
             where: { Id: id },
             data: {
                 Status: 'Ongoing',
+                DismissReason: null,
                 LastModificationTime: new Date()
             },
             select: {
@@ -1287,9 +1525,27 @@ router.put('/courses/:id/unarchive', async (req, res) => {
             }
         });
 
+        // Send unarchive email to instructor
+        const instructorUser = existingCourse.Instructors?.Users_Instructors_CreatorIdToUsers;
+        if (instructorUser?.Email) {
+            sendCourseUnarchivedEmail(
+                instructorUser.Email,
+                instructorUser.FullName,
+                updatedCourse.Title
+            ).catch(err => console.error('Failed to send course unarchived email:', err));
+        }
+
+        // Send in-app notification to instructor
+        if (existingCourse.Instructors?.CreatorId) {
+            notificationService.createUnarchiveNotification(
+                existingCourse.Instructors.CreatorId,
+                updatedCourse.Title
+            ).catch(err => console.error('Failed to create unarchive notification:', err));
+        }
+
         res.json({
             success: true,
-            message: 'Course unarchived successfully',
+            message: 'Course unarchived successfully. Notification email sent to instructor.',
             course: {
                 id: updatedCourse.Id,
                 title: updatedCourse.Title,

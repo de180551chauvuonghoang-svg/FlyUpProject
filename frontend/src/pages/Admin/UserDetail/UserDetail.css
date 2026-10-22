@@ -250,6 +250,161 @@
   backdrop-filter: blur(8px);
 }
 
+.ud-stat-card.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.ud-stat-card.clickable:hover, .ud-stat-card.clickable.active {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.ud-stat-chevron {
+  position: absolute;
+  right: 15px;
+  color: var(--text-secondary, #94a3b8);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+}
+
+.ud-stat-card.clickable:hover .ud-stat-chevron {
+  opacity: 1;
+}
+
+.ud-stat-chevron.open {
+  transform: rotate(-180deg);
+  opacity: 1;
+  color: #818cf8;
+}
+
+/* ─── Courses Section ───────────────────────────── */
+.ud-courses-section {
+  background: var(--bg-card, rgba(30, 41, 59, 0.7));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.07));
+  border-radius: 16px;
+  padding: 0 24px;
+  backdrop-filter: blur(8px);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.ud-courses-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.07));
+  margin-bottom: 20px;
+}
+
+.ud-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding-bottom: 24px;
+}
+
+.ud-course-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ud-course-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.ud-course-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.ud-course-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ud-course-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #94a3b8);
+  opacity: 0.3;
+}
+
+.ud-course-status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ud-course-status.approved { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
+.ud-course-status.pending { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
+.ud-course-status.rejected { color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
+
+.ud-course-info {
+  padding: 14px;
+}
+
+.ud-course-title {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary, #f1f5f9);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ud-course-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.ud-course-category {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ud-course-learners {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ud-course-price {
+  font-weight: 600;
+  color: #4ade80;
+}
+
 .ud-stat-icon {
   flex-shrink: 0;
   opacity: 0.85;
@@ -729,4 +884,145 @@
   .ud-stats-row {
     grid-template-columns: 1fr;
   }
+}
+/* ─── Custom Lock Modal ────────────────────────────── */
+.ud-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.ud-modal-content {
+  background: var(--bg-card, #1e293b);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  position: relative;
+}
+
+.ud-modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ef4444, #b91c1c);
+}
+
+.ud-modal-header {
+  padding: 24px 24px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ud-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary, #f1f5f9);
+}
+
+.ud-modal-icon {
+  color: #ef4444;
+}
+
+.ud-modal-body {
+  padding: 0 24px 24px;
+}
+
+.ud-modal-body p {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.ud-modal-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 8px;
+}
+
+.ud-modal-textarea {
+  width: 100%;
+  min-height: 120px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #f1f5f9;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.ud-modal-textarea:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.ud-modal-footer {
+  padding: 16px 24px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.ud-modal-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ud-modal-btn-cancel {
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ud-modal-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+}
+
+.ud-modal-btn-confirm {
+  background: #ef4444;
+  color: white;
+  border: 1px solid #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ud-modal-btn-confirm:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.ud-modal-btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
