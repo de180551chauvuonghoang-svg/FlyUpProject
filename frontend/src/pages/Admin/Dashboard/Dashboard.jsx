@@ -32,7 +32,7 @@ function Dashboard() {
         setIsLoading(true);
         const [stats, revenue] = await Promise.all([
           dashboardService.getStatistics(),
-          dashboardService.getRevenueChart('quarterly'),
+          dashboardService.getRevenueChart('monthly'),
         ]);
         setStatistics(stats);
         setRevenueData(revenue);

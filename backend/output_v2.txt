@@ -1,0 +1,55 @@
+﻿prisma:query SELECT "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId" FROM "public"."Notifications" WHERE 1=1 ORDER BY "public"."Notifications"."CreationTime" DESC LIMIT $1 OFFSET $2
+prisma:query SELECT "public"."Users"."Id", "public"."Users"."FullName", "public"."Users"."Email", "public"."Users"."Role" FROM "public"."Users" WHERE "public"."Users"."Id" IN ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) OFFSET $11
+--- Recent Notifications (Top 10) ---
+1. [course_rejected] to Huß╗│nh Mai Giang (8c3d6d81-2d70-4b5d-87bd-0a9b2d4da4ed)
+   Message: Kh├│a hß╗ìc cß╗ºa bß║ín ─æ├ú bß╗ï tß╗½ chß╗æi. L├╜ do: lß╗ùi rß╗ôi n├¿ 
+   Status: unread | Time: Thu Nov 13 2025 16:48:10 GMT+0700 (Indochina Time)
+---
+2. [RequestWithdrawal] to SYSTEM/UNKNOWN (null)
+   Message: {"Gateway":"VNPay","AccountNumber":"123456789987654321","AccountHolderName":"Nguyen Van A","Amount":400000}
+   Status: Approved | Time: Fri Oct 27 2023 22:29:40 GMT+0700 (Indochina Time)
+---
+3. [ReportCourse] to SYSTEM/UNKNOWN (null)
+   Message: {"Message":"Outdated content","Course":"00ef965c-d74e-487b-ab36-55619d89ef37"}
+   Status: Resolved | Time: Tue Oct 24 2023 22:01:49 GMT+0700 (Indochina Time)
+---
+4. [InviteMember] to Ho├áng Minh Ph╞░╞íng (55ac3b6e-48c4-4ef0-86e8-17129b0f1676)
+   Message: {"Conversation":"22eb6b1d-3ea1-4c21-baeb-ede77c52b4e7"}
+   Status: Approved | Time: Tue Oct 24 2023 21:26:22 GMT+0700 (Indochina Time)
+---
+5. [RequestWithdrawal] to SYSTEM/UNKNOWN (null)
+   Message: {"Gateway":"VNPay","AccountNumber":"1234566541234532","AccountHolderName":"Card holder Card holder","Amount":600000}
+   Status: Approved | Time: Fri Oct 20 2023 06:28:22 GMT+0700 (Indochina Time)
+---
+6. [InviteMember] to Ho├áng Minh Ph╞░╞íng (55ac3b6e-48c4-4ef0-86e8-17129b0f1676)
+   Message: {"Conversation":"22eb6b1d-3ea1-4c21-baeb-ede77c52b4e7"}
+   Status: Dismissed | Time: Fri Oct 20 2023 05:14:49 GMT+0700 (Indochina Time)
+---
+7. [InviteMember] to Fgn85761 (820ef64f-8e25-4486-86e5-027d4fddb31d)
+   Message: {"Conversation":"22eb6b1d-3ea1-4c21-baeb-ede77c52b4e7"}
+   Status: Approved | Time: Fri Oct 20 2023 05:14:49 GMT+0700 (Indochina Time)
+---
+8. [RequestToBecomeInstructor] to SYSTEM/UNKNOWN (null)
+   Message: {"Intro":"Watashi wa DangHang","Experience":"Watashi wa DangHang 123456"}
+   Status: Approved | Time: Fri Oct 20 2023 04:58:42 GMT+0700 (Indochina Time)
+---
+9. [ReportCourse] to SYSTEM/UNKNOWN (null)
+   Message: {"Message":"Unreliable content","Course":"090413cd-dcb2-49e9-b0bb-79933ff1cb3a"}
+   Status: Resolved | Time: Mon Oct 16 2023 16:07:50 GMT+0700 (Indochina Time)
+---
+10. [RequestWithdrawal] to SYSTEM/UNKNOWN (null)
+   Message: {"Gateway":"TechComBank","AccountNumber":"123456123456","AccountHolderName":"Ho Hoang Loc","Amount":100000}
+   Status: None | Time: Mon Oct 16 2023 03:29:10 GMT+0700 (Indochina Time)
+---
+prisma:query SELECT "public"."Users"."Id", "public"."Users"."Role", "public"."Users"."Email", "public"."Users"."FullName" FROM "public"."Users" WHERE "public"."Users"."Role" ILIKE $1 OFFSET $2
+
+--- Admins Found in Database ---
+- TestAdmin3 (testadmin3@example.com) ID: 28cc5c62-66ce-409a-a690-6289c9f9e28f Role: Admin
+- L├¬ V─ân ─Éß╗⌐c (tigerlion9@gmail.com) ID: 1e512cf4-856b-4dd8-94b1-521c71276d8a Role: Admin
+- KHOA ANH (anhkhoa20052501@gmail.com) ID: 0b4d2f75-64c1-48ce-97b2-391a9fd45361 Role: Admin
+- Admin ABC (testadmin1@ex.com) ID: d7067dc0-6f21-4073-9990-1c691bda358c Role: Admin
+- Chau Vuong Hoang (de180551chauvuonghoang@gmail.com) ID: 08b70e76-4163-44ac-8dd9-1735a200da30 Role: Admin
+- Anh iu em (limbo04112004@gmail.com) ID: 5e348006-8a68-4776-8c36-80806111db0a Role: Admin
+- Test Admin (test@example.com) ID: a1dc4325-1a0d-4272-a7f5-1a848ac455c6 Role: Admin
+- L├¬ ─É─âng Trung Hiß║┐u (hieuldt.dev@gmail.com) ID: ccc28e54-d21d-44fc-a8fc-26a135ae69f0 Role: Admin
+- Admin User (admin@flyup.com) ID: 2e3c2c07-e166-4427-8702-91ce83d23103 Role: admin

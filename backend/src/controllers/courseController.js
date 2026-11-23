@@ -1,5 +1,6 @@
 import * as courseService from "../services/courseService.js";
 import * as reviewService from "../services/reviewService.js";
+import * as notificationService from "../services/notificationService.js";
 import { safeDel } from "../lib/cache.js";
 
 // Add Review
@@ -169,6 +170,7 @@ export const getInstructorStats = async (req, res) => {
     // Find instructor record from user
     let instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
 
     if (!instructor && req.user.role?.toLowerCase() === "instructor") {
@@ -272,6 +274,7 @@ export const getInstructorCourses = async (req, res) => {
     // Find instructor record
     let instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
 
     if (!instructor && req.user.role?.toLowerCase() === "instructor") {
@@ -368,6 +371,7 @@ export const createCourse = async (req, res) => {
     // Find instructor record
     let instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
 
     if (!instructor && req.user.role?.toLowerCase() === "instructor") {
@@ -490,6 +494,10 @@ export const createCourse = async (req, res) => {
       return newCourse;
     });
 
+    // Create notification for instructor
+    console.log(`[CourseController] createCourse: Success for user ${userId}, triggering notification...`);
+    await notificationService.createCourseCreationNotification(userId, title.trim());
+
     res.status(201).json({
       success: true,
       message:
@@ -523,6 +531,7 @@ export const deleteCourse = async (req, res) => {
     // Try to find via Instructors table first, then fallback to CreatorId
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const courseWhere = instructor
       ? { Id: courseId, InstructorId: instructor.Id }
@@ -558,6 +567,7 @@ export const publishCourse = async (req, res) => {
 
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const courseWhere = instructor
       ? { Id: courseId, InstructorId: instructor.Id }
@@ -576,19 +586,17 @@ export const publishCourse = async (req, res) => {
         where: { Id: courseId },
         data: { ApprovalStatus: "Pending" },
       });
+      console.log(`[CourseController] ApprovalStatus updated to Pending. Preparing notification...`);
 
-      // Create Course Notification for Admin
-      await prisma.courseNotifications.create({
-        data: {
-          CourseId: courseId,
-          InstructorId: course.InstructorId,
-          InstructorName: instructor.Users_Instructors_CreatorIdToUsers?.FullName || "Instructor",
-          CourseTitle: course.Title,
-          CoursePrice: parseFloat(course.Price) || 0,
-          NotificationType: "Submission",
-          Status: "Pending",
-        },
-      });
+      // Use notification service for submission
+      await notificationService.createSubmissionNotification(
+          courseId, 
+          course.InstructorId, // Record ID for Admin panel
+          userId,              // User ID for Bell icon
+          instructor.Users_Instructors_CreatorIdToUsers?.FullName || "Instructor",
+          course.Title,
+          course.Price
+      );
 
       return res.json({
         success: true,
@@ -630,6 +638,7 @@ export const unpublishCourse = async (req, res) => {
 
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const courseWhereUnpub = instructor
       ? { Id: courseId, InstructorId: instructor.Id }
@@ -669,6 +678,7 @@ export const updateCourse = async (req, res) => {
     // Verify ownership with CreatorId fallback
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const courseWhereUpd = instructor
       ? { Id: courseId, InstructorId: instructor.Id }
@@ -734,6 +744,7 @@ export const createSection = async (req, res) => {
     // Verify ownership
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const courseWhere = instructor
       ? { Id: courseId, InstructorId: instructor.Id }
@@ -807,6 +818,7 @@ export const updateSection = async (req, res) => {
 
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const hasAccess = instructor
       ? section.Courses.InstructorId === instructor.Id
@@ -859,6 +871,7 @@ export const deleteSection = async (req, res) => {
 
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const hasAccess = instructor
       ? section.Courses.InstructorId === instructor.Id
@@ -950,6 +963,7 @@ export const createLecture = async (req, res) => {
 
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const hasAccess = instructor
       ? section.Courses.InstructorId === instructor.Id
@@ -1035,6 +1049,7 @@ export const updateLecture = async (req, res) => {
 
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const hasAccess = instructor
       ? lecture.Sections.Courses.InstructorId === instructor.Id
@@ -1095,6 +1110,7 @@ export const deleteLecture = async (req, res) => {
 
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     const hasAccess = instructor
       ? lecture.Sections.Courses.InstructorId === instructor.Id
@@ -1168,6 +1184,7 @@ export const getInstructorStudents = async (req, res) => {
     // Find instructor record
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     if (!instructor) {
       return res.json({ success: true, data: [] });
@@ -1267,6 +1284,7 @@ export const exportStudentResults = async (req, res) => {
     // Find instructor record
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     if (!instructor) {
       return res.status(404).json({ success: false, error: "Instructor not found" });
@@ -1362,6 +1380,7 @@ export const getInstructorCommunication = async (req, res) => {
     // Find instructor record
     const instructor = await prisma.instructors.findFirst({
       where: { CreatorId: userId },
+      include: { Users_Instructors_CreatorIdToUsers: true }
     });
     if (!instructor) {
       return res.json({ success: true, data: { comments: [], reviews: [] } });
@@ -1489,7 +1508,11 @@ export const markLectureComplete = async (req, res) => {
     // Verify lecture exists and get its CourseId
     const lecture = await prisma.lectures.findUnique({
       where: { Id: lectureId },
-      include: { Sections: true },
+      include: { 
+        Sections: {
+          include: { Courses: true }
+        }
+      },
     });
 
     if (!lecture)
@@ -1531,6 +1554,14 @@ export const markLectureComplete = async (req, res) => {
           }
         });
       });
+      // Check if course is now 100% complete
+      const totalLecturesCount = await prisma.lectures.count({
+          where: { Sections: { CourseId: courseId } }
+      });
+      
+      if (milestones.length === totalLecturesCount) {
+          await notificationService.createCompletionNotification(userId, courseId, lecture.Sections.Courses?.Title || "Course");
+      }
     }
 
     res.json({ success: true, message: "Lecture marked as complete" });

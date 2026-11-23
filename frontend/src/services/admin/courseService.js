@@ -61,10 +61,11 @@ const courseService = {
   /**
    * Archive a course
    * @param {string} courseId - Course ID to archive
+   * @param {string} reason - Archive reason
    * @returns {Promise<Object>}
    */
-  archiveCourse: async (courseId) => {
-    return api.put(`/admin/courses/${courseId}/archive`, {});
+  archiveCourse: async (courseId, reason = '') => {
+    return api.put(`/admin/courses/${courseId}/archive`, { reason });
   },
 
   /**
@@ -94,6 +95,15 @@ const courseService = {
    */
   getCourseStudents: async (courseId) => {
     return api.get(`/admin/courses/${courseId}/students`);
+  },
+
+  /**
+   * Delete a course
+   * @param {string} courseId - Course ID to delete
+   * @returns {Promise<Object>}
+   */
+  deleteCourse: async (courseId) => {
+    return api.delete(`/admin/courses/${courseId}`);
   },
 };
 

@@ -44,6 +44,7 @@ import AdminCourseDetail from './pages/Admin/CourseDetail/CourseDetail';
 import AdminUserDetail from './pages/Admin/UserDetail/UserDetail';
 
 import AdminNotifications from './pages/Admin/Notifications/Notifications';
+import NotificationsPage from './pages/NotificationsPage/NotificationsPage';
 
 
 function App() {
@@ -129,8 +130,7 @@ function App() {
           <Route path="/instructor/tools" element={<InstructorRoute><InstructorToolsPage /></InstructorRoute>} />
           <Route path="/learning/:courseId" element={<CourseLessonPage />} />
           <Route path="/learning/:courseId/lesson/:lessonId" element={<CourseLessonPage />} />
-          <Route path="/certificate/:courseId" element={<CertificatePage />} />
-
+          <Route path="/notifications" element={<NotificationsPage />} />
           
           <Route
               path="/instructor/question-banks"

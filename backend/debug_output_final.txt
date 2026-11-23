@@ -1,0 +1,65 @@
+﻿--- Debug Notification Trigger ---
+prisma:query SELECT "public"."Instructors"."Id", "public"."Instructors"."Intro", "public"."Instructors"."Experience", "public"."Instructors"."CreatorId", "public"."Instructors"."CreationTime", "public"."Instructors"."LastModificationTime", "public"."Instructors"."Balance", "public"."Instructors"."CourseCount" FROM "public"."Instructors" WHERE 1=1 LIMIT $1 OFFSET $2
+prisma:query SELECT "public"."Users"."Id", "public"."Users"."UserName", "public"."Users"."Password", "public"."Users"."Email", "public"."Users"."FullName", "public"."Users"."MetaFullName", "public"."Users"."AvatarUrl", "public"."Users"."Role", "public"."Users"."Token", "public"."Users"."RefreshToken", "public"."Users"."IsVerified", "public"."Users"."IsApproved", "public"."Users"."AccessFailedCount", "public"."Users"."LoginProvider", "public"."Users"."ProviderKey", "public"."Users"."Bio", "public"."Users"."DateOfBirth", "public"."Users"."Phone", "public"."Users"."EnrollmentCount", "public"."Users"."InstructorId", "public"."Users"."CreationTime", "public"."Users"."LastModificationTime", "public"."Users"."SystemBalance", "public"."Users"."last_seen" FROM "public"."Users" WHERE "public"."Users"."Id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Courses"."Id", "public"."Courses"."Title", "public"."Courses"."MetaTitle", "public"."Courses"."ThumbUrl", "public"."Courses"."Intro", "public"."Courses"."Description", "public"."Courses"."Status", "public"."Courses"."Price", "public"."Courses"."Discount", "public"."Courses"."DiscountExpiry", "public"."Courses"."Level", "public"."Courses"."Outcomes", "public"."Courses"."Requirements", "public"."Courses"."LectureCount", "public"."Courses"."LearnerCount", "public"."Courses"."RatingCount", "public"."Courses"."TotalRating", "public"."Courses"."LeafCategoryId", "public"."Courses"."InstructorId", "public"."Courses"."CreationTime", "public"."Courses"."LastModificationTime", "public"."Courses"."CreatorId", "public"."Courses"."LastModifierId", "public"."Courses"."DismissReason", "public"."Courses"."RejectionReason", "public"."Courses"."ApprovalStatus" FROM "public"."Courses" WHERE 1=1 LIMIT $1 OFFSET $2
+Using Instructor User ID: 603d925c-147c-4d22-82cf-23633d1c4a80
+Using Instructor Record ID: ca49669e-746e-4dab-ad77-2a625d144b8b
+Using Course ID: 1f1832ec-dfd9-4348-a51e-33731384f074 ("r44")
+
+Calling notificationService.createSubmissionNotification...
+[NotificationService] createSubmissionNotification for course: DEBUG TEST: r44
+prisma:query INSERT INTO "public"."CourseNotifications" ("CourseId","InstructorId","InstructorName","CourseTitle","CoursePrice","NotificationType","Status","CreationTime") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING "public"."CourseNotifications"."Id", "public"."CourseNotifications"."CourseId", "public"."CourseNotifications"."InstructorId", "public"."CourseNotifications"."InstructorName", "public"."CourseNotifications"."CourseTitle", "public"."CourseNotifications"."CoursePrice", "public"."CourseNotifications"."NotificationType", "public"."CourseNotifications"."Status", "public"."CourseNotifications"."RejectionReason", "public"."CourseNotifications"."CreationTime", "public"."CourseNotifications"."ProcessedTime", "public"."CourseNotifications"."ProcessedBy"
+[NotificationService] Notifying all admins: COURSE_SUBMISSION
+prisma:query SELECT "public"."Users"."Id" FROM "public"."Users" WHERE "public"."Users"."Role" ILIKE $1 OFFSET $2
+[NotificationService] Creating COURSE_SUBMISSION for user 28cc5c62-66ce-409a-a690-6289c9f9e28f
+[NotificationService] Creating COURSE_SUBMISSION for user 0b4d2f75-64c1-48ce-97b2-391a9fd45361
+[NotificationService] Creating COURSE_SUBMISSION for user 1e512cf4-856b-4dd8-94b1-521c71276d8a
+[NotificationService] Creating COURSE_SUBMISSION for user d7067dc0-6f21-4073-9990-1c691bda358c
+[NotificationService] Creating COURSE_SUBMISSION for user 08b70e76-4163-44ac-8dd9-1735a200da30
+[NotificationService] Creating COURSE_SUBMISSION for user 5e348006-8a68-4776-8c36-80806111db0a
+[NotificationService] Creating COURSE_SUBMISSION for user a1dc4325-1a0d-4272-a7f5-1a848ac455c6
+[NotificationService] Creating COURSE_SUBMISSION for user ccc28e54-d21d-44fc-a8fc-26a135ae69f0
+[NotificationService] Creating COURSE_SUBMISSION for user 2e3c2c07-e166-4427-8702-91ce83d23103
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+[NotificationService] Creating SUBMISSION_CONFIRMED for user 603d925c-147c-4d22-82cf-23633d1c4a80
+prisma:query INSERT INTO "public"."Notifications" ("Message","Type","Status","ReceiverId","CreationTime","CreatorId") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId"
+Γ£à Service call completed without error
+
+Verifying in Notifications table...
+prisma:query SELECT "public"."Notifications"."Id", "public"."Notifications"."Message", "public"."Notifications"."Type", "public"."Notifications"."Status", "public"."Notifications"."ReceiverId", "public"."Notifications"."CreationTime", "public"."Notifications"."CreatorId" FROM "public"."Notifications" WHERE ("public"."Notifications"."ReceiverId" = $1 AND "public"."Notifications"."Type" = $2) ORDER BY "public"."Notifications"."CreationTime" DESC LIMIT $3 OFFSET $4
+≡ƒÄë SUCCESS! Notification found in database:
+{
+  "Id": "6c7ca864-d3d5-4f7b-974f-10b34ce6cc22",
+  "Message": "Your course \"DEBUG TEST: r44\" has been submitted for review.",
+  "Type": "SUBMISSION_CONFIRMED",
+  "Status": "Unread",
+  "ReceiverId": "603d925c-147c-4d22-82cf-23633d1c4a80",
+  "CreationTime": "2026-03-27T08:27:01.091Z",
+  "CreatorId": "603d925c-147c-4d22-82cf-23633d1c4a80"
+}
+
+Verifying in CourseNotifications table...
+prisma:query SELECT "public"."CourseNotifications"."Id", "public"."CourseNotifications"."CourseId", "public"."CourseNotifications"."InstructorId", "public"."CourseNotifications"."InstructorName", "public"."CourseNotifications"."CourseTitle", "public"."CourseNotifications"."CoursePrice", "public"."CourseNotifications"."NotificationType", "public"."CourseNotifications"."Status", "public"."CourseNotifications"."RejectionReason", "public"."CourseNotifications"."CreationTime", "public"."CourseNotifications"."ProcessedTime", "public"."CourseNotifications"."ProcessedBy" FROM "public"."CourseNotifications" WHERE ("public"."CourseNotifications"."CourseId" = $1 AND "public"."CourseNotifications"."NotificationType" = $2) ORDER BY "public"."CourseNotifications"."CreationTime" DESC LIMIT $3 OFFSET $4
+≡ƒÄë SUCCESS! CourseNotification found in database:
+{
+  "Id": "c3a754c5-d656-424f-a06e-a444054ca247",
+  "CourseId": "1f1832ec-dfd9-4348-a51e-33731384f074",
+  "InstructorId": "ca49669e-746e-4dab-ad77-2a625d144b8b",
+  "InstructorName": "─Éß║╖ng Mai Hß║ính",
+  "CourseTitle": "DEBUG TEST: r44",
+  "CoursePrice": 98966,
+  "NotificationType": "Submission",
+  "Status": "Pending",
+  "RejectionReason": null,
+  "CreationTime": "2026-03-27T08:26:58.529Z",
+  "ProcessedTime": null,
+  "ProcessedBy": null
+}
